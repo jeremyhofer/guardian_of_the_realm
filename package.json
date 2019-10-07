@@ -1,0 +1,14 @@
+{
+  "name": "guardian-of-the-realm",
+  "version": "1.0.0",
+  "description": "Seven Thrones Discord bot",
+  "main": "bot.js",
+  "author": "Zorbaz Englander",
+  "contributors": [
+    "Jeremy Hofer"
+  ],
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "winston": "^3.2.1"
+  }
+}
