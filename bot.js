@@ -29,6 +29,7 @@ const command_dispatch = {
   "thief": player_interact.thief,
   "train": tasks.train,
   "view": admin.view,
+  "truce": clan_interact.truce,
   "war": clan_interact.war,
   "work": tasks.work
 };
