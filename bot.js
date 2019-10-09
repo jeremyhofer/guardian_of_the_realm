@@ -11,7 +11,7 @@ var general = require('./commands/general.js');
 const command_dispatch = {
   "add": admin.add,
   "buy": economy.buy,
-  "give": admin.give,
+  "gift": admin.gift,
   "help": general.help,
   "join": clan_interact.join,
   "loan": economy.loan,
@@ -23,13 +23,13 @@ const command_dispatch = {
   "raid": player_interact.raid,
   "siege": clan_interact.siege,
   "slut": tasks.slut,
-  "smuggle": player_interact.smuggle,
+  "smuggle": tasks.smuggle,
   "spy": player_interact.spy,
   "take": admin.take,
   "thief": player_interact.thief,
   "train": tasks.train,
-  "view": admin.view,
   "truce": clan_interact.truce,
+  "view": admin.view,
   "war": clan_interact.war,
   "work": tasks.work
 };

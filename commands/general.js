@@ -1,3 +1,5 @@
 module.exports = {
-  help: function(args) {}
+  help (args) {
+    // Show help text. optional specific command
+  }
 };
