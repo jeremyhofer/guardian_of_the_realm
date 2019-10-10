@@ -1,4 +1,6 @@
 const Discord = require('discord.js');
+const SQLite = require("better-sqlite3");
+const sql = new SQLite('./data/gotr_bot.sqlite');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
@@ -34,9 +36,30 @@ const command_dispatch = {
   "work": tasks.work
 };
 
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+client.on("ready", () => {
+  // Check if the table "points" exists.
+  const table = sql.prepare(`
+    SELECT count(*) FROM sqlite_master
+    WHERE type='table' AND name = 'player_data';
+  `).get();
+  if (!table['count(*)']) {
+    // If the table isn't there, create it and setup the database correctly.
+    sql.prepare(`
+      CREATE TABLE player_data (
+        user TEXT PRIMARY KEY,
+        house TEXT,
+        men INTEGER,
+        ships INTEGER,
+        money INTEGER
+      );
+    `).run();
+    // Ensure that the "id" row is always unique and indexed.
+    sql.prepare(`
+      CREATE UNIQUE INDEX idx_player_data_id ON player_data (user);
+    `).run();
+    sql.pragma("synchronous = 1");
+    sql.pragma("journal_mode = wal");
+  }
 });
 
 client.login(auth.token);
