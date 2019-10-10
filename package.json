@@ -8,8 +8,10 @@
     "Jeremy Hofer"
   ],
   "dependencies": {
+    "better-sqlite3": "^5.4.3",
     "discord.js": "^11.5.1",
     "eslint": "^6.5.1",
+    "node-gyp": "^6.0.0",
     "winston": "^3.2.1"
   }
 }
