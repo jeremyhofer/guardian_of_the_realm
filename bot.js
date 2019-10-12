@@ -13,7 +13,7 @@ var general = require('./commands/general.js');
 const command_dispatch = {
   "add": admin.add,
   "buy": economy.buy,
-  "gift": admin.gift,
+  "gift": player_interact.gift,
   "help": general.help,
   "join": clan_interact.join,
   "loan": economy.loan,
@@ -24,9 +24,9 @@ const command_dispatch = {
   "pray": tasks.pray,
   "raid": player_interact.raid,
   "siege": clan_interact.siege,
-  "slut": tasks.slut,
   "smuggle": tasks.smuggle,
   "spy": player_interact.spy,
+  "subvert": tasks.subvert,
   "take": admin.take,
   "thief": player_interact.thief,
   "train": tasks.train,
@@ -37,7 +37,7 @@ const command_dispatch = {
 };
 
 client.on("ready", () => {
-  // Check if the table "points" exists.
+  // Check if the table "player_data" exists.
   const table = sql.prepare(`
     SELECT count(*) FROM sqlite_master
     WHERE type='table' AND name = 'player_data';
@@ -50,7 +50,18 @@ client.on("ready", () => {
         house TEXT,
         men INTEGER,
         ships INTEGER,
-        money INTEGER
+        money INTEGER,
+        gift_last_time INTEGER,
+        loan_last_time INTEGER,
+        pirate_last_time INTEGER,
+        pray_last_time INTEGER,
+        raid_last_time INTEGER,
+        smuggle_last_time INTEGER,
+        spy_last_time INTEGER,
+        subvert_last_time INTEGER,
+        thief_last_time INTEGER,
+        train_last_time INTEGER,
+        work_last_time INTEGER
       );
     `).run();
     // Ensure that the "id" row is always unique and indexed.
@@ -60,6 +71,42 @@ client.on("ready", () => {
     sql.pragma("synchronous = 1");
     sql.pragma("journal_mode = wal");
   }
+
+  client.getPlayer = sql.prepare("SELECT * FROM player_data WHERE user = ?");
+  client.setPlayer = sql.prepare(`
+    INSERT OR REPLACE INTO player_data (
+      user, house, men, ships, money, pray_last_time,
+      gift_last_time, loan_last_time, pirate_last_time,
+      pray_last_time, raid_last_time, smuggle_last_time,
+      spy_last_time, subvert_last_time, thief_last_time,
+      train_last_time, work_last_time)
+    VALUES (
+      @user, @house, @men, @ships, @money, @pray_last_time,
+      @gift_last_time, @loan_last_time, @pirate_last_time,
+      @pray_last_time, @raid_last_time, @smuggle_last_time,
+      @spy_last_time, @subvert_last_time, @thief_last_time,
+      @train_last_time, @work_last_time);
+  `);
+  client.defaultPlayerData = {
+    "user": '',
+    "house": '',
+    "men": 20,
+    "ships": 2,
+    "money": 2000,
+    "gift_last_time": 0,
+    "loan_last_time": 0,
+    "pirate_last_time": 0,
+    "pray_last_time": 0,
+    "raid_last_time": 0,
+    "smuggle_last_time": 0,
+    "spy_last_time": 0,
+    "subvert_last_time": 0,
+    "thief_last_time": 0,
+    "train_last_time": 0,
+    "work_last_time": 0
+  };
+
+  console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.login(auth.token);
@@ -69,8 +116,10 @@ client.on('message', msg => {
   if (tokens[0].startsWith(PREFIX)) {
     var command = tokens[0].substring(1);
     if(command in command_dispatch) {
-      command_dispatch[command](tokens.slice(1));
-      msg.reply(command + ' is not yet implemented');
+      const r_val = command_dispatch[command](tokens.slice(1), client, msg);
+      if(r_val !== 0) {
+        msg.reply(command + ' is not yet implemented');
+      }
     } else{
       msg.reply(command + ' is not a recognized command');
     }

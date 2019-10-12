@@ -1,5 +1,5 @@
 module.exports = {
-  edit (args) {
+  edit (args, client, msg) {
 
     /*
      * Edit player data. will take flags i.e. --house. will hard set to the
@@ -7,14 +7,7 @@ module.exports = {
      * <SHIPS> --title <array>
      */
   },
-  gift (args) {
-
-    /*
-     * Give person title, men, ships, money
-     * @player [TITLE|MEN|SHIPS|MONEY] <VALUE>
-     */
-  },
-  map (args) {
+  map (args, client, msg) {
 
     /*
      * Generates a map. 8x12 (tiles are emojis). top row and left column are
@@ -22,14 +15,14 @@ module.exports = {
      * grid owned by houses are what matter
      */
   },
-  take (args) {
+  take (args, client, msg) {
 
     /*
      * Take person title, men, ships, money
      * @player [TITLE|MEN|SHIPS|MONEY] <VALUE>
      */
   },
-  view (args) {
+  view (args, client, msg) {
     // VIEW ALL THE STUFF!!!!!!!!!!
   }
 };

@@ -1,5 +1,5 @@
 module.exports = {
-  help (args) {
+  help (args, client, msg) {
     // Show help text. optional specific command
   }
 };
