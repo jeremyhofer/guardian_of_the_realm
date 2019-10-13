@@ -13,6 +13,7 @@ var general = require('./commands/general.js');
 const command_dispatch = {
   "add": admin.add,
   "buy": economy.buy,
+  "bal": general.bal,
   "gift": player_interact.gift,
   "help": general.help,
   "join": clan_interact.join,
