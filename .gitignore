@@ -1,6 +1,6 @@
 # project specific files
 auth.json
-data/gotr_bot.sqlite
+data/gotr_bot.sqlite*
 .python-version
 
 # Logs
