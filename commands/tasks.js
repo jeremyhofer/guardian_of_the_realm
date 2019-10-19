@@ -21,14 +21,16 @@ var get_random_value_in_range = (min, max) => min +
   Math.floor(Math.random() * (max - min + 1));
 
 module.exports = {
-  pray (args, client, msg, player_data) {
+  pray (args, player_data) {
 
     /*
      * Possibly earn money. 1h cooldown
      * min: 0, max: 200
      */
+    let reply = "";
+
     if (Array.isArray(args) && args.length) {
-      msg.reply("pray does not take any arguments");
+      reply = "pray does not take any arguments";
     } else {
       // Ensure the minimum cooldown time has been passed
       const cooldown = 1 * (60 * 60 * 1000);
@@ -44,43 +46,52 @@ module.exports = {
         player_data.pray_last_time = current_time;
         const payout = get_random_value_in_range(0, 200);
         player_data.money += payout;
-        client.setPlayer.run(player_data);
-        msg.reply("Your prayers were heard! " +
-          `You received ${payout} bringing you to ${player_data.money}`);
+        reply = "Your prayers were heard! " +
+          `You received ${payout} bringing you to ${player_data.money}`;
       } else {
         // Not enough time has passed. Let player know
         const time_until = last_time + cooldown - current_time;
         const time_until_string = get_time_until_string(time_until);
-        msg.reply("No one is around to hear your prayers " +
-          "for another " + time_until_string);
+        reply = "No one is around to hear your prayers " +
+          "for another " + time_until_string;
       }
     }
 
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ];
   },
-  smuggle (args, client, msg, player_data) {
+  smuggle (args, player_data) {
 
     /*
      * Send ships to try and steal money. 50/50 success. lose lose ships, win
      * gain money <SHIPS>. win ships * (400 - 1000). fail lose 10-20% ships
      */
+    let reply = "";
     if (Array.isArray(args) && args.length === 1) {
-      msg.reply("Arg matey! You set sail to smuggle but " +
-        "forgot you were only in the bath!");
+      reply = "Arg matey! You set sail to smuggle but " +
+        "forgot you were only in the bath!";
     } else {
-      msg.reply("smuggle takes one argument: number of ships");
+      reply = "smuggle takes one argument: number of ships";
     }
 
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ];
   },
-  subvert (args, client, msg, player_data) {
+  subvert (args, player_data) {
 
     /*
      * Possible earn money. 12h cooldown
      * min: 1000, max: 4000. 50/50. fine 200-1000
      */
+    let reply = "";
     if (Array.isArray(args) && args.length) {
-      msg.reply("subvert does not take any arguments");
+      reply = "subvert does not take any arguments";
     } else {
       // Ensure the minimum cooldown time has been passed
       const cooldown = 12 * (60 * 60 * 1000);
@@ -90,7 +101,6 @@ module.exports = {
       if(current_time - last_time >= cooldown) {
         // Determine if this is a successful attempt
         const chance = get_random_value_in_range(1, 100);
-        let reply = "";
         if(chance >= 50) {
           // Success! Pay reward
           const payout = get_random_value_in_range(1000, 4000);
@@ -105,26 +115,29 @@ module.exports = {
             `tried and fined ${penalty} bringing you to ${player_data.money}`;
         }
         player_data.subvert_last_time = current_time;
-        client.setPlayer.run(player_data);
-        msg.reply(reply);
       } else {
         const time_until = last_time + cooldown - current_time;
         const time_until_string = get_time_until_string(time_until);
-        msg.reply("The watch is in high presence right now. You should try " +
-          "again in another " + time_until_string);
+        reply = "The watch is in high presence right now. You should try " +
+          "again in another " + time_until_string;
       }
     }
 
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ];
   },
-  train (args, client, msg, player_data) {
+  train (args, player_data) {
 
     /*
      * Possible earn men. 12h cooldown. 20% fail risk - fine 10-100
      * min: 1, max : 20
      */
+    let reply = "";
     if (Array.isArray(args) && args.length) {
-      msg.reply("train does not take any arguments");
+      reply = "train does not take any arguments";
     } else {
       // Ensure the minimum cooldown time has been passed
       const cooldown = 12 * (60 * 60 * 1000);
@@ -134,7 +147,6 @@ module.exports = {
       if(current_time - last_time >= cooldown) {
         // Determine if this is a successful attempt
         const chance = get_random_value_in_range(1, 100);
-        let reply = "";
         if(chance >= 20) {
           // Success! Pay reward
           const payout = get_random_value_in_range(1, 20);
@@ -150,26 +162,29 @@ module.exports = {
             `to ${player_data.money}`;
         }
         player_data.train_last_time = current_time;
-        client.setPlayer.run(player_data);
-        msg.reply(reply);
       } else {
         const time_until = last_time + cooldown - current_time;
         const time_until_string = get_time_until_string(time_until);
-        msg.reply("You have been training tirelessly. " +
-          "You should rest for " + time_until_string);
+        reply = "You have been training tirelessly. " +
+          "You should rest for " + time_until_string;
       }
     }
 
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ];
   },
-  work (args, client, msg, player_data) {
+  work (args, player_data) {
 
     /*
      * Gain money. 6h cooldown
      * min: 500, max: 2000
      */
+    let reply = "";
     if (Array.isArray(args) && args.length) {
-      msg.reply("work does not take any arguments");
+      reply = "work does not take any arguments";
     } else {
       // Ensure the minimum cooldown time has been passed
       const cooldown = 6 * (60 * 60 * 1000);
@@ -185,18 +200,21 @@ module.exports = {
         player_data.work_last_time = current_time;
         const payout = get_random_value_in_range(500, 2000);
         player_data.money += payout;
-        client.setPlayer.run(player_data);
-        msg.reply("Your hard work has paid off! " +
-          `You received ${payout} bringing you to ${player_data.money}`);
+        reply = "Your hard work has paid off! " +
+          `You received ${payout} bringing you to ${player_data.money}`;
       } else {
         // Not enough time has passed. Let player know
         const time_until = last_time + cooldown - current_time;
         const time_until_string = get_time_until_string(time_until);
-        msg.reply("You continue to slave away, but you will not be paid " +
-          "for another " + time_until_string);
+        reply = "You continue to slave away, but you will not be paid " +
+          "for another " + time_until_string;
       }
     }
 
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ];
   }
 };

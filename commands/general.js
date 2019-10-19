@@ -1,16 +1,20 @@
 module.exports = {
-  help (args, client, msg, player_data) {
+  help (args, player_data) {
     // Show help text. optional specific command
   },
-  bal (args, client, msg, player_data) {
+  bal (args, player_data) {
 
     /*
      * Lists the players money, men, and ships with
      * the unique faction name for each.
      */
-    msg.reply(`Your account: ${player_data.money} :moneybag: ` +
-      `${player_data.men} :MenAtArms: ${player_data.ships} :Warship:`);
+    let reply = `Your account: ${player_data.money} :moneybag: ` +
+      `${player_data.men} :MenAtArms: ${player_data.ships} :Warship:`;
 
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ]
   }
 };

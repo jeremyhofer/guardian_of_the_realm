@@ -126,9 +126,16 @@ client.on('message', msg => {
         player_data.user = msg.author.id;
       }
 
-      const r_val = command_dispatch[command](tokens.slice(1), client, msg, player_data);
+      const [
+        r_val,
+        updated_player_data,
+        reply
+      ] = command_dispatch[command](tokens.slice(1), player_data);
 
-      if(r_val !== 0) {
+      if(r_val === 0) {
+        client.setPlayer.run(updated_player_data);
+        msg.reply(reply);
+      } else {
         msg.reply(command + ' is not yet implemented');
       }
     } else{
