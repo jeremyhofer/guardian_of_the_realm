@@ -114,11 +114,28 @@ client.login(auth.token);
 
 client.on('message', msg => {
   var tokens = msg.content.split(" ");
+
   if (tokens[0].startsWith(PREFIX)) {
     var command = tokens[0].substring(1);
+
     if(command in command_dispatch) {
-      const r_val = command_dispatch[command](tokens.slice(1), client, msg);
-      if(r_val !== 0) {
+      let player_data = client.getPlayer.get(msg.author.id);
+
+      if (!player_data) {
+        player_data = {...client.defaultPlayerData};
+        player_data.user = msg.author.id;
+      }
+
+      const [
+        r_val,
+        updated_player_data,
+        reply
+      ] = command_dispatch[command](tokens.slice(1), player_data);
+
+      if(r_val === 0) {
+        client.setPlayer.run(updated_player_data);
+        msg.reply(reply);
+      } else {
         msg.reply(command + ' is not yet implemented');
       }
     } else{

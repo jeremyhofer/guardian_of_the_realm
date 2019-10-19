@@ -1,12 +1,12 @@
 module.exports = {
-  gift (args, client, msg) {
+  gift (args, player_data) {
 
     /*
      * Give person title, men, ships, money
      * @player [TITLE|MEN|SHIPS|MONEY] <VALUE>
      */
   },
-  pirate (args, client, msg) {
+  pirate (args, player_data) {
 
     /*
      * Destroy ships! fail_risk = yours / (theirs + 2*yours)
@@ -14,7 +14,7 @@ module.exports = {
      * <PLAYER>
      */
   },
-  raid (args, client, msg) {
+  raid (args, player_data) {
 
     /*
      * Destroy men! fail_risk = yours / (theirs + 2*yours)
@@ -22,14 +22,14 @@ module.exports = {
      * <PLAYER>.
      */
   },
-  spy (args, client, msg) {
+  spy (args, player_data) {
 
     /*
      * View money, ships, men of a player. costs 400
      * <PLAYER>
      */
   },
-  thief (args, client, msg) {
+  thief (args, player_data) {
 
     /*
      * Steal money from someone. fail_risk = yours / (theirs + yours)

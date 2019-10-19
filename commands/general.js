@@ -1,19 +1,20 @@
 module.exports = {
-  help (args, client, msg) {
+  help (args, player_data) {
     // Show help text. optional specific command
   },
-  bal (args, client, msg) {
+  bal (args, player_data) {
 
-  let player_data = null;
+    /*
+     * Lists the players money, men, and ships with
+     * the unique faction name for each.
+     */
+    let reply = `Your account: ${player_data.money} :moneybag: ` +
+      `${player_data.men} :MenAtArms: ${player_data.ships} :Warship:`;
 
-  // Get player data - use defaults if new
-  player_data = client.getPlayer.get(msg.author.id);
-    if (!player_data) {
-      player_data = {...client.defaultPlayerData};
-      player_data.user = msg.author.id;
-      client.setPlayer.run(player_data);}
-    // Lists the players money, men, and ships with the unique faction name for each.
-    msg.reply(`Your account: ${player_data.money} :moneybag: ${player_data.men} :MenAtArms: ${player_data.ships} :Warship:`);
-    return 0;
+    return [
+      0,
+      player_data,
+      reply
+    ]
   }
 };
