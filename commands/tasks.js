@@ -21,24 +21,15 @@ var get_random_value_in_range = (min, max) => min +
   Math.floor(Math.random() * (max - min + 1));
 
 module.exports = {
-  pray (args, client, msg) {
+  pray (args, client, msg, player_data) {
 
     /*
      * Possibly earn money. 1h cooldown
      * min: 0, max: 200
      */
-    let player_data = null;
-
     if (Array.isArray(args) && args.length) {
       msg.reply("pray does not take any arguments");
     } else {
-      // Get player data - use defaults if new
-      player_data = client.getPlayer.get(msg.author.id);
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
       // Ensure the minimum cooldown time has been passed
       const cooldown = 1 * (60 * 60 * 1000);
       const current_time = Date.now();
@@ -67,21 +58,13 @@ module.exports = {
 
     return 0;
   },
-  smuggle (args, client, msg) {
+  smuggle (args, client, msg, player_data) {
 
     /*
      * Send ships to try and steal money. 50/50 success. lose lose ships, win
      * gain money <SHIPS>. win ships * (400 - 1000). fail lose 10-20% ships
      */
-    let player_data = null;
-
     if (Array.isArray(args) && args.length === 1) {
-      player_data = client.getPlayer.get(msg.author.id);
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
       msg.reply("Arg matey! You set sail to smuggle but " +
         "forgot you were only in the bath!");
     } else {
@@ -90,24 +73,15 @@ module.exports = {
 
     return 0;
   },
-  subvert (args, client, msg) {
+  subvert (args, client, msg, player_data) {
 
     /*
      * Possible earn money. 12h cooldown
      * min: 1000, max: 4000. 50/50. fine 200-1000
      */
-    let player_data = null;
-
     if (Array.isArray(args) && args.length) {
       msg.reply("subvert does not take any arguments");
     } else {
-      // Get player data - use defaults if new
-      player_data = client.getPlayer.get(msg.author.id);
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
       // Ensure the minimum cooldown time has been passed
       const cooldown = 12 * (60 * 60 * 1000);
       const current_time = Date.now();
@@ -143,24 +117,15 @@ module.exports = {
 
     return 0;
   },
-  train (args, client, msg) {
+  train (args, client, msg, player_data) {
 
     /*
      * Possible earn men. 12h cooldown. 20% fail risk - fine 10-100
      * min: 1, max : 20
      */
-    let player_data = null;
-
     if (Array.isArray(args) && args.length) {
       msg.reply("train does not take any arguments");
     } else {
-      // Get player data - use defaults if new
-      player_data = client.getPlayer.get(msg.author.id);
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
       // Ensure the minimum cooldown time has been passed
       const cooldown = 12 * (60 * 60 * 1000);
       const current_time = Date.now();
@@ -197,24 +162,15 @@ module.exports = {
 
     return 0;
   },
-  work (args, client, msg) {
+  work (args, client, msg, player_data) {
 
     /*
      * Gain money. 6h cooldown
      * min: 500, max: 2000
      */
-    let player_data = null;
-
     if (Array.isArray(args) && args.length) {
       msg.reply("work does not take any arguments");
     } else {
-      // Get player data - use defaults if new
-      player_data = client.getPlayer.get(msg.author.id);
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
       // Ensure the minimum cooldown time has been passed
       const cooldown = 6 * (60 * 60 * 1000);
       const current_time = Date.now();
