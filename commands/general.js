@@ -10,13 +10,10 @@ module.exports = {
      * Lists the players money, men, and ships with
      * the unique faction name for each.
      */
-    const reply = `Your account: ${player_data.money} :moneybag: ` +
-      `${player_data.men} ${assets.emojis.MenAtArms} ${player_data.ships} ${assets.emojis.Warship}`;
-
-    return [
-      0,
-      player_data,
-      reply
-    ];
+    return {
+      "reply": `Your account: ${player_data.money} :moneybag: ` +
+        `${player_data.men} ${assets.emojis.MenAtArms} ${player_data.ships} ` +
+        `${assets.emojis.Warship}`
+    };
   }
 };
