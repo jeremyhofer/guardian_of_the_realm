@@ -1,3 +1,5 @@
+const assets = require('../assets.js');
+
 module.exports = {
   help (args, player_data) {
     // Show help text. optional specific command
@@ -8,13 +10,13 @@ module.exports = {
      * Lists the players money, men, and ships with
      * the unique faction name for each.
      */
-    let reply = `Your account: ${player_data.money} :moneybag: ` +
-      `${player_data.men} :MenAtArms: ${player_data.ships} :Warship:`;
+    const reply = `Your account: ${player_data.money} :moneybag: ` +
+      `${player_data.men} ${assets.emojis.MenAtArms} ${player_data.ships} ${assets.emojis.Warship}`;
 
     return [
       0,
       player_data,
       reply
-    ]
+    ];
   }
 };

@@ -1,24 +1,4 @@
-/**
- * Convert milliseconds to a countdown-like string.
- * @param {number} ms milliseconds .
- * @returns {string} Countdown-like string of milliseconds provided.
- */
-var get_time_until_string = ms => {
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-  const minutes = Math.floor(ms % (1000 * 60 * 60) / (1000 * 60));
-  const seconds = Math.floor(ms % (1000 * 60) / 1000);
-
-  return `${hours} hours ${minutes} minutes ${seconds} seconds`;
-};
-
-/**
- * Return a random number in the range between min and max, inclusive.
- * @param {number} min minimum value in range.
- * @param {number} max maximum value in range.
- * @returns {number} random value in range.
- */
-var get_random_value_in_range = (min, max) => min +
-  Math.floor(Math.random() * (max - min + 1));
+const utils = require('../utils.js');
 
 module.exports = {
   pray (args, player_data) {
@@ -44,14 +24,14 @@ module.exports = {
          * Let player know and save to database.
          */
         player_data.pray_last_time = current_time;
-        const payout = get_random_value_in_range(0, 200);
+        const payout = utils.get_random_value_in_range(0, 200);
         player_data.money += payout;
         reply = "Your prayers were heard! " +
           `You received ${payout} bringing you to ${player_data.money}`;
       } else {
         // Not enough time has passed. Let player know
         const time_until = last_time + cooldown - current_time;
-        const time_until_string = get_time_until_string(time_until);
+        const time_until_string = utils.get_time_until_string(time_until);
         reply = "No one is around to hear your prayers " +
           "for another " + time_until_string;
       }
@@ -100,16 +80,16 @@ module.exports = {
 
       if(current_time - last_time >= cooldown) {
         // Determine if this is a successful attempt
-        const chance = get_random_value_in_range(1, 100);
+        const chance = utils.get_random_value_in_range(1, 100);
         if(chance >= 50) {
           // Success! Pay reward
-          const payout = get_random_value_in_range(1000, 4000);
+          const payout = utils.get_random_value_in_range(1000, 4000);
           player_data.money += payout;
           reply = "You caught the ear of a wealthy noble. They granted you " +
             `${payout} bringing you to ${player_data.money}`;
         } else {
           // Failure. Take penalty.
-          const penalty = get_random_value_in_range(200, 1000);
+          const penalty = utils.get_random_value_in_range(200, 1000);
           player_data.money -= penalty;
           reply = "The watch have caught on to your ways. You have been " +
             `tried and fined ${penalty} bringing you to ${player_data.money}`;
@@ -117,7 +97,7 @@ module.exports = {
         player_data.subvert_last_time = current_time;
       } else {
         const time_until = last_time + cooldown - current_time;
-        const time_until_string = get_time_until_string(time_until);
+        const time_until_string = utils.get_time_until_string(time_until);
         reply = "The watch is in high presence right now. You should try " +
           "again in another " + time_until_string;
       }
@@ -146,16 +126,16 @@ module.exports = {
 
       if(current_time - last_time >= cooldown) {
         // Determine if this is a successful attempt
-        const chance = get_random_value_in_range(1, 100);
+        const chance = utils.get_random_value_in_range(1, 100);
         if(chance >= 20) {
           // Success! Pay reward
-          const payout = get_random_value_in_range(1, 20);
+          const payout = utils.get_random_value_in_range(1, 20);
           player_data.men += payout;
           reply = `You have successfully recruited ${payout} men to your ` +
             `cause bringing you to ${player_data.men} men`;
         } else {
           // Failure. Take penalty.
-          const penalty = get_random_value_in_range(10, 100);
+          const penalty = utils.get_random_value_in_range(10, 100);
           player_data.money -= penalty;
           reply = "You spoke with a variety of people, but none joined your " +
             `cause. You spent ${penalty} in the process bringing you ` +
@@ -164,7 +144,7 @@ module.exports = {
         player_data.train_last_time = current_time;
       } else {
         const time_until = last_time + cooldown - current_time;
-        const time_until_string = get_time_until_string(time_until);
+        const time_until_string = utils.get_time_until_string(time_until);
         reply = "You have been training tirelessly. " +
           "You should rest for " + time_until_string;
       }
@@ -198,14 +178,14 @@ module.exports = {
          * Let player know and save to database.
          */
         player_data.work_last_time = current_time;
-        const payout = get_random_value_in_range(500, 2000);
+        const payout = utils.get_random_value_in_range(500, 2000);
         player_data.money += payout;
         reply = "Your hard work has paid off! " +
           `You received ${payout} bringing you to ${player_data.money}`;
       } else {
         // Not enough time has passed. Let player know
         const time_until = last_time + cooldown - current_time;
-        const time_until_string = get_time_until_string(time_until);
+        const time_until_string = utils.get_time_until_string(time_until);
         reply = "You continue to slave away, but you will not be paid " +
           "for another " + time_until_string;
       }
