@@ -1,10 +1,10 @@
 const assets = require('../assets.js');
 
 module.exports = {
-  help (args, player_data) {
+  help ({args, player_data}) {
     // Show help text. optional specific command
   },
-  bal (args, player_data) {
+  bal ({args, player_data}) {
 
     /*
      * Lists the players money, men, and ships with

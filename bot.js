@@ -11,30 +11,174 @@ var player_interact = require('./commands/player_interact.js');
 var clan_interact = require('./commands/clan_interact.js');
 var general = require('./commands/general.js');
 const command_dispatch = {
-  "add": admin.add,
-  "buy": economy.buy,
-  "bal": general.bal,
-  "gift": player_interact.gift,
-  "help": general.help,
-  "join": clan_interact.join,
-  "loan": economy.loan,
-  "map": admin.map,
-  "market": economy.market,
-  "pirate": player_interact.pirate,
-  "pledge": clan_interact.pledge,
-  "pray": tasks.pray,
-  "raid": player_interact.raid,
-  "siege": clan_interact.siege,
-  "smuggle": tasks.smuggle,
-  "spy": player_interact.spy,
-  "subvert": tasks.subvert,
-  "take": admin.take,
-  "thief": player_interact.thief,
-  "train": tasks.train,
-  "truce": clan_interact.truce,
-  "view": admin.view,
-  "war": clan_interact.war,
-  "work": tasks.work
+  "add": {
+    "function": admin.add,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "buy": {
+    "function": economy.buy,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "bal": {
+    "function": general.bal,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "gift": {
+    "function": player_interact.gift,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "help": {
+    "function": general.help,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "join": {
+    "function": clan_interact.join,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "loan": {
+    "function": economy.loan,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "map": {
+    "function": admin.map,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "market": {
+    "function": economy.market,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "pirate": {
+    "function": player_interact.pirate,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "pledge": {
+    "function": clan_interact.pledge,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "pray": {
+    "function": tasks.pray,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "raid": {
+    "function": player_interact.raid,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "siege": {
+    "function": clan_interact.siege,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "smuggle": {
+    "function": tasks.smuggle,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "spy": {
+  "function": player_interact.spy,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "subvert": {
+  "function": tasks.subvert,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "take": {
+    "function": admin.take,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "thief": {
+    "function": player_interact.thief,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "train": {
+    "function": tasks.train,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "truce": {
+    "function": clan_interact.truce,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "view": {
+    "function": admin.view,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "war": {
+    "function": clan_interact.war,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  },
+  "work": {
+    "function": tasks.work,
+    "args": [
+      "args",
+      "player_data"
+    ]
+  }
 };
 
 client.on("ready", () => {
@@ -119,6 +263,10 @@ client.on('message', msg => {
     var command = tokens[0].substring(1);
 
     if(command in command_dispatch) {
+      const call_function = command_dispatch[command].function;
+      const call_args = {};
+
+      // Get player_data, in case it is required
       let player_data = client.getPlayer.get(msg.author.id);
 
       if (!player_data) {
@@ -126,10 +274,20 @@ client.on('message', msg => {
         player_data.user = msg.author.id;
       }
 
-      const command_return = command_dispatch[command](
-        tokens.slice(1),
-        player_data
-      );
+      command_dispatch[command].args.forEach(required_arg => {
+        switch(required_arg) {
+          case 'args':
+            call_args.args = tokens.slice(1);
+            break;
+          case 'player_data':
+            call_args.player_data = player_data;
+            break;
+          default:
+            break;
+        }
+      });
+
+      const command_return = call_function(call_args);
 
       if(command_return) {
         if('player_update' in command_return) {
@@ -140,7 +298,9 @@ client.on('message', msg => {
           if('roles' in command_return.player_update) {
             // Adjust player roles as necessary
             command_return.player_update.roles.add.forEach(add_role => {
-              const server_role = msg.guild.roles.find(role => role.name.toLowerCase() === add_role);
+              const server_role =
+                msg.guild.roles.find(role => role.name.toLowerCase() ===
+                  add_role);
 
               if(server_role) {
                 // Add role to player

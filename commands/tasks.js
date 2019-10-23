@@ -1,7 +1,7 @@
 const utils = require('../utils.js');
 
 module.exports = {
-  pray (args, player_data) {
+  pray ({args, player_data}) {
 
     /*
      * Possibly earn money. 1h cooldown
@@ -45,7 +45,7 @@ module.exports = {
 
     return command_return;
   },
-  smuggle (args, player_data) {
+  smuggle ({args, player_data}) {
 
     /*
      * Send ships to try and steal money. 50/50 success. lose lose ships, win
@@ -67,7 +67,7 @@ module.exports = {
 
     return command_return;
   },
-  subvert (args, player_data) {
+  subvert ({args, player_data}) {
 
     /*
      * Possible earn money. 12h cooldown
@@ -96,28 +96,30 @@ module.exports = {
           const payout = utils.get_random_value_in_range(1000, 4000);
           command_return.player_update.player_data.money += payout;
           const player_money = command_return.player_update.player_data.money;
-          command_return.reply = "You caught the ear of a wealthy noble. They granted you " +
-            `${payout} bringing you to ${player_money}`;
+          command_return.reply = "You caught the ear of a wealthy noble. " +
+            `They granted you ${payout} bringing you to ${player_money}`;
         } else {
           // Failure. Take penalty.
           const penalty = utils.get_random_value_in_range(200, 1000);
           command_return.player_update.player_data.money -= penalty;
           const player_money = command_return.player_update.player_data.money;
-          command_return.reply = "The watch have caught on to your ways. You have been " +
-            `tried and fined ${penalty} bringing you to ${player_money}`;
+          command_return.reply = "The watch have caught on to your ways. You " +
+            `have been tried and fined ${penalty} bringing you to ` +
+            `${player_money}`;
         }
-        command_return.player_update.player_data.subvert_last_time = current_time;
+        command_return.player_update.player_data.subvert_last_time =
+          current_time;
       } else {
         const time_until = last_time + cooldown - current_time;
         const time_until_string = utils.get_time_until_string(time_until);
-        command_return.reply = "The watch is in high presence right now. You should try " +
-          "again in another " + time_until_string;
+        command_return.reply = "The watch is in high presence right now. " +
+          "You should try again in another " + time_until_string;
       }
     }
 
     return command_return;
   },
-  train (args, player_data) {
+  train ({args, player_data}) {
 
     /*
      * Possible earn men. 12h cooldown. 20% fail risk - fine 10-100
@@ -146,8 +148,8 @@ module.exports = {
           const payout = utils.get_random_value_in_range(1, 20);
           command_return.player_update.player_data.men += payout;
           const player_men = command_return.player_update.player_data.men;
-          command_return.reply = `You have successfully recruited ${payout} men to your ` +
-            `cause bringing you to ${player_men} men`;
+          command_return.reply = `You have successfully recruited ${payout} ` +
+            `men to your cause bringing you to ${player_men} men`;
         } else {
           // Failure. Take penalty.
           const penalty = utils.get_random_value_in_range(10, 100);
@@ -168,7 +170,7 @@ module.exports = {
 
     return command_return;
   },
-  work (args, player_data) {
+  work ({args, player_data}) {
 
     /*
      * Gain money. 6h cooldown

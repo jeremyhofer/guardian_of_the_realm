@@ -96,7 +96,7 @@ module.exports = {
         "max-classes-per-file": "error",
         "max-depth": "off",
         "max-len": "error",
-        "max-lines": "error",
+        "max-lines": "off",
         "max-lines-per-function": "off",
         "max-nested-callbacks": "error",
         "max-params": "error",

@@ -1,7 +1,7 @@
 const assets = require('../assets.js');
 
 module.exports = {
-  buy (args, player_data) {
+  buy ({args, player_data}) {
 
     /*
      * Buy some item in a quantity. titles only one, cant buy more or same
@@ -21,9 +21,9 @@ module.exports = {
     if(Array.isArray(args) && args.length) {
       // Get item and quanity. Default quantity is 1
       const item = args[0].toLowerCase();
-      const quantity = args.length > 1 ?
-        parseInt(args[1], 10) :
-        1;
+      const quantity = args.length > 1
+        ? parseInt(args[1], 10)
+        : 1;
 
       // Ensure the desired item is in the store
       if(item in assets.store_items) {
@@ -71,19 +71,20 @@ module.exports = {
         command_return.reply = `${item} is not a valid store item.`;
       }
     } else {
-      command_return.reply = "buy requires at least 1 argument. usage: buy <item> <quantity>";
+      command_return.reply = "buy requires at least 1 argument. usage: buy " +
+        "<item> <quantity>";
     }
 
     return command_return;
   },
-  loan (args, player_data) {
+  loan ({args, player_data}) {
 
     /*
      * Request a loan of a given amount. must repay within 24 hours.
      * no more than 50% total money. random 5-50% interest. only one at a time
      */
   },
-  market (args, player_data) {
+  market ({args, player_data}) {
     // Lists everything in the market they may buy
     let reply = "The items available in the market are:\n";
 
