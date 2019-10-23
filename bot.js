@@ -103,58 +103,65 @@ client.on('message', msg => {
     if(command in command_dispatch) {
       const call_function = command_dispatch[command].function;
       const call_args = {};
+      const other_tokens = tokens.slice(1);
 
-      // Get player_data, in case it is required
-      let player_data = client.getPlayer.get(msg.author.id);
-
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
-      command_dispatch[command].args.forEach(required_arg => {
-        switch(required_arg) {
-          case 'args':
-            call_args.args = tokens.slice(1);
-            break;
-          case 'player_data':
-            call_args.player_data = player_data;
-            break;
-          default:
-            break;
-        }
-      });
-
-      const command_return = call_args
-        ? call_function(call_args)
-        : call_function();
-
-      if(command_return) {
-        if('player_update' in command_return) {
-          if('player_data' in command_return.player_update) {
-            client.setPlayer.run(command_return.player_update.player_data);
-          }
-
-          if('roles' in command_return.player_update) {
-            // Adjust player roles as necessary
-            command_return.player_update.roles.add.forEach(add_role => {
-              const server_role =
-                msg.guild.roles.find(role => role.name.toLowerCase() ===
-                  add_role);
-
-              if(server_role) {
-                // Add role to player
-                msg.member.addRole(server_role).catch(console.error);
-              }
-            });
-          }
-        }
-
-        if('reply' in command_return) {
-          msg.reply(command_return.reply);
-        }
+      // See if command should have additional arguments. If not, error
+      if(other_tokens.length &&
+          !command_dispatch[command].args.includes('args')) {
+        msg.reply(`${command} does not take any additional arguments`);
       } else {
-        msg.reply(command + ' is not yet implemented');
+        // Get player_data, in case it is required
+        let player_data = client.getPlayer.get(msg.author.id);
+
+        if (!player_data) {
+          player_data = {...client.defaultPlayerData};
+          player_data.user = msg.author.id;
+        }
+
+        command_dispatch[command].args.forEach(required_arg => {
+          switch(required_arg) {
+            case 'args':
+              call_args.args = tokens.slice(1);
+              break;
+            case 'player_data':
+              call_args.player_data = player_data;
+              break;
+            default:
+              break;
+          }
+        });
+
+        const command_return = call_args
+          ? call_function(call_args)
+          : call_function();
+
+        if(command_return) {
+          if('player_update' in command_return) {
+            if('player_data' in command_return.player_update) {
+              client.setPlayer.run(command_return.player_update.player_data);
+            }
+
+            if('roles' in command_return.player_update) {
+              // Adjust player roles as necessary
+              command_return.player_update.roles.add.forEach(add_role => {
+                const server_role =
+                  msg.guild.roles.find(role => role.name.toLowerCase() ===
+                    add_role);
+
+                if(server_role) {
+                  // Add role to player
+                  msg.member.addRole(server_role).catch(console.error);
+                }
+              });
+            }
+          }
+
+          if('reply' in command_return) {
+            msg.reply(command_return.reply);
+          }
+        } else {
+          msg.reply(command + ' is not yet implemented');
+        }
       }
     } else{
       msg.reply(command + ' is not a recognized command');
