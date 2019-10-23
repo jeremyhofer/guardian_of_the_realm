@@ -4,181 +4,19 @@ const sql = new SQLite('./data/gotr_bot.sqlite');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
-var economy = require('./commands/economy.js');
-var tasks = require('./commands/tasks.js');
 var admin = require('./commands/admin.js');
-var player_interact = require('./commands/player_interact.js');
 var clan_interact = require('./commands/clan_interact.js');
+var economy = require('./commands/economy.js');
 var general = require('./commands/general.js');
+var player_interact = require('./commands/player_interact.js');
+var tasks = require('./commands/tasks.js');
 const command_dispatch = {
-  "add": {
-    "function": admin.add,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "buy": {
-    "function": economy.buy,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "bal": {
-    "function": general.bal,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "gift": {
-    "function": player_interact.gift,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "help": {
-    "function": general.help,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "join": {
-    "function": clan_interact.join,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "loan": {
-    "function": economy.loan,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "map": {
-    "function": admin.map,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "market": {
-    "function": economy.market,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "pirate": {
-    "function": player_interact.pirate,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "pledge": {
-    "function": clan_interact.pledge,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "pray": {
-    "function": tasks.pray,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "raid": {
-    "function": player_interact.raid,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "siege": {
-    "function": clan_interact.siege,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "smuggle": {
-    "function": tasks.smuggle,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "spy": {
-  "function": player_interact.spy,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "subvert": {
-  "function": tasks.subvert,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "take": {
-    "function": admin.take,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "thief": {
-    "function": player_interact.thief,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "train": {
-    "function": tasks.train,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "truce": {
-    "function": clan_interact.truce,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "view": {
-    "function": admin.view,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "war": {
-    "function": clan_interact.war,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  },
-  "work": {
-    "function": tasks.work,
-    "args": [
-      "args",
-      "player_data"
-    ]
-  }
+  ...admin.dispatch,
+  ...clan_interact.dispatch,
+  ...economy.dispatch,
+  ...general.dispatch,
+  ...player_interact.dispatch,
+  ...tasks.dispatch
 };
 
 client.on("ready", () => {
@@ -287,7 +125,9 @@ client.on('message', msg => {
         }
       });
 
-      const command_return = call_function(call_args);
+      const command_return = call_args
+        ? call_function(call_args)
+        : call_function();
 
       if(command_return) {
         if('player_update' in command_return) {
