@@ -126,15 +126,33 @@ client.on('message', msg => {
         player_data.user = msg.author.id;
       }
 
-      const [
-        r_val,
-        updated_player_data,
-        reply
-      ] = command_dispatch[command](tokens.slice(1), player_data);
+      const command_return = command_dispatch[command](
+        tokens.slice(1),
+        player_data
+      );
 
-      if(r_val === 0) {
-        client.setPlayer.run(updated_player_data);
-        msg.reply(reply);
+      if(command_return) {
+        if('player_update' in command_return) {
+          if('player_data' in command_return.player_update) {
+            client.setPlayer.run(command_return.player_update.player_data);
+          }
+
+          if('roles' in command_return.player_update) {
+            // Adjust player roles as necessary
+            command_return.player_update.roles.add.forEach(add_role => {
+              const server_role = msg.guild.roles.find(role => role.name.toLowerCase() === add_role);
+
+              if(server_role) {
+                // Add role to player
+                msg.member.addRole(server_role).catch(console.error);
+              }
+            });
+          }
+        }
+
+        if('reply' in command_return) {
+          msg.reply(command_return.reply);
+        }
       } else {
         msg.reply(command + ' is not yet implemented');
       }
