@@ -67,7 +67,7 @@ module.exports = {
       "cost": 10000
     },
     "men": {
-      "type": "item",
+      "type": "men",
       "cost": 100
     },
     "mill": {
@@ -83,7 +83,7 @@ module.exports = {
       "cost": 2000
     },
     "ships": {
-      "type": "item",
+      "type": "ships",
       "cost": 1000
     },
     "stable": {

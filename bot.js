@@ -136,6 +136,10 @@ client.on('message', msg => {
           if('player_data' in command_return.player_update) {
             client.setPlayer.run(command_return.player_update.player_data);
           }
+
+          if('roles' in command_return.player_update) {
+            // Adjust player roles as necessary
+          }
         }
 
         if('reply' in command_return) {
