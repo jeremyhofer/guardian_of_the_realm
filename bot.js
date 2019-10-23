@@ -139,6 +139,14 @@ client.on('message', msg => {
 
           if('roles' in command_return.player_update) {
             // Adjust player roles as necessary
+            command_return.player_update.roles.add.forEach(add_role => {
+              const server_role = msg.guild.roles.find(role => role.name.toLowerCase() === add_role);
+
+              if(server_role) {
+                // Add role to player
+                msg.member.addRole(server_role).catch(console.error);
+              }
+            });
           }
         }
 
