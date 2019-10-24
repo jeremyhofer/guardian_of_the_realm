@@ -4,37 +4,19 @@ const sql = new SQLite('./data/gotr_bot.sqlite');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
-var economy = require('./commands/economy.js');
-var tasks = require('./commands/tasks.js');
 var admin = require('./commands/admin.js');
-var player_interact = require('./commands/player_interact.js');
 var clan_interact = require('./commands/clan_interact.js');
+var economy = require('./commands/economy.js');
 var general = require('./commands/general.js');
+var player_interact = require('./commands/player_interact.js');
+var tasks = require('./commands/tasks.js');
 const command_dispatch = {
-  "add": admin.add,
-  "buy": economy.buy,
-  "bal": general.bal,
-  "gift": player_interact.gift,
-  "help": general.help,
-  "join": clan_interact.join,
-  "loan": economy.loan,
-  "map": admin.map,
-  "market": economy.market,
-  "pirate": player_interact.pirate,
-  "pledge": clan_interact.pledge,
-  "pray": tasks.pray,
-  "raid": player_interact.raid,
-  "siege": clan_interact.siege,
-  "smuggle": tasks.smuggle,
-  "spy": player_interact.spy,
-  "subvert": tasks.subvert,
-  "take": admin.take,
-  "thief": player_interact.thief,
-  "train": tasks.train,
-  "truce": clan_interact.truce,
-  "view": admin.view,
-  "war": clan_interact.war,
-  "work": tasks.work
+  ...admin.dispatch,
+  ...clan_interact.dispatch,
+  ...economy.dispatch,
+  ...general.dispatch,
+  ...player_interact.dispatch,
+  ...tasks.dispatch
 };
 
 client.on("ready", () => {
@@ -119,42 +101,67 @@ client.on('message', msg => {
     var command = tokens[0].substring(1);
 
     if(command in command_dispatch) {
-      let player_data = client.getPlayer.get(msg.author.id);
+      const call_function = command_dispatch[command].function;
+      const call_args = {};
+      const other_tokens = tokens.slice(1);
 
-      if (!player_data) {
-        player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
-      }
-
-      const command_return = command_dispatch[command](
-        tokens.slice(1),
-        player_data
-      );
-
-      if(command_return) {
-        if('player_update' in command_return) {
-          if('player_data' in command_return.player_update) {
-            client.setPlayer.run(command_return.player_update.player_data);
-          }
-
-          if('roles' in command_return.player_update) {
-            // Adjust player roles as necessary
-            command_return.player_update.roles.add.forEach(add_role => {
-              const server_role = msg.guild.roles.find(role => role.name.toLowerCase() === add_role);
-
-              if(server_role) {
-                // Add role to player
-                msg.member.addRole(server_role).catch(console.error);
-              }
-            });
-          }
-        }
-
-        if('reply' in command_return) {
-          msg.reply(command_return.reply);
-        }
+      // See if command should have additional arguments. If not, error
+      if(other_tokens.length &&
+          !command_dispatch[command].args.includes('args')) {
+        msg.reply(`${command} does not take any additional arguments`);
       } else {
-        msg.reply(command + ' is not yet implemented');
+        // Get player_data, in case it is required
+        let player_data = client.getPlayer.get(msg.author.id);
+
+        if (!player_data) {
+          player_data = {...client.defaultPlayerData};
+          player_data.user = msg.author.id;
+        }
+
+        command_dispatch[command].args.forEach(required_arg => {
+          switch(required_arg) {
+            case 'args':
+              call_args.args = tokens.slice(1);
+              break;
+            case 'player_data':
+              call_args.player_data = player_data;
+              break;
+            default:
+              break;
+          }
+        });
+
+        const command_return = call_args
+          ? call_function(call_args)
+          : call_function();
+
+        if(command_return) {
+          if('player_update' in command_return) {
+            if('player_data' in command_return.player_update) {
+              client.setPlayer.run(command_return.player_update.player_data);
+            }
+
+            if('roles' in command_return.player_update) {
+              // Adjust player roles as necessary
+              command_return.player_update.roles.add.forEach(add_role => {
+                const server_role =
+                  msg.guild.roles.find(role => role.name.toLowerCase() ===
+                    add_role);
+
+                if(server_role) {
+                  // Add role to player
+                  msg.member.addRole(server_role).catch(console.error);
+                }
+              });
+            }
+          }
+
+          if('reply' in command_return) {
+            msg.reply(command_return.reply);
+          }
+        } else {
+          msg.reply(command + ' is not yet implemented');
+        }
       }
     } else{
       msg.reply(command + ' is not a recognized command');
