@@ -86,7 +86,76 @@ const pirate = ({player_data, player_mention}) => {
  * fail lose 50-150, other 10-90. win lose 10-90, other 100-150
  * <PLAYER>.
  */
-const raid = () => null;
+const raid = ({player_data, player_mention}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data},
+      "player_mention": {...player_mention}
+    },
+    "reply": ""
+  };
+
+  if(player_mention) {
+    // Make sure both have enough men
+    const p_men = player_data.men;
+    const m_men = player_mention.men;
+    if(p_men > 0) {
+      if(m_men > 0) {
+        // Both have at least 1 ship. Figure out who wins!
+        let fail_risk = Math.round(p_men /
+          (m_men + (2 * p_men)) * 100);
+
+        if(fail_risk < 0) {
+          fail_risk = 0;
+        } else if(fail_risk > 100) {
+          fail_risk = 100;
+        }
+
+        const chance = utils.get_random_value_in_range(1, 100);
+
+        let player_lose = 0;
+        let mention_lose = 0;
+        let winner = 'player';
+
+        if(chance >= fail_risk) {
+          // Player wins! Adjust men
+          player_lose = utils.get_random_value_in_range(10, 90);
+          mention_lose = utils.get_random_value_in_range(100, 150);
+        } else {
+          // Mention wins! Adjust men
+          player_lose = utils.get_random_value_in_range(50, 150);
+          mention_lose = utils.get_random_value_in_range(10, 90);
+          winner = 'mention';
+        }
+
+        player_lose = player_lose > p_men
+          ? p_men
+          : player_lose;
+
+        mention_lose = mention_lose > m_men
+          ? m_men
+          : mention_lose;
+
+        command_return.update.player_data.men -= player_lose;
+        command_return.update.player_mention.men -= mention_lose;
+        command_return.reply = winner === 'player'
+          ? `you successfully raided the encampment! You lost ${player_lose} ` +
+            `men. <@${player_mention.user}> lost ${mention_lose} men.`
+          : "scouts spotted your raid part. Defenses were prepared. You lost " +
+            `${player_lose} men. <@${player_mention.user}> lost ` +
+            `${mention_lose} men.`;
+      } else {
+        command_return.reply = "the other player does not have any men";
+      }
+    } else {
+      command_return.reply = "you do not have any men";
+    }
+  } else {
+    command_return.reply = "you must @ mention another player";
+  }
+
+  return command_return;
+};
 
 /*
  * View money, ships, men of a player. costs 400
@@ -116,7 +185,10 @@ module.exports = {
     },
     "raid": {
       "function": raid,
-      "args": []
+      "args": [
+        "player_data",
+        "player_mention"
+      ]
     },
     "spy": {
       "function": spy,
