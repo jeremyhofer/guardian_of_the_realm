@@ -14,13 +14,13 @@ const gift = () => null;
 const pirate = ({player_data, player_mention}) => {
   const command_return = {
     "update": {
-      "player_data": {...player_data},
-      "player_mention": {...player_mention}
+      "player_data": {...player_data}
     },
     "reply": ""
   };
 
-  if(player_mention) {
+  if(Object.keys(player_mention).length) {
+    command_return.update.player_mention = {...player_mention};
     // Make sure both have enough ships
     const p_ships = player_data.ships;
     const m_ships = player_mention.ships;
@@ -89,13 +89,13 @@ const pirate = ({player_data, player_mention}) => {
 const raid = ({player_data, player_mention}) => {
   const command_return = {
     "update": {
-      "player_data": {...player_data},
-      "player_mention": {...player_mention}
+      "player_data": {...player_data}
     },
     "reply": ""
   };
 
-  if(player_mention) {
+  if(Object.keys(player_mention).length) {
+    command_return.update.player_mention = {...player_mention};
     // Make sure both have enough men
     const p_men = player_data.men;
     const m_men = player_mention.men;
