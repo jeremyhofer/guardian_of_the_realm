@@ -1,3 +1,4 @@
+const assets = require("../assets.js");
 const utils = require("../utils.js");
 
 /*
@@ -161,7 +162,33 @@ const raid = ({player_data, player_mention}) => {
  * View money, ships, men of a player. costs 400
  * <PLAYER>
  */
-const spy = () => null;
+const spy = ({player_data, player_mention}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data}
+    },
+    "reply": ""
+  };
+
+  if(Object.keys(player_mention).length) {
+    command_return.update.player_mention = {...player_mention};
+    // Make sure both have enough men
+    const p_money = player_data.money;
+    if(p_money >= 400) {
+      command_return.update.player_data.money -= 400;
+      command_return.reply = `<@${player_mention.user}> has ` +
+        `${player_mention.money} :moneybag: ${player_mention.men} ` +
+        `${assets.emojis.MenAtArms} ${player_mention.ships} ` +
+        `${assets.emojis.Warship}`;
+    } else {
+      command_return.reply = "you do not have enough money. spy costs 400.";
+    }
+  } else {
+    command_return.reply = "you must @ mention another player";
+  }
+
+  return command_return;
+};
 
 /*
  * Steal money from someone. fail_risk = yours / (theirs + yours)
@@ -259,7 +286,10 @@ module.exports = {
     },
     "spy": {
       "function": spy,
-      "args": []
+      "args": [
+        "player_data",
+        "player_mention"
+      ]
     },
     "thief": {
       "function": thief,
