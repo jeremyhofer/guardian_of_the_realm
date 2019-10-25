@@ -7,7 +7,7 @@ const utils = require('../utils.js');
 const pray = ({player_data}) => {
   const command_return = {
     "reply": "",
-    "player_update": {
+    "update": {
       "player_data": {...player_data}
     }
   };
@@ -23,10 +23,10 @@ const pray = ({player_data}) => {
      * Determine payout. Set last time and new money amount.
      * Let player know and save to database.
      */
-    command_return.player_update.player_data.pray_last_time = current_time;
+    command_return.update.player_data.pray_last_time = current_time;
     const payout = utils.get_random_value_in_range(0, 200);
-    command_return.player_update.player_data.money += payout;
-    const player_money = command_return.player_update.player_data.money;
+    command_return.update.player_data.money += payout;
+    const player_money = command_return.update.player_data.money;
     command_return.reply = "Your prayers were heard! " +
       `You received ${payout} bringing you to ${player_money}`;
   } else {
@@ -48,7 +48,7 @@ const pray = ({player_data}) => {
 const smuggle = ({args, player_data}) => {
   const command_return = {
     "reply": "",
-    "player_update": {
+    "update": {
       "player_data": {...player_data}
     }
   };
@@ -71,7 +71,7 @@ const smuggle = ({args, player_data}) => {
         if(chance >= 50) {
           // They win! Determine payout
           const payout = utils.get_random_value_in_range(400, 1000) * num_ships;
-          command_return.player_update.player_data.money += payout;
+          command_return.update.player_data.money += payout;
           command_return.reply = "Arg matey! You successfully plundered " +
             `${payout}!`;
         } else {
@@ -81,12 +81,12 @@ const smuggle = ({args, player_data}) => {
             10,
             20
           );
-          command_return.player_update.player_data.ships -= penalty;
+          command_return.update.player_data.ships -= penalty;
           command_return.reply = "You lost the favor of Calypso today. " +
             `${penalty} of your ships were sent to Davy Jones' locker`;
         }
 
-        command_return.player_update.player_data.smuggle_last_time =
+        command_return.update.player_data.smuggle_last_time =
           current_time;
       } else {
         command_return.reply = `you do not have ${num_ships} available`;
@@ -111,7 +111,7 @@ const smuggle = ({args, player_data}) => {
 const subvert = ({player_data}) => {
   const command_return = {
     "reply": "",
-    "player_update": {
+    "update": {
       "player_data": {...player_data}
     }
   };
@@ -127,20 +127,20 @@ const subvert = ({player_data}) => {
     if(chance >= 50) {
       // Success! Pay reward
       const payout = utils.get_random_value_in_range(1000, 4000);
-      command_return.player_update.player_data.money += payout;
-      const player_money = command_return.player_update.player_data.money;
+      command_return.update.player_data.money += payout;
+      const player_money = command_return.update.player_data.money;
       command_return.reply = "You caught the ear of a wealthy noble. " +
         `They granted you ${payout} bringing you to ${player_money}`;
     } else {
       // Failure. Take penalty.
       const penalty = utils.get_random_value_in_range(200, 1000);
-      command_return.player_update.player_data.money -= penalty;
-      const player_money = command_return.player_update.player_data.money;
+      command_return.update.player_data.money -= penalty;
+      const player_money = command_return.update.player_data.money;
       command_return.reply = "The watch have caught on to your ways. You " +
         `have been tried and fined ${penalty} bringing you to ` +
         `${player_money}`;
     }
-    command_return.player_update.player_data.subvert_last_time =
+    command_return.update.player_data.subvert_last_time =
       current_time;
   } else {
     const time_until = last_time + cooldown - current_time;
@@ -159,7 +159,7 @@ const subvert = ({player_data}) => {
 const train = ({player_data}) => {
   const command_return = {
     "reply": "",
-    "player_update": {
+    "update": {
       "player_data": {...player_data}
     }
   };
@@ -175,20 +175,20 @@ const train = ({player_data}) => {
     if(chance >= 20) {
       // Success! Pay reward
       const payout = utils.get_random_value_in_range(1, 20);
-      command_return.player_update.player_data.men += payout;
-      const player_men = command_return.player_update.player_data.men;
+      command_return.update.player_data.men += payout;
+      const player_men = command_return.update.player_data.men;
       command_return.reply = `You have successfully recruited ${payout} ` +
         `men to your cause bringing you to ${player_men} men`;
     } else {
       // Failure. Take penalty.
       const penalty = utils.get_random_value_in_range(10, 100);
-      command_return.player_update.player_data.money -= penalty;
-      const player_money = command_return.player_update.player_data.money;
+      command_return.update.player_data.money -= penalty;
+      const player_money = command_return.update.player_data.money;
       command_return.reply = "You spoke with a variety of people, but " +
         `none joined your cause. You spent ${penalty} in the process ` +
         `bringing you to ${player_money}`;
     }
-    command_return.player_update.player_data.train_last_time = current_time;
+    command_return.update.player_data.train_last_time = current_time;
   } else {
     const time_until = last_time + cooldown - current_time;
     const time_until_string = utils.get_time_until_string(time_until);
@@ -206,7 +206,7 @@ const train = ({player_data}) => {
 const work = ({player_data}) => {
   const command_return = {
     "reply": "",
-    "player_update": {
+    "update": {
       "player_data": {...player_data}
     }
   };
@@ -222,10 +222,10 @@ const work = ({player_data}) => {
      * Determine payout. Set last time and new money amount.
      * Let player know and save to database.
      */
-    command_return.player_update.player_data.work_last_time = current_time;
+    command_return.update.player_data.work_last_time = current_time;
     const payout = utils.get_random_value_in_range(500, 2000);
-    command_return.player_update.player_data.money += payout;
-    const player_money = command_return.player_update.player_data.money;
+    command_return.update.player_data.money += payout;
+    const player_money = command_return.update.player_data.money;
     command_return.reply = "Your hard work has paid off! " +
       `You received ${payout} bringing you to ${player_money}`;
   } else {

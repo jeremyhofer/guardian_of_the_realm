@@ -107,15 +107,28 @@ client.on('message', msg => {
 
       // See if command should have additional arguments. If not, error
       if(other_tokens.length &&
-          !command_dispatch[command].args.includes('args')) {
+          !command_dispatch[command].args.includes('args') &&
+          !command_dispatch[command].args.includes('player_mention')) {
         msg.reply(`${command} does not take any additional arguments`);
       } else {
         // Get player_data, in case it is required
-        let player_data = client.getPlayer.get(msg.author.id);
+        let player_data = client.getPlayer.get(msg.member.id);
 
         if (!player_data) {
           player_data = {...client.defaultPlayerData};
           player_data.user = msg.author.id;
+        }
+
+        let player_mention = {};
+        const mentioned_player = msg.mentions.members.first();
+
+        if(mentioned_player) {
+          player_mention = client.getPlayer.get(mentioned_player.user.id);
+
+          if(!player_mention) {
+            player_mention = {...client.defaultPlayerData};
+            player_mention.user = mentioned_player.user.id;
+          }
         }
 
         command_dispatch[command].args.forEach(required_arg => {
@@ -125,6 +138,9 @@ client.on('message', msg => {
               break;
             case 'player_data':
               call_args.player_data = player_data;
+              break;
+            case 'player_mention':
+              call_args.player_mention = player_mention;
               break;
             default:
               break;
@@ -136,14 +152,18 @@ client.on('message', msg => {
           : call_function();
 
         if(command_return) {
-          if('player_update' in command_return) {
-            if('player_data' in command_return.player_update) {
-              client.setPlayer.run(command_return.player_update.player_data);
+          if('update' in command_return) {
+            if('player_data' in command_return.update) {
+              client.setPlayer.run(command_return.update.player_data);
             }
 
-            if('roles' in command_return.player_update) {
+            if('player_mention' in command_return.update) {
+              client.setPlayer.run(command_return.update.player_mention);
+            }
+
+            if('roles' in command_return.update) {
               // Adjust player roles as necessary
-              command_return.player_update.roles.add.forEach(add_role => {
+              command_return.update.roles.add.forEach(add_role => {
                 const server_role =
                   msg.guild.roles.find(role => role.name.toLowerCase() ===
                     add_role);
