@@ -168,7 +168,74 @@ const spy = () => null;
  * on succeed, take 2-10%. fail pay 100-1000 to player
  * <PLAYER>
  */
-const thief = () => null;
+const thief = ({player_data, player_mention}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data}
+    },
+    "reply": ""
+  };
+
+  if(Object.keys(player_mention).length) {
+    command_return.update.player_mention = {...player_mention};
+    // Make sure both have enough men
+    const p_money = player_data.money;
+    const m_money = player_mention.money;
+    if(p_money >= 0) {
+      if(m_money > 0) {
+        // Both have at least 1 ship. Figure out who wins!
+        let fail_risk = Math.round(p_money /
+          (m_money + p_money) * 100);
+
+        if(fail_risk < 0) {
+          fail_risk = 0;
+        } else if(fail_risk > 100) {
+          fail_risk = 100;
+        }
+
+        const chance = utils.get_random_value_in_range(1, 100);
+
+        let money_change = 0
+        let winner = 'player';
+
+        if(chance >= fail_risk) {
+          // Player wins! Adjust money
+          money_change = utils.get_percent_of_value_given_range(m_money, 2, 10);
+        } else {
+          // Mention wins! Adjust money
+          money_change = utils.get_random_value_in_range(100, 1000);
+          winner = 'mention';
+        }
+
+        if(winner === 'player') {
+          money_change = money_change > m_money
+            ? m_money
+            : money_change;
+          command_return.update.player_data.money += money_change;
+          command_return.update.player_mention.money -= money_change;
+        } else {
+          command_return.update.player_data.money -= money_change;
+          command_return.update.player_mention.money += money_change;
+        }
+
+        command_return.reply = winner === 'player'
+          ? `you successfully raided the cophers! You stole ${money_change} ` +
+            `from <@${player_mention.user}>.`
+          : "you were caught by the guards. You paid a fine of " +
+            `${money_change} to <@${player_mention.user}>.`
+      } else {
+        command_return.reply = "the other player does not have any money";
+      }
+    } else {
+      command_return.reply = "you are in debt. You should find other ways " +
+        "to make money";
+    }
+  } else {
+    command_return.reply = "you must @ mention another player";
+  }
+
+  return command_return;
+};
 
 module.exports = {
   "dispatch": {
@@ -196,7 +263,10 @@ module.exports = {
     },
     "thief": {
       "function": thief,
-      "args": []
+      "args": [
+        "player_data",
+        "player_mention"
+      ]
     }
   }
 };
