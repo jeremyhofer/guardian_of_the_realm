@@ -7,7 +7,7 @@ const assets = require('../assets.js');
 const buy = ({args, player_data}) => {
   const command_return = {
     "reply": "",
-    "player_update": {
+    "update": {
       "player_data": {...player_data},
       "roles": {
         "add": [],
@@ -40,14 +40,14 @@ const buy = ({args, player_data}) => {
           // If this is a title type set the roles to adjust
           switch(item_type) {
             case "title":
-              command_return.player_update.roles.add.push(item);
+              command_return.update.roles.add.push(item);
               command_return.reply = `you successfully bought the ${item} ` +
                 `title for ${total_cost}`;
               deduct_cost = true;
               break;
             case "men":
             case "ships":
-              command_return.player_update.player_data[item_type] += quantity;
+              command_return.update.player_data[item_type] += quantity;
               command_return.reply = `you successfully bought ${quantity} ` +
                 `${item} for ${total_cost}`;
               deduct_cost = true;
@@ -58,7 +58,7 @@ const buy = ({args, player_data}) => {
           }
 
           if(deduct_cost) {
-            command_return.player_update.player_data.money -= total_cost;
+            command_return.update.player_data.money -= total_cost;
           }
         } else {
           command_return.reply = "you do not have enough money to make " +

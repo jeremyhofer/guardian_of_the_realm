@@ -21,7 +21,6 @@ module.exports = {
 
     return message;
   },
-
   get_random_value_in_range (min, max) {
 
     /**
@@ -31,5 +30,10 @@ module.exports = {
      * @returns {number} random value in range.
      */
     return min + Math.floor(Math.random() * (max - min + 1));
+  },
+  get_percent_of_value_given_range (value, p_min, p_max) {
+    // Return a percent of value between p_min and p_max, inclusively
+    return Math.round(value *
+        (module.exports.get_random_value_in_range(p_min, p_max) / 100));
   }
 };
