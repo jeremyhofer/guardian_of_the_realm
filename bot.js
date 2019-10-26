@@ -260,6 +260,10 @@ client.on('message', msg => {
               msg.reply(command_return.reply);
             }
 
+            if('send' in command_return) {
+              msg.channel.send(command_return.send, {"split": true});
+            }
+
             if('loans' in command_return) {
               if('add' in command_return.loans) {
                 // Add the new loan to the database
