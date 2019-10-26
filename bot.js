@@ -4,12 +4,13 @@ const sql = new SQLite('./data/gotr_bot.sqlite');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
-var admin = require('./commands/admin.js');
-var clan_interact = require('./commands/clan_interact.js');
-var economy = require('./commands/economy.js');
-var general = require('./commands/general.js');
-var player_interact = require('./commands/player_interact.js');
-var tasks = require('./commands/tasks.js');
+const admin = require('./commands/admin.js');
+const clan_interact = require('./commands/clan_interact.js');
+const economy = require('./commands/economy.js');
+const general = require('./commands/general.js');
+const player_interact = require('./commands/player_interact.js');
+const tasks = require('./commands/tasks.js');
+const utils = require('./utils.js');
 const command_dispatch = {
   ...admin.dispatch,
   ...clan_interact.dispatch,
@@ -105,83 +106,125 @@ client.on('message', msg => {
       const call_args = {};
       const other_tokens = tokens.slice(1);
 
-      // See if command should have additional arguments. If not, error
-      if(other_tokens.length &&
-          !command_dispatch[command].args.includes('args') &&
-          !command_dispatch[command].args.includes('player_mention')) {
-        msg.reply(`${command} does not take any additional arguments`);
-      } else {
-        // Get player_data, in case it is required
-        let player_data = client.getPlayer.get(msg.member.id);
+      // Get player_data
+      let player_data = client.getPlayer.get(msg.member.id);
 
-        if (!player_data) {
-          player_data = {...client.defaultPlayerData};
-          player_data.user = msg.author.id;
-        }
+      if (!player_data) {
+        player_data = {...client.defaultPlayerData};
+        player_data.user = msg.author.id;
+      }
 
-        let player_mention = {};
-        const mentioned_player = msg.mentions.members.first();
+      let cooldown = false;
+      let cooldown_passed = false;
+      let cooldown_field = null;
+      let cooldown_fail_message = null;
+      const current_time = Date.now();
 
-        if(mentioned_player) {
-          player_mention = client.getPlayer.get(mentioned_player.user.id);
+      if('cooldown' in command_dispatch[command]) {
+        // Check to see if the cooldown for the command has passed
+        cooldown = true;
+        cooldown_field = command_dispatch[command].cooldown.field;
+        const last_time = player_data[cooldown_field];
+        const cooldown_time = command_dispatch[command].cooldown.time;
+        const base_reply = command_dispatch[command].cooldown.reply;
+        const time_until = utils.get_time_until_string(last_time +
+          cooldown_time - current_time);
 
-          if(!player_mention) {
-            player_mention = {...client.defaultPlayerData};
-            player_mention.user = mentioned_player.user.id;
-          }
-        }
+        cooldown_passed = current_time - last_time >= cooldown_time;
+        cooldown_fail_message = cooldown_passed
+          ? ""
+          : base_reply + " " + time_until;
+      }
 
-        command_dispatch[command].args.forEach(required_arg => {
-          switch(required_arg) {
-            case 'args':
-              call_args.args = tokens.slice(1);
-              break;
-            case 'player_data':
-              call_args.player_data = player_data;
-              break;
-            case 'player_mention':
-              call_args.player_mention = player_mention;
-              break;
-            default:
-              break;
-          }
-        });
-
-        const command_return = call_args
-          ? call_function(call_args)
-          : call_function();
-
-        if(command_return) {
-          if('update' in command_return) {
-            if('player_data' in command_return.update) {
-              client.setPlayer.run(command_return.update.player_data);
-            }
-
-            if('player_mention' in command_return.update) {
-              client.setPlayer.run(command_return.update.player_mention);
-            }
-
-            if('roles' in command_return.update) {
-              // Adjust player roles as necessary
-              command_return.update.roles.add.forEach(add_role => {
-                const server_role =
-                  msg.guild.roles.find(role => role.name.toLowerCase() ===
-                    add_role);
-
-                if(server_role) {
-                  // Add role to player
-                  msg.member.addRole(server_role).catch(console.error);
-                }
-              });
-            }
-          }
-
-          if('reply' in command_return) {
-            msg.reply(command_return.reply);
-          }
+      // If we do not have a cooldown or the cooldown is passed, continue
+      if(!cooldown || cooldown_passed) {
+        // See if command should have additional arguments. If not, error
+        if(other_tokens.length &&
+            !command_dispatch[command].args.includes('args') &&
+            !command_dispatch[command].args.includes('player_mention')) {
+          msg.reply(`${command} does not take any additional arguments`);
         } else {
-          msg.reply(command + ' is not yet implemented');
+
+          let player_mention = {};
+          const mentioned_player = msg.mentions.members.first();
+
+          if(mentioned_player) {
+            player_mention = client.getPlayer.get(mentioned_player.user.id);
+
+            if(!player_mention) {
+              player_mention = {...client.defaultPlayerData};
+              player_mention.user = mentioned_player.user.id;
+            }
+          }
+
+          command_dispatch[command].args.forEach(required_arg => {
+            switch(required_arg) {
+              case 'args':
+                call_args.args = tokens.slice(1);
+                break;
+              case 'player_data':
+                call_args.player_data = player_data;
+                break;
+              case 'player_mention':
+                call_args.player_mention = player_mention;
+                break;
+              default:
+                break;
+            }
+          });
+
+          const command_return = call_args
+            ? call_function(call_args)
+            : call_function();
+
+          if(command_return) {
+            if('update' in command_return) {
+              if('player_data' in command_return.update) {
+                // If there was a cooldown, update the last time
+                if(cooldown) {
+                  command_return.update.player_data[
+                    cooldown_field] = current_time;
+                }
+                client.setPlayer.run(command_return.update.player_data);
+              }
+
+              if('player_mention' in command_return.update) {
+                client.setPlayer.run(command_return.update.player_mention);
+              }
+
+              if('roles' in command_return.update) {
+                // Adjust player roles as necessary
+                command_return.update.roles.add.forEach(add_role => {
+                  const server_role =
+                    msg.guild.roles.find(role => role.name.toLowerCase() ===
+                      add_role);
+
+                  if(server_role) {
+                    // Add role to player
+                    msg.member.addRole(server_role).catch(console.error);
+                  }
+                });
+              }
+            } else if(cooldown) {
+
+              /*
+               * If the command had a cooldown and player_data was not returned
+               * As part of an update for the command, update the cooldown here
+               */
+              player_data[cooldown_field] = current_time;
+              client.setPlayer.run(player_data);
+            }
+
+            if('reply' in command_return) {
+              msg.reply(command_return.reply);
+            }
+          } else {
+            msg.reply(command + ' is not yet implemented');
+          }
         }
+      } else {
+        // Cooldown failed. Reply.
+        msg.reply(cooldown_fail_message);
       }
     } else{
       msg.reply(command + ' is not a recognized command');

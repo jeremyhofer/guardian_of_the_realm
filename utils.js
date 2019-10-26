@@ -35,5 +35,9 @@ module.exports = {
     // Return a percent of value between p_min and p_max, inclusively
     return Math.round(value *
         (module.exports.get_random_value_in_range(p_min, p_max) / 100));
+  },
+  hours_to_ms (hours) {
+    // Covert hours to milliseconds
+    return hours * 60 * 60 * 1000;
   }
 };
