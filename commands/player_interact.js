@@ -2,10 +2,49 @@ const assets = require("../assets.js");
 const utils = require("../utils.js");
 
 /*
- * Give person title, men, ships, money
- * @player [TITLE|MEN|SHIPS|MONEY] <VALUE>
+ * Give another player money
+ * @player <VALUE>
  */
-const gift = () => null;
+const gift = ({args, player_data, player_mention}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data}
+    },
+    "reply": ""
+  };
+
+  if(Object.keys(player_mention).length) {
+    command_return.update.player_mention = {...player_mention};
+    // Make sure the player has enough money
+    const p_money = player_data.money;
+    if(p_money > 0) {
+      // Ensure the args are valid
+      if(Array.isArray(args) && args.length === 2) {
+        const amount_to_give = parseInt(args[1], 10);
+
+        if(isNaN(amount_to_give) || amount_to_give < 1) {
+          command_return.reply = "amount to give must be a positive number";
+        } else if(p_money >= amount_to_give) {
+          // All good! Grant the cash
+          command_return.update.player_data.money -= amount_to_give;
+          command_return.update.player_mention.money += amount_to_give;
+          command_return.reply = "you successfully gave " +
+            `<@${player_mention.user}> ${amount_to_give} :moneybag:`;
+        } else {
+          command_return.reply = `you only have ${p_money} available`;
+        }
+      } else {
+        command_return.reply = "gift usage: .gift @player <money amount>";
+      }
+    } else {
+      command_return.reply = "you do not have any money to gift";
+    }
+  } else {
+    command_return.reply = "you must @ mention another player";
+  }
+
+  return command_return;
+};
 
 /*
  * Destroy ships! fail_risk = yours / (theirs + 2*yours)
@@ -268,10 +307,20 @@ module.exports = {
   "dispatch": {
     "gift": {
       "function": gift,
-      "args": []
+      "args": [
+        "args",
+        "player_data",
+        "player_mention"
+      ]
     },
     "pirate": {
       "function": pirate,
+      "cooldown": {
+        "time": utils.hours_to_ms(24),
+        "field": "pirate_last_time",
+        "reply": "Pirating now would not be wise as the navy is patroling. " +
+          "They are due to leave in"
+      },
       "args": [
         "player_data",
         "player_mention"
@@ -279,6 +328,12 @@ module.exports = {
     },
     "raid": {
       "function": raid,
+      "cooldown": {
+        "time": utils.hours_to_ms(24),
+        "field": "raid_last_time",
+        "reply": "Your troops are still resting from the last raid party. " +
+          "Your party may leave again in"
+      },
       "args": [
         "player_data",
         "player_mention"
@@ -286,6 +341,11 @@ module.exports = {
     },
     "spy": {
       "function": spy,
+      "cooldown": {
+        "time": utils.hours_to_ms(1),
+        "field": "spy_last_time",
+        "reply": "The spy is out to lunch and will be back in"
+      },
       "args": [
         "player_data",
         "player_mention"
@@ -293,6 +353,11 @@ module.exports = {
     },
     "thief": {
       "function": thief,
+      "cooldown": {
+        "time": utils.hours_to_ms(24),
+        "field": "thief_last_time",
+        "reply": "The guards are in high presence. Maybe you can try again in"
+      },
       "args": [
         "player_data",
         "player_mention"
