@@ -1,4 +1,5 @@
 const assets = require('../assets.js');
+const utils = require('../utils.js');
 
 /*
  * Buy some item in a quantity. titles only one, cant buy more or same
@@ -78,9 +79,124 @@ const buy = ({args, player_data}) => {
 
 /*
  * Request a loan of a given amount. must repay within 24 hours.
- * no more than 50% total money. random 5-50% interest. only one at a time
+ * no more than 50% total money. random 5-50% interest. only one at a time.
+ * .loan <GET|PAY|SHOW> <amount>
  */
-const loan = () => null;
+const loan = ({args, player_data, loans}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data}
+    },
+    "loans": {},
+    "reply": ""
+  };
+
+  // Check the args. Determine what the player is trying to do.
+  if(Array.isArray(args) && args.length) {
+    const action = args[0].toLowerCase();
+
+    if(action === 'get') {
+      // See if player has a loan
+      if(Array.isArray(loans) && loans.length) {
+        command_return.reply = "you already have an outstanding loan";
+      } else {
+        // Ensure a value was specified and that it is valid
+        const loan_amount = args.length === 2
+          ? parseInt(args[1], 10)
+          : NaN;
+        const max_loan_allowed = Math.floor(player_data.money / 2);
+
+        if(isNaN(loan_amount) || loan_amount < 1) {
+          command_return.reply = "loan amount must be a positive number";
+        } else if(loan_amount > max_loan_allowed) {
+          command_return.reply = "the maximum loan amount you may get is " +
+            `${max_loan_allowed}`;
+        } else {
+          // Good to go! Grant player loan amount. Determine interest
+          const interest = utils.get_percent_of_value_given_range(
+            loan_amount,
+            5,
+            50
+          );
+          command_return.update.player_data.money += loan_amount;
+          command_return.loans.add = {
+            "user": player_data.user,
+            "amount_due": loan_amount + interest,
+            "time_due": Date.now() + utils.hours_to_ms(24)
+          };
+          command_return.reply = "you successfully received a loan of " +
+            `${loan_amount}. You have been charged ${interest} in interest. ` +
+            "The loan is due in 24 hours";
+        }
+      }
+    } else if(action === 'pay') {
+      // See if player has a loan
+      if(Array.isArray(loans) && loans.length) {
+        const [loan_info] = loans;
+        // Ensure a value was specified and that it is valid.
+        let pay_amount = 0;
+
+        // Adjust amount accordingly
+        if(args.length === 2) {
+          if(args[1] === 'all') {
+            pay_amount = loan_info.amount_due;
+          } else {
+            pay_amount = parseInt(args[1], 10);
+            if(!isNaN(pay_amount)) {
+              pay_amount = pay_amount > loan_info.amount_due
+                ? loan_info.amount_due
+                : pay_amount;
+            }
+          }
+        }
+
+        if(isNaN(pay_amount) || pay_amount < 1) {
+          command_return.reply = "pay amount must be a positive number";
+        } else if(pay_amount > player_data.money) {
+          command_return.reply = "you do not have enough money";
+        } else {
+          // Good to go! Adjust amount due. If paid off, delete the loan
+          loan_info.amount_due -= pay_amount;
+
+          if(loan_info.amount_due <= 0) {
+            // Loan is paid! Delete it
+            command_return.loans.remove = loan_info;
+            command_return.reply = "you have paid off your loan!";
+          } else {
+            // Still have money due
+            command_return.loans.update = loan_info;
+            command_return.reply = `you paid ${pay_amount} toward your ` +
+              `loan. You still owe ${loan_info.amount_due}`;
+          }
+
+          command_return.update.player_data.money -= pay_amount;
+        }
+      } else {
+        command_return.reply = "you do not have an outstanding loan";
+      }
+    } else if(action === 'show') {
+      if(Array.isArray(loans) && loans.length) {
+        // Output loan info
+        loans.forEach(this_loan => {
+          const time_until_due = this_loan.time_due - Date.now();
+          const due_string = time_until_due > 0
+            ? "due in " + utils.get_time_until_string(time_until_due)
+            : "past due";
+          command_return.reply = `you owe ${this_loan.amount_due} on your ` +
+            "loan. The loan is " + due_string;
+        });
+      } else {
+        command_return.reply = "you do not have any loans";
+      }
+    } else {
+      command_return.reply = `${action} is not a valid loan action`;
+    }
+  } else {
+    command_return.reply = "specify get, pay, or show";
+  }
+
+  return command_return;
+};
 
 // Lists everything in the market they may buy
 const market = () => {
@@ -109,7 +225,11 @@ module.exports = {
     },
     "loan": {
       "function": loan,
-      "args": []
+      "args": [
+        "args",
+        "player_data",
+        "loans"
+      ]
     },
     "market": {
       "function": market,

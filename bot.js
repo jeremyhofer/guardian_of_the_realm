@@ -22,11 +22,11 @@ const command_dispatch = {
 
 client.on("ready", () => {
   // Check if the table "player_data" exists.
-  const table = sql.prepare(`
+  const player_table = sql.prepare(`
     SELECT count(*) FROM sqlite_master
     WHERE type='table' AND name = 'player_data';
   `).get();
-  if (!table['count(*)']) {
+  if (!player_table['count(*)']) {
     // If the table isn't there, create it and setup the database correctly.
     sql.prepare(`
       CREATE TABLE player_data (
@@ -56,6 +56,29 @@ client.on("ready", () => {
     sql.pragma("journal_mode = wal");
   }
 
+  const loan_table = sql.prepare(`
+    SELECT count(*) FROM sqlite_master
+    WHERE type='table' AND name = 'loans';
+  `).get();
+  if (!loan_table['count(*)']) {
+    // If the table isn't there, create it and setup the database correctly.
+    sql.prepare(`
+      CREATE TABLE loans (
+        loan_id INTEGER PRIMARY KEY,
+        user TEXT,
+        amount_due INTEGER,
+        time_due INTEGER,
+        FOREIGN KEY(user) REFERENCES player_data(user)
+      );
+    `).run();
+    // Ensure that the "id" row is always unique and indexed.
+    sql.prepare(`
+      CREATE INDEX idx_loan_user_id ON loans (user);
+    `).run();
+    sql.pragma("synchronous = 1");
+    sql.pragma("journal_mode = wal");
+  }
+
   client.getPlayer = sql.prepare("SELECT * FROM player_data WHERE user = ?");
   client.setPlayer = sql.prepare(`
     INSERT OR REPLACE INTO player_data (
@@ -70,6 +93,19 @@ client.on("ready", () => {
       @pray_last_time, @raid_last_time, @smuggle_last_time,
       @spy_last_time, @subvert_last_time, @thief_last_time,
       @train_last_time, @work_last_time);
+  `);
+  client.getPlayerLoans = sql.prepare("SELECT * FROM loans WHERE user = ?");
+  client.addPlayerLoan = sql.prepare(`
+    INSERT INTO loans (
+      user, amount_due, time_due)
+    VALUES (
+      @user, @amount_due, @time_due);
+  `);
+  client.updatePlayerLoan = sql.prepare(`
+    UPDATE loans SET amount_due = @amount_due WHERE loan_id = @loan_id;
+  `);
+  client.removePlayerLoan = sql.prepare(`
+    DELETE FROM loans WHERE loan_id = @loan_id;
   `);
   client.defaultPlayerData = {
     "user": '',
@@ -157,6 +193,8 @@ client.on('message', msg => {
             }
           }
 
+          const loans = client.getPlayerLoans.all(player_data.user);
+
           command_dispatch[command].args.forEach(required_arg => {
             switch(required_arg) {
               case 'args':
@@ -167,6 +205,9 @@ client.on('message', msg => {
                 break;
               case 'player_mention':
                 call_args.player_mention = player_mention;
+                break;
+              case 'loans':
+                call_args.loans = loans;
                 break;
               default:
                 break;
@@ -217,6 +258,17 @@ client.on('message', msg => {
 
             if('reply' in command_return) {
               msg.reply(command_return.reply);
+            }
+
+            if('loans' in command_return) {
+              if('add' in command_return.loans) {
+                // Add the new loan to the database
+                client.addPlayerLoan.run(command_return.loans.add);
+              } else if ('update' in command_return.loans) {
+                client.updatePlayerLoan.run(command_return.loans.update);
+              } else if ('remove' in command_return.loans) {
+                client.removePlayerLoan.run(command_return.loans.remove);
+              }
             }
           } else {
             msg.reply(command + ' is not yet implemented');
