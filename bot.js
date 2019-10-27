@@ -9,6 +9,7 @@ const economy = require('./commands/economy.js');
 const general = require('./commands/general.js');
 const player_interact = require('./commands/player_interact.js');
 const tasks = require('./commands/tasks.js');
+const assets = require('./assets.js');
 const utils = require('./utils.js');
 const command_dispatch = {
   ...admin.dispatch,
@@ -80,7 +81,8 @@ client.on('message', msg => {
         // See if command should have additional arguments. If not, error
         if(other_tokens.length &&
             !command_dispatch[command].args.includes('args') &&
-            !command_dispatch[command].args.includes('player_mention')) {
+            !command_dispatch[command].args.includes('player_mention') &&
+            !command_dispatch[command].args.includes('role_mention')) {
           msg.reply(`${command} does not take any additional arguments`);
         } else {
 
@@ -94,6 +96,13 @@ client.on('message', msg => {
               player_mention = {...client.defaultPlayerData};
               player_mention.user = mentioned_player.user.id;
             }
+          }
+
+          let role_mention = "";
+          const mentioned_role = msg.mentions.roles.first();
+
+          if(mentioned_role) {
+            role_mention = mentioned_role.id;
           }
 
           const loans = client.getPlayerLoans.all(player_data.user);
@@ -111,6 +120,9 @@ client.on('message', msg => {
                 break;
               case 'loans':
                 call_args.loans = loans;
+                break;
+              case 'role_mention':
+                call_args.role_mention = role_mention;
                 break;
               default:
                 break;
@@ -137,17 +149,24 @@ client.on('message', msg => {
               }
 
               if('roles' in command_return.update) {
-                // Adjust player roles as necessary
-                command_return.update.roles.add.forEach(add_role => {
-                  const server_role =
-                    msg.guild.roles.find(role => role.name.toLowerCase() ===
-                      add_role);
-
-                  if(server_role) {
-                    // Add role to player
-                    msg.member.addRole(server_role).catch(console.error);
-                  }
-                });
+                if('add' in command_return.update.roles) {
+                  // Adjust player roles as necessary
+                  command_return.update.roles.add.forEach(add_role => {
+                    // See if this is an ID. If so, use it, otherwise get ID
+                    const server_role = add_role in assets.game_roles
+                      ? add_role
+                      : utils.find_role_id_given_name(
+                          add_role,
+                          assets.game_roles
+                        );
+                    if(server_role) {
+                      // Add role to player
+                      msg.member.addRole(server_role).catch(console.error);
+                    } else {
+                      msg.reply(`${add_role} is not defined. Contact a bot dev`);
+                    }
+                  });
+                }
               }
             } else if(cooldown) {
 
