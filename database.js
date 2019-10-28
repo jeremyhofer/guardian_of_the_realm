@@ -191,6 +191,15 @@ module.exports = {
   "remove_loan": sql.prepare(`
     DELETE FROM loans WHERE loan_id = @loan_id;
   `),
+  "get_player_vote_by_type": sql.prepare(`
+    SELECT * FROM votes WHERE user = ? and type = ?
+  `),
+  "add_vote": sql.prepare(`
+    INSERT INTO votes (
+      type, user, choice, time)
+    VALUES (
+      @type, @user, @choice, @time);
+  `),
   "default_player": {
     "user": '',
     "house": '',

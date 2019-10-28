@@ -29,6 +29,7 @@ client.on("ready", () => {
   client.updatePlayerLoan = db.update_loan;
   client.removePlayerLoan = db.remove_loan;
   client.defaultPlayerData = db.default_player;
+  client.addVote = db.add_vote;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -194,6 +195,13 @@ client.on('message', msg => {
                 client.updatePlayerLoan.run(command_return.loans.update);
               } else if ('remove' in command_return.loans) {
                 client.removePlayerLoan.run(command_return.loans.remove);
+              }
+            }
+
+            if('votes' in command_return) {
+              if('add' in command_return.votes) {
+                // Add the vote to the database
+                client.addVote.run(command_return.votes.add);
               }
             }
           } else {

@@ -1,4 +1,6 @@
 const assets = require('../assets.js');
+const db = require('../database.js');
+const utils = require('../utils.js');
 
 /*
  * Assigns player to a house w/ default money and men
@@ -126,7 +128,67 @@ const truce = () => null;
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const war = () => null;
+const war = ({args, player_data, role_mention}) => {
+  const command_return = {
+    "votes": {},
+    "reply": ""
+  };
+
+  const existing_vote = db.get_player_vote_by_type.get(player_data.user, "war");
+
+  if(existing_vote) {
+    // Already has a vote
+    const reply_choice = existing_vote.choice === "peace"
+      ? "peace"
+      : `<@&${existing_vote.choice}>`;
+    command_return.reply = `you have already voted for ${reply_choice}`;
+  } else if(Array.isArray(args) && args.length === 1) {
+    // See what the arg is
+    let player_choice = '';
+    if(role_mention) {
+      player_choice = role_mention;
+    } else if(args[0].toLowerCase() === 'peace') {
+      player_choice = 'peace';
+    } else {
+      player_choice = utils.find_role_id_given_name(
+        args[0],
+        assets.game_roles
+      );
+    }
+
+    if(player_choice) {
+
+      /*
+       * Add the player's vote to the database
+       * Ensure the player does not vote for their own house
+       */
+      if(player_choice === player_data.house) {
+        command_return.reply = "you cannot vote for your own house";
+      } else {
+        command_return.votes.add = {
+          "type": "war",
+          "user": player_data.user,
+          "choice": player_choice,
+          "time": Date.now()
+        };
+
+        const reply_choice = player_choice === "peace"
+          ? "peace"
+          : `<@&${player_choice}>`;
+        command_return.reply = "your choice of " + reply_choice +
+          " was recorded";
+      }
+    } else {
+      command_return.reply = "your choice is not recognized. Please vote " +
+        "again";
+    }
+  } else {
+    command_return.reply = "you must vote for a house or peace. To vote " +
+      "for a house @ the house, use their name, or use their Men at Arms";
+  }
+
+  return command_return;
+};
 
 module.exports = {
   "dispatch": {
@@ -151,7 +213,11 @@ module.exports = {
     },
     "war": {
       "function": war,
-      "args": []
+      "args": [
+        "args",
+        "player_data",
+        "role_mention"
+      ]
     }
   }
 };
