@@ -96,7 +96,89 @@ const siege = () => null;
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const truce = () => null;
+const truce = ({args, player_data, role_mention}) => {
+  const command_return = {
+    "votes": {},
+    "reply": ""
+  };
+
+  // Check args. Make sure a war exists between the houses in question
+  if(Array.isArray(args) && args.length === 2) {
+    // Figure it out
+    const house_vote = role_mention
+      ? role_mention
+      : utils.find_role_id_given_name(args[0], assets.game_roles);
+
+    if(assets.houses.includes(house_vote)) {
+      // See if the player has already voted for this
+      const yes_votes = db.get_player_vote_by_type.all(
+        player_data.user,
+        "truce_yes"
+      );
+      const no_votes = db.get_player_vote_by_type.all(
+        player_data.user,
+        "truce_no"
+      );
+      const all_votes = yes_votes.concat(no_votes);
+
+      const existing_vote = all_votes.filter(vote => vote &&
+        'choice' in vote && vote.choice === house_vote);
+
+      if(existing_vote.length) {
+        // Already voted in this truce vote
+        const [vote] = existing_vote;
+        const choice = vote.type === "truce_yes"
+          ? "YES"
+          : "NO";
+
+        command_return.reply = `you have already voted ${choice} to a truce ` +
+          `with <@&${vote.choice}>`;
+      } else {
+        // Ensure a war exists between the houses
+        const war = db.get_war_between_houses.get({
+          "house1": player_data.house,
+          "house2": house_vote
+        });
+
+        if(war) {
+          // Check yes/no choice
+          const player_choice = args[1].toLowerCase();
+          let truce_type = "";
+
+          if(player_choice === "yes") {
+            truce_type = "truce_yes";
+          } else if(player_choice === "no") {
+            truce_type = "truce_no";
+          }
+
+          if(truce_type) {
+            // Truce vote is good. Add it
+            command_return.votes.add = {
+              "type": truce_type,
+              "user": player_data.user,
+              "choice": house_vote,
+              "time": Date.now()
+            };
+            command_return.reply = `your choice of ${player_choice} was ` +
+              "recorded";
+          } else {
+            command_return.reply = "you must vote YES or NO";
+          }
+        } else {
+          command_return.reply = "your house is not at war with " +
+            `<@&${house_vote}>`;
+        }
+      }
+    } else {
+      command_return.reply = `${args[0]} is not a house`;
+    }
+  } else {
+    command_return.reply = "you must @ the house to truce, use their name, " +
+      "or use their Men at Arms and vote YES or NO";
+  }
+
+  return command_return;
+};
 
 /*
  * Start vote in house to begin a war. choose other houses, or no war.
@@ -209,7 +291,11 @@ module.exports = {
     },
     "truce": {
       "function": truce,
-      "args": []
+      "args": [
+        "args",
+        "player_data",
+        "role_mention"
+      ]
     },
     "war": {
       "function": war,

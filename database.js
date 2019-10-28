@@ -200,6 +200,10 @@ module.exports = {
     VALUES (
       @type, @user, @choice, @time);
   `),
+  "get_war_between_houses": sql.prepare(`
+    SELECT * from wars WHERE (house_a = @house1 and house_b = @house2)
+      or (house_a = @house2 and house_b = @house1)
+  `),
   "default_player": {
     "user": '',
     "house": '',
