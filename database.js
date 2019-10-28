@@ -2,56 +2,161 @@ const SQLite = require("better-sqlite3");
 const sql = new SQLite('./data/gotr_bot.sqlite');
 
 const player_table = sql.prepare(`
-    SELECT count(*) FROM sqlite_master
-    WHERE type='table' AND name = 'player_data';
-  `).get();
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'player_data';
+`).get();
+
 if (!player_table['count(*)']) {
   // If the table isn't there, create it and setup the database correctly.
   sql.prepare(`
-      CREATE TABLE player_data (
-        user TEXT PRIMARY KEY,
-        house TEXT,
-        men INTEGER,
-        ships INTEGER,
-        money INTEGER,
-        gift_last_time INTEGER,
-        loan_last_time INTEGER,
-        pirate_last_time INTEGER,
-        pray_last_time INTEGER,
-        raid_last_time INTEGER,
-        smuggle_last_time INTEGER,
-        spy_last_time INTEGER,
-        subvert_last_time INTEGER,
-        thief_last_time INTEGER,
-        train_last_time INTEGER,
-        work_last_time INTEGER
-      );
-    `).run();
+    CREATE TABLE player_data (
+      user TEXT PRIMARY KEY,
+      house TEXT,
+      men INTEGER,
+      ships INTEGER,
+      money INTEGER,
+      gift_last_time INTEGER,
+      loan_last_time INTEGER,
+      pirate_last_time INTEGER,
+      pray_last_time INTEGER,
+      raid_last_time INTEGER,
+      smuggle_last_time INTEGER,
+      spy_last_time INTEGER,
+      subvert_last_time INTEGER,
+      thief_last_time INTEGER,
+      train_last_time INTEGER,
+      work_last_time INTEGER
+    );
+  `).run();
   // Ensure that the "id" row is always unique and indexed.
   sql.prepare(`
-      CREATE UNIQUE INDEX idx_player_data_id ON player_data (user);
-    `).run();
+    CREATE UNIQUE INDEX idx_player_data_id ON player_data (user);
+  `).run();
 }
 
 const loan_table = sql.prepare(`
-    SELECT count(*) FROM sqlite_master
-    WHERE type='table' AND name = 'loans';
-  `).get();
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'loans';
+`).get();
+
 if (!loan_table['count(*)']) {
   // If the table isn't there, create it and setup the database correctly.
   sql.prepare(`
-      CREATE TABLE loans (
-        loan_id INTEGER PRIMARY KEY,
-        user TEXT,
-        amount_due INTEGER,
-        time_due INTEGER,
-        FOREIGN KEY(user) REFERENCES player_data(user)
-      );
-    `).run();
-  // Ensure that the "id" row is always unique and indexed.
+    CREATE TABLE loans (
+      loan_id INTEGER PRIMARY KEY,
+      user TEXT,
+      amount_due INTEGER,
+      time_due INTEGER,
+      FOREIGN KEY(user) REFERENCES player_data(user)
+    );
+  `).run();
+  // Ensure that the "id" row is indexed.
   sql.prepare(`
-      CREATE INDEX idx_loan_user_id ON loans (user);
-    `).run();
+    CREATE INDEX idx_loan_user_id ON loans (user);
+  `).run();
+}
+
+const war_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'wars';
+`).get();
+
+if (!war_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE wars (
+      war_id INTEGER PRIMARY KEY,
+      house_a TEXT,
+      house_b TEXT
+    );
+  `).run();
+}
+
+const vote_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'votes';
+`).get();
+
+if (!vote_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE votes (
+      vote_id INTEGER PRIMARY KEY,
+      type TEXT,
+      user TEXT,
+      choice TEXT,
+      time INTEGER,
+      FOREIGN KEY(user) REFERENCES player_data(user)
+    );
+  `).run();
+
+  // Add index on type + user
+  sql.prepare(`
+    CREATE INDEX idx_votes_type_user ON votes (type, user);
+  `).run();
+}
+
+const owners_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'tile_owners';
+`).get();
+
+if (!owners_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE tile_owners (
+      tile TEXT PRIMARY KEY,
+      house TEXT
+    );
+  `).run();
+}
+
+const siege_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'sieges';
+`).get();
+
+if (!siege_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE sieges (
+      siege_id INTEGER PRIMARY KEY,
+      tile TEXT,
+      attacker TEXT,
+      time INTEGER,
+      FOREIGN KEY(tile) REFERENCES tile_owners(tile)
+    );
+  `).run();
+
+  // Add index on siege column
+  sql.prepare(`
+    CREATE UNIQUE INDEX idx_siege_tile ON sieges (tile);
+  `).run();
+}
+
+const pledge_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'pledges';
+`).get();
+
+if (!pledge_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE pledges (
+      pledge_id INTEGER PRIMARY KEY,
+      siege INTEGER,
+      user TEXT,
+      men INTEGER,
+      choice TEXT,
+      FOREIGN KEY(siege) REFERENCES sieges(siege_id),
+      FOREIGN KEY(user) REFERENCES player_data(user)
+    );
+  `).run();
+
+  // Add index on siege column
+  sql.prepare(`
+    CREATE INDEX idx_pledges_siege ON pledges (siege);
+  `).run();
 }
 
 sql.pragma("synchronous = 1");
