@@ -39,7 +39,58 @@ const join = ({player_data, role_mention}) => {
  *
  * deduct the men from the player's count when the pledge is made
  */
-const pledge = () => null;
+const pledge = ({args, player_data}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data}
+    },
+    "pledges": {},
+    "reply": ""
+  };
+
+  // Check args
+  if(Array.isArray(args) && args.length === 3) {
+    // Validate args
+    const selected_tile = args[0].toLowerCase();
+    const num_men = parseInt(args[1], 10);
+    const action = args[2].toLowerCase();
+
+    const tile_owner = db.get_tile_owner.get(selected_tile);
+    const p_men = player_data.men;
+
+    if(!tile_owner) {
+      command_return.reply = `${selected_tile} is not a castle`;
+    } else if(isNaN(num_men) || num_men < 1) {
+      command_return.reply = "number of men must be a positive number";
+    } else if(num_men > p_men) {
+      command_return.reply = `you do not have ${num_men} men`;
+    } else if(action !== "attack" && action !== "defend") {
+      command_return.reply = "action must be ATTACK or DEFEND";
+    } else {
+      // Ensure a siege exists on the tile
+      const existing_siege = db.get_siege_on_tile.get(selected_tile);
+
+      if(existing_siege) {
+        // Add the pledge
+        command_return.pledges.add = {
+          "siege": existing_siege.siege_id,
+          "user": player_data.user,
+          "men": num_men,
+          "choice": action
+        };
+        command_return.update.player_data.men -= num_men;
+        command_return.reply = `you successfully pledged ${num_men} to ` +
+          `${action} ${selected_tile}`;
+      } else {
+        command_return.reply = `there is no active siege on ${selected_tile}`;
+      }
+    }
+  } else {
+    command_return.reply = "usage: .pledge <tile> <num_men> [ATTACK|DEFEND]";
+  }
+
+  return command_return;
+};
 
 /*
  * Start a siege on a tile. must be with a house you are at war with
@@ -335,7 +386,10 @@ module.exports = {
     },
     "pledge": {
       "function": pledge,
-      "args": []
+      "args": [
+        "args",
+        "player_data"
+      ]
     },
     "siege": {
       "function": siege,

@@ -31,6 +31,7 @@ client.on("ready", () => {
   client.defaultPlayerData = db.default_player;
   client.addVote = db.add_vote;
   client.addSiege = db.add_siege;
+  client.addPledge = db.add_pledge;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -210,6 +211,13 @@ client.on('message', msg => {
               if('add' in command_return.sieges) {
                 // Add the siege to the database
                 client.addSiege.run(command_return.sieges.add);
+              }
+            }
+
+            if('pledges' in command_return) {
+              if('add' in command_return.pledges) {
+                // Add the pledge to the database
+                client.addPledge.run(command_return.pledges.add);
               }
             }
           } else {

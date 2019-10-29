@@ -216,6 +216,12 @@ module.exports = {
     VALUES (
       @tile, @attacker, @time);
   `),
+  "add_pledge": sql.prepare(`
+    INSERT INTO pledges (
+      siege, user, men, choice)
+    VALUES (
+      @siege, @user, @men, @choice);
+  `),
   "default_player": {
     "user": '',
     "house": '',
