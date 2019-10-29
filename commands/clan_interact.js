@@ -71,7 +71,59 @@ const pledge = () => null;
  * the losers by pledge amount.
  *
  */
-const siege = () => null;
+const siege = ({args, player_data}) => {
+  const command_return = {
+    "sieges": {},
+    "reply": ""
+  };
+
+  // Make sure the tile arg is correct
+  if(Array.isArray(args) && args.length) {
+    // Check tile
+    const selected_tile = args[0].toLowerCase();
+    const tile_owner = db.get_tile_owner.get(selected_tile);
+
+    if(tile_owner) {
+      // Tile is good. Make sure it is owned by a house at war with
+      if(player_data.house === tile_owner.house) {
+        command_return.reply = "your house owns this castle";
+      } else {
+        const war = db.get_war_between_houses.get({
+          "house1": player_data.house,
+          "house2": tile_owner.house
+        });
+
+        if(war) {
+          // Make sure a siege does not already exist on this tile
+          const existing_siege = db.get_siege_on_tile.get(selected_tile);
+
+          if(existing_siege) {
+            command_return.reply = "a siege is in progress on that castle";
+          } else {
+            // Good to go! Add the siege
+            command_return.sieges.add = {
+              "tile": selected_tile,
+              "attacker": player_data.house,
+              "time": Date.now() + utils.hours_to_ms(6)
+            };
+
+            command_return.reply = "you have initiated a siege on " +
+              `<@&${tile_owner.house}>'s castle at ${selected_tile}`;
+          }
+        } else {
+          command_return.reply = "your house is not at war with " +
+            `<@&${tile_owner.house}>`;
+        }
+      }
+    } else {
+      command_return.reply = `${selected_tile} is not a castle`;
+    }
+  } else {
+    command_return.reply = "you must specify a castle to attack, e.g. A10";
+  }
+
+  return command_return;
+};
 
 /*
  * Open a vote between two waring houses to stop the war. majority of each
@@ -287,7 +339,10 @@ module.exports = {
     },
     "siege": {
       "function": siege,
-      "args": []
+      "args": [
+        "args",
+        "player_data"
+      ]
     },
     "truce": {
       "function": truce,

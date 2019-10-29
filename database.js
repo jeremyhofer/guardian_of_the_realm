@@ -204,6 +204,18 @@ module.exports = {
     SELECT * from wars WHERE (house_a = @house1 and house_b = @house2)
       or (house_a = @house2 and house_b = @house1)
   `),
+  "get_tile_owner": sql.prepare(`
+    SELECT * from tile_owners where tile = ?
+  `),
+  "get_siege_on_tile": sql.prepare(`
+    SELECT * from sieges where tile = ?
+  `),
+  "add_siege": sql.prepare(`
+    INSERT INTO sieges (
+      tile, attacker, time)
+    VALUES (
+      @tile, @attacker, @time);
+  `),
   "default_player": {
     "user": '',
     "house": '',

@@ -30,6 +30,7 @@ client.on("ready", () => {
   client.removePlayerLoan = db.remove_loan;
   client.defaultPlayerData = db.default_player;
   client.addVote = db.add_vote;
+  client.addSiege = db.add_siege;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -164,7 +165,7 @@ client.on('message', msg => {
                       // Add role to player
                       msg.member.addRole(server_role).catch(console.error);
                     } else {
-                      msg.reply(`${add_role} is not defined. Contact a bot dev`);
+                      msg.reply(`${add_role} is not defined. Contact a dev`);
                     }
                   });
                 }
@@ -202,6 +203,13 @@ client.on('message', msg => {
               if('add' in command_return.votes) {
                 // Add the vote to the database
                 client.addVote.run(command_return.votes.add);
+              }
+            }
+
+            if('sieges' in command_return) {
+              if('add' in command_return.sieges) {
+                // Add the siege to the database
+                client.addSiege.run(command_return.sieges.add);
               }
             }
           } else {
