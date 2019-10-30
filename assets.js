@@ -152,5 +152,19 @@ module.exports = {
     "572288151419355136",
     "572289104742580254",
     "572288492101435408"
-  ]
+  ],
+  "daily_payouts": {
+    "apothecary": 600,
+    "blacksmith": 500,
+    "mill": 200,
+    "mine": 750,
+    "quarry": 1000,
+    "stable": 300,
+    "tavern": 100,
+    "workshop": 1000
+  },
+  "daily_costs": {
+    "men": 2,
+    "ships": 20
+  }
 };
