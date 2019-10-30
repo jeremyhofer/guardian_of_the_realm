@@ -39,5 +39,23 @@ module.exports = {
   hours_to_ms (hours) {
     // Covert hours to milliseconds
     return hours * 60 * 60 * 1000;
+  },
+  find_role_id_given_name (name, role_obj) {
+
+    /*
+     * This is specific for searching the game roles asset for a role
+     * ID containing a valid identifier matching the name argument.
+     * All items in the role_obj are in the form role_id: [identifier list]
+     */
+    let role_id = "";
+
+    for(const key in role_obj) {
+      if(key in role_obj && role_obj[key].includes(name.toLowerCase())) {
+        role_id = key;
+        break;
+      }
+    }
+
+    return role_id;
   }
 };

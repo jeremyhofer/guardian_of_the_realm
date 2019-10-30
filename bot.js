@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
-const SQLite = require("better-sqlite3");
-const sql = new SQLite('./data/gotr_bot.sqlite');
+const db = require('./database.js');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
@@ -10,6 +9,7 @@ const economy = require('./commands/economy.js');
 const general = require('./commands/general.js');
 const player_interact = require('./commands/player_interact.js');
 const tasks = require('./commands/tasks.js');
+const assets = require('./assets.js');
 const utils = require('./utils.js');
 const command_dispatch = {
   ...admin.dispatch,
@@ -21,110 +21,17 @@ const command_dispatch = {
 };
 
 client.on("ready", () => {
-  // Check if the table "player_data" exists.
-  const player_table = sql.prepare(`
-    SELECT count(*) FROM sqlite_master
-    WHERE type='table' AND name = 'player_data';
-  `).get();
-  if (!player_table['count(*)']) {
-    // If the table isn't there, create it and setup the database correctly.
-    sql.prepare(`
-      CREATE TABLE player_data (
-        user TEXT PRIMARY KEY,
-        house TEXT,
-        men INTEGER,
-        ships INTEGER,
-        money INTEGER,
-        gift_last_time INTEGER,
-        loan_last_time INTEGER,
-        pirate_last_time INTEGER,
-        pray_last_time INTEGER,
-        raid_last_time INTEGER,
-        smuggle_last_time INTEGER,
-        spy_last_time INTEGER,
-        subvert_last_time INTEGER,
-        thief_last_time INTEGER,
-        train_last_time INTEGER,
-        work_last_time INTEGER
-      );
-    `).run();
-    // Ensure that the "id" row is always unique and indexed.
-    sql.prepare(`
-      CREATE UNIQUE INDEX idx_player_data_id ON player_data (user);
-    `).run();
-    sql.pragma("synchronous = 1");
-    sql.pragma("journal_mode = wal");
-  }
-
-  const loan_table = sql.prepare(`
-    SELECT count(*) FROM sqlite_master
-    WHERE type='table' AND name = 'loans';
-  `).get();
-  if (!loan_table['count(*)']) {
-    // If the table isn't there, create it and setup the database correctly.
-    sql.prepare(`
-      CREATE TABLE loans (
-        loan_id INTEGER PRIMARY KEY,
-        user TEXT,
-        amount_due INTEGER,
-        time_due INTEGER,
-        FOREIGN KEY(user) REFERENCES player_data(user)
-      );
-    `).run();
-    // Ensure that the "id" row is always unique and indexed.
-    sql.prepare(`
-      CREATE INDEX idx_loan_user_id ON loans (user);
-    `).run();
-    sql.pragma("synchronous = 1");
-    sql.pragma("journal_mode = wal");
-  }
-
-  client.getPlayer = sql.prepare("SELECT * FROM player_data WHERE user = ?");
-  client.setPlayer = sql.prepare(`
-    INSERT OR REPLACE INTO player_data (
-      user, house, men, ships, money, pray_last_time,
-      gift_last_time, loan_last_time, pirate_last_time,
-      pray_last_time, raid_last_time, smuggle_last_time,
-      spy_last_time, subvert_last_time, thief_last_time,
-      train_last_time, work_last_time)
-    VALUES (
-      @user, @house, @men, @ships, @money, @pray_last_time,
-      @gift_last_time, @loan_last_time, @pirate_last_time,
-      @pray_last_time, @raid_last_time, @smuggle_last_time,
-      @spy_last_time, @subvert_last_time, @thief_last_time,
-      @train_last_time, @work_last_time);
-  `);
-  client.getPlayerLoans = sql.prepare("SELECT * FROM loans WHERE user = ?");
-  client.addPlayerLoan = sql.prepare(`
-    INSERT INTO loans (
-      user, amount_due, time_due)
-    VALUES (
-      @user, @amount_due, @time_due);
-  `);
-  client.updatePlayerLoan = sql.prepare(`
-    UPDATE loans SET amount_due = @amount_due WHERE loan_id = @loan_id;
-  `);
-  client.removePlayerLoan = sql.prepare(`
-    DELETE FROM loans WHERE loan_id = @loan_id;
-  `);
-  client.defaultPlayerData = {
-    "user": '',
-    "house": '',
-    "men": 20,
-    "ships": 2,
-    "money": 2000,
-    "gift_last_time": 0,
-    "loan_last_time": 0,
-    "pirate_last_time": 0,
-    "pray_last_time": 0,
-    "raid_last_time": 0,
-    "smuggle_last_time": 0,
-    "spy_last_time": 0,
-    "subvert_last_time": 0,
-    "thief_last_time": 0,
-    "train_last_time": 0,
-    "work_last_time": 0
-  };
+  // Setup database commands for various actions.
+  client.getPlayer = db.get_player;
+  client.setPlayer = db.set_player;
+  client.getPlayerLoans = db.get_loan;
+  client.addPlayerLoan = db.add_loan;
+  client.updatePlayerLoan = db.update_loan;
+  client.removePlayerLoan = db.remove_loan;
+  client.defaultPlayerData = db.default_player;
+  client.addVote = db.add_vote;
+  client.addSiege = db.add_siege;
+  client.addPledge = db.add_pledge;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -177,7 +84,8 @@ client.on('message', msg => {
         // See if command should have additional arguments. If not, error
         if(other_tokens.length &&
             !command_dispatch[command].args.includes('args') &&
-            !command_dispatch[command].args.includes('player_mention')) {
+            !command_dispatch[command].args.includes('player_mention') &&
+            !command_dispatch[command].args.includes('role_mention')) {
           msg.reply(`${command} does not take any additional arguments`);
         } else {
 
@@ -191,6 +99,13 @@ client.on('message', msg => {
               player_mention = {...client.defaultPlayerData};
               player_mention.user = mentioned_player.user.id;
             }
+          }
+
+          let role_mention = "";
+          const mentioned_role = msg.mentions.roles.first();
+
+          if(mentioned_role) {
+            role_mention = mentioned_role.id;
           }
 
           const loans = client.getPlayerLoans.all(player_data.user);
@@ -208,6 +123,9 @@ client.on('message', msg => {
                 break;
               case 'loans':
                 call_args.loans = loans;
+                break;
+              case 'role_mention':
+                call_args.role_mention = role_mention;
                 break;
               default:
                 break;
@@ -234,17 +152,24 @@ client.on('message', msg => {
               }
 
               if('roles' in command_return.update) {
-                // Adjust player roles as necessary
-                command_return.update.roles.add.forEach(add_role => {
-                  const server_role =
-                    msg.guild.roles.find(role => role.name.toLowerCase() ===
-                      add_role);
-
-                  if(server_role) {
-                    // Add role to player
-                    msg.member.addRole(server_role).catch(console.error);
-                  }
-                });
+                if('add' in command_return.update.roles) {
+                  // Adjust player roles as necessary
+                  command_return.update.roles.add.forEach(add_role => {
+                    // See if this is an ID. If so, use it, otherwise get ID
+                    const server_role = add_role in assets.game_roles
+                      ? add_role
+                      : utils.find_role_id_given_name(
+                          add_role,
+                          assets.game_roles
+                        );
+                    if(server_role) {
+                      // Add role to player
+                      msg.member.addRole(server_role).catch(console.error);
+                    } else {
+                      msg.reply(`${add_role} is not defined. Contact a dev`);
+                    }
+                  });
+                }
               }
             } else if(cooldown) {
 
@@ -272,6 +197,27 @@ client.on('message', msg => {
                 client.updatePlayerLoan.run(command_return.loans.update);
               } else if ('remove' in command_return.loans) {
                 client.removePlayerLoan.run(command_return.loans.remove);
+              }
+            }
+
+            if('votes' in command_return) {
+              if('add' in command_return.votes) {
+                // Add the vote to the database
+                client.addVote.run(command_return.votes.add);
+              }
+            }
+
+            if('sieges' in command_return) {
+              if('add' in command_return.sieges) {
+                // Add the siege to the database
+                client.addSiege.run(command_return.sieges.add);
+              }
+            }
+
+            if('pledges' in command_return) {
+              if('add' in command_return.pledges) {
+                // Add the pledge to the database
+                client.addPledge.run(command_return.pledges.add);
               }
             }
           } else {
