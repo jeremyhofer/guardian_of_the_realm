@@ -32,6 +32,9 @@ client.on("ready", () => {
   client.addVote = db.add_vote;
   client.addSiege = db.add_siege;
   client.addPledge = db.add_pledge;
+  client.getLastPayout = db.get_last_payout;
+  client.updateLastPayout = db.update_last_payout;
+  client.getAllPlayers = db.get_all_players;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -233,3 +236,62 @@ client.on('message', msg => {
     }
   }
 });
+
+setInterval(() => {
+
+  /*
+   * Give role payouts if it is time. Payout part every 12 hours
+   * Charge 1 money per men every 12 hours
+   * Charge 100 money per ship every 12 hours
+   * Check to see if a war vote should be finalized and finalize it
+   * Check to see if a truce vote should be finalized and finalize it
+   * Check to see if a siege should be resolved
+   * ST guild ID: 572263893729017893
+   */
+  const guild = client.guilds.get("572263893729017893");
+  const now = Date.now();
+  const hours_between_payout = 12;
+  const payout_percent = hours_between_payout / 24;
+  const last_payout = client.getLastPayout.get();
+
+  if(last_payout.time + utils.hours_to_ms(hours_between_payout) <= now) {
+    // Payout roles
+    for(const title in assets.daily_payouts) {
+      if(title in assets.daily_payouts) {
+        const payout = Math.round(assets.daily_payouts[title] * payout_percent);
+        const role_id = utils.find_role_id_given_name(title, assets.game_roles);
+        guild.roles.get(role_id).members.forEach((value, key) => {
+          // Get player_data
+          let player_data = client.getPlayer.get(key);
+
+          if (!player_data) {
+            player_data = {...client.defaultPlayerData};
+            player_data.user = key;
+          }
+
+          // Add payout
+          player_data.money += payout;
+
+          // Save
+          client.setPlayer.run(player_data);
+
+        });
+      }
+    }
+
+    // Deduct troop prices
+    const all_players = client.getAllPlayers.all();
+
+    all_players.forEach(player => {
+      const men_cost = player.men * Math.round(assets.daily_costs.men *
+        payout_percent);
+      const ship_cost = player.ships * Math.round(assets.daily_costs.ships *
+        payout_percent);
+      player.money -= men_cost;
+      player.money -= ship_cost;
+      client.setPlayer.run(player);
+    });
+    client.updateLastPayout.run(now);
+  }
+
+}, 60 * 1000);

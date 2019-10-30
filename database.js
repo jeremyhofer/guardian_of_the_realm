@@ -159,6 +159,21 @@ if (!pledge_table['count(*)']) {
   `).run();
 }
 
+const last_payout_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'last_payout';
+`).get();
+
+if (!last_payout_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE last_payout (
+      payout_type TEXT,
+      time INTEGER
+    );
+  `).run();
+}
+
 sql.pragma("synchronous = 1");
 sql.pragma("journal_mode = wal");
 
@@ -178,6 +193,7 @@ module.exports = {
       @spy_last_time, @subvert_last_time, @thief_last_time,
       @train_last_time, @work_last_time);
   `),
+  "get_all_players": sql.prepare("SELECT * FROM player_data"),
   "get_loan": sql.prepare("SELECT * FROM loans WHERE user = ?"),
   "add_loan": sql.prepare(`
     INSERT INTO loans (
@@ -222,6 +238,12 @@ module.exports = {
     VALUES (
       @siege, @user, @men, @choice);
   `),
+  "get_last_payout": sql.prepare(`
+    SELECT * FROM last_payout WHERE payout_type = "all"
+  `),
+  "update_last_payout": sql.prepare(`
+    UPDATE last_payout SET time = ? WHERE payout_type = "all"
+  `),
   "default_player": {
     "user": '',
     "house": '',
@@ -239,5 +261,5 @@ module.exports = {
     "thief_last_time": 0,
     "train_last_time": 0,
     "work_last_time": 0
-  }
+  },
 };
