@@ -172,6 +172,13 @@ if (!last_payout_table['count(*)']) {
       time INTEGER
     );
   `).run();
+
+  sql.prepare(`
+    INSERT INTO last_payout (
+      payout_type, time)
+    VALUES
+      ("all", 0);
+  `).run();
 }
 
 sql.pragma("synchronous = 1");
