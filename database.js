@@ -226,6 +226,22 @@ module.exports = {
     VALUES (
       @type, @user, @choice, @time);
   `),
+  "get_expired_votes_by_type": sql.prepare(`
+    SELECT * FROM votes WHERE type = ? and time <= ?
+  `),
+  "get_all_house_votes_by_type": sql.prepare(`
+    SELECT * FROM votes WHERE type = ? and user in (
+      SELECT user FROM player_data WHERE house = ?)
+  `),
+  "remove_vote": sql.prepare(`
+    DELETE FROM votes WHERE vote_id = @vote_id
+  `),
+  "add_war": sql.prepare(`
+    INSERT INTO wars (
+      house_a, house_b)
+    VALUES (
+      @house_a, @house_b);
+  `),
   "get_war_between_houses": sql.prepare(`
     SELECT * from wars WHERE (house_a = @house1 and house_b = @house2)
       or (house_a = @house2 and house_b = @house1)

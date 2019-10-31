@@ -31,11 +31,15 @@ client.on("ready", () => {
   client.getAllDueLoans = db.get_due_loans;
   client.defaultPlayerData = db.default_player;
   client.addVote = db.add_vote;
+  client.getExpiredVotes = db.get_expired_votes_by_type;
+  client.getAllVotesByHouse = db.get_all_house_votes_by_type;
+  client.removeVote = db.remove_vote;
   client.addSiege = db.add_siege;
   client.addPledge = db.add_pledge;
   client.getLastPayout = db.get_last_payout;
   client.updateLastPayout = db.update_last_payout;
   client.getAllPlayers = db.get_all_players;
+  client.addWar = db.add_war;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -309,5 +313,92 @@ setInterval(() => {
       `of ${loan.amount_due} has been deducted from your account`);
   });
 
+  // Resolve expired war votes
+  const expiration_time = now - utils.hours_to_ms(0.1);
+  let expired_war_vote = client.getExpiredVotes.get("war", expiration_time);
 
-}, 60 * 1000);
+  while(expired_war_vote) {
+    // Get the data for the player who made this vote
+    const player_data = client.getPlayer.get(expired_war_vote.user);
+    // Get all votes for the house
+    const house_votes = client.getAllVotesByHouse.all("war", player_data.house);
+    const vote_counts = {};
+
+    // Count the votes
+    house_votes.forEach(vote => {
+      if(vote.choice in vote_counts) {
+        vote_counts[vote.choice] += 1;
+      } else {
+        vote_counts[vote.choice] = 1;
+      }
+    });
+
+    // Add the counts as objects in the array so we may sort by count
+    const top_choices = [];
+
+    for(const choice in vote_counts) {
+      if(choice in vote_counts) {
+        top_choices.push({
+          choice,
+          "votes": vote_counts.choice
+        });
+      }
+    }
+
+    top_choices.sort((first, second) => second.votes - first.votes);
+
+    // Get the top choice and see if we have any ties
+    let top_choice = top_choices[0].choice;
+
+    if(top_choices.length > 1) {
+      // See if the 2nd highest has the same number. If so there is a tie
+      top_choice = top_choices[0].votes === top_choices[1].votes
+        ? "peace"
+        : top_choice;
+    }
+
+    let vote_reply = "";
+
+    // WAR OR PEACE
+    if(top_choice === "peace") {
+      // Send message that vote ended in peace
+      vote_reply = `<@&${player_data.house} your war vote has resulted in ` +
+        "peace";
+    } else {
+      // WE HAVE WAR
+      client.addWar.run({
+        "house_a": player_data.house,
+        "house_b": top_choice
+      });
+
+      /*
+       * Get all votes from the other house. If any are for the house that
+       * declared war, delete them
+       */
+      const other_house_votes = client.getAllVotesByHouse.all(
+        "war",
+        top_choice
+      );
+
+      other_house_votes.forEach(vote => {
+        if(vote.choice === player_data.house) {
+          client.removeVote.run(vote);
+        }
+      });
+
+      vote_reply = `<@&${player_data.house}> has declared war on ` +
+        `<@&${top_choice}>`;
+    }
+
+    // Send the reply
+    guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
+
+    // Remove the votes
+    house_votes.forEach(vote => {
+      client.removeVote.run(vote);
+    });
+
+    // Get next vote to resolve, if exists
+    expired_war_vote = client.getExpiredVotes.get("war", expiration_time);
+  }
+}, 10 * 1000);
