@@ -28,6 +28,7 @@ client.on("ready", () => {
   client.addPlayerLoan = db.add_loan;
   client.updatePlayerLoan = db.update_loan;
   client.removePlayerLoan = db.remove_loan;
+  client.getAllDueLoans = db.get_due_loans;
   client.defaultPlayerData = db.default_player;
   client.addVote = db.add_vote;
   client.addSiege = db.add_siege;
@@ -293,5 +294,20 @@ setInterval(() => {
     });
     client.updateLastPayout.run(now);
   }
+
+  // Collect on all loans that are due
+  const due_loans = client.getAllDueLoans.all(now);
+
+  due_loans.forEach(loan => {
+    const player_data = client.getPlayer.get(loan.user);
+    player_data.money -= loan.amount_due;
+    client.setPlayer.run(player_data);
+    client.removePlayerLoan.run(loan);
+
+    guild.channels.get(assets.reply_channels.command_tent).send("<@" +
+      `${player_data.user}> your loan has expired. The remaining balance ` +
+      `of ${loan.amount_due} has been deducted from your account`);
+  });
+
 
 }, 60 * 1000);

@@ -214,6 +214,9 @@ module.exports = {
   "remove_loan": sql.prepare(`
     DELETE FROM loans WHERE loan_id = @loan_id;
   `),
+  "get_due_loans": sql.prepare(`
+    SELECT * FROM loans WHERE time_due <= ?
+  `),
   "get_player_vote_by_type": sql.prepare(`
     SELECT * FROM votes WHERE user = ? and type = ?
   `),
