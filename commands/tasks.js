@@ -9,7 +9,8 @@ const pray = ({player_data}) => {
     "reply": "",
     "update": {
       "player_data": {...player_data}
-    }
+    },
+    "success": true
   };
 
   /*
@@ -35,7 +36,8 @@ const smuggle = ({args, player_data}) => {
     "reply": "",
     "update": {
       "player_data": {...player_data}
-    }
+    },
+    "success": false
   };
 
   if (Array.isArray(args) && args.length === 1) {
@@ -64,6 +66,7 @@ const smuggle = ({args, player_data}) => {
         command_return.reply = "You lost the favor of Calypso today. " +
           `${penalty} of your ships were sent to Davy Jones' locker`;
       }
+      command_return.success = true;
     } else {
       command_return.reply = `you do not have ${num_ships} available`;
     }
@@ -83,7 +86,8 @@ const subvert = ({player_data}) => {
     "reply": "",
     "update": {
       "player_data": {...player_data}
-    }
+    },
+    "success": true
   };
 
   // Determine if this is a successful attempt
@@ -117,7 +121,8 @@ const train = ({player_data}) => {
     "reply": "",
     "update": {
       "player_data": {...player_data}
-    }
+    },
+    "success": true
   };
 
   // Determine if this is a successful attempt
@@ -151,7 +156,8 @@ const work = ({player_data}) => {
     "reply": "",
     "update": {
       "player_data": {...player_data}
-    }
+    },
+    "success": true
   };
 
   /*

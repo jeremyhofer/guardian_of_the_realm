@@ -157,7 +157,8 @@ client.on('message', msg => {
             if('update' in command_return) {
               if('player_data' in command_return.update) {
                 // If there was a cooldown, update the last time
-                if(cooldown) {
+                if(cooldown && 'success' in
+                  command_return && command_return.success) {
                   command_return.update.player_data[
                     cooldown_field] = current_time;
                 }
@@ -188,7 +189,8 @@ client.on('message', msg => {
                   });
                 }
               }
-            } else if(cooldown) {
+            } else if(cooldown && 'success' in
+              command_return && command_return.success) {
 
               /*
                * If the command had a cooldown and player_data was not returned

@@ -56,7 +56,8 @@ const pirate = ({player_data, player_mention}) => {
     "update": {
       "player_data": {...player_data}
     },
-    "reply": ""
+    "reply": "",
+    "success": false
   };
 
   if(Object.keys(player_mention).length) {
@@ -108,6 +109,7 @@ const pirate = ({player_data, player_mention}) => {
             `ships. <@${player_mention.user}> lost ${mention_lose} ships.`
           : `your pirate adventures were thwarted. You lost ${player_lose} ` +
             `ships. <@${player_mention.user}> lost ${mention_lose} ships.`;
+        command_return.success = true;
       } else {
         command_return.reply = "the other player does not have any ships";
       }
@@ -131,7 +133,8 @@ const raid = ({player_data, player_mention}) => {
     "update": {
       "player_data": {...player_data}
     },
-    "reply": ""
+    "reply": "",
+    "success": false
   };
 
   if(Object.keys(player_mention).length) {
@@ -184,6 +187,7 @@ const raid = ({player_data, player_mention}) => {
           : "scouts spotted your raid part. Defenses were prepared. You lost " +
             `${player_lose} men. <@${player_mention.user}> lost ` +
             `${mention_lose} men.`;
+        command_return.success = true;
       } else {
         command_return.reply = "the other player does not have any men";
       }
@@ -206,7 +210,8 @@ const spy = ({player_data, player_mention}) => {
     "update": {
       "player_data": {...player_data}
     },
-    "reply": ""
+    "reply": "",
+    "success": false
   };
 
   if(Object.keys(player_mention).length) {
@@ -219,6 +224,7 @@ const spy = ({player_data, player_mention}) => {
         `${player_mention.money} :moneybag: ${player_mention.men} ` +
         `${assets.emojis.MenAtArms} ${player_mention.ships} ` +
         `${assets.emojis.Warship}`;
+      command_return.success = true;
     } else {
       command_return.reply = "you do not have enough money. spy costs 400.";
     }
@@ -239,7 +245,8 @@ const thief = ({player_data, player_mention}) => {
     "update": {
       "player_data": {...player_data}
     },
-    "reply": ""
+    "reply": "",
+    "success": false
   };
 
   if(Object.keys(player_mention).length) {
@@ -289,6 +296,8 @@ const thief = ({player_data, player_mention}) => {
             `from <@${player_mention.user}>.`
           : "you were caught by the guards. You paid a fine of " +
             `${money_change} to <@${player_mention.user}>.`
+
+        command_return.success = true;
       } else {
         command_return.reply = "the other player does not have any money";
       }
