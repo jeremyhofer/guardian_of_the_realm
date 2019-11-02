@@ -1,4 +1,5 @@
 const assets = require('../assets.js');
+const db = require('../database.js');
 
 /*
  * Edit player data. will take flags i.e. --house. will hard set to the
@@ -48,11 +49,18 @@ const map = () => {
 
   let send = "";
 
+  /*
   map_data.forEach(row => {
     row.forEach(column => {
       send += column;
     });
     send += "\n";
+  });
+  */
+
+  const tile_owners = db.get_all_tiles.all();
+  tile_owners.forEach(tile => {
+    send += `${tile.tile}: <@&${tile.house}>\n`;
   });
 
   return {send};

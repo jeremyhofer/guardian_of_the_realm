@@ -252,6 +252,9 @@ module.exports = {
   "remove_war": sql.prepare(`
     DELETE FROM wars WHERE war_id = @war_id
   `),
+  "get_all_tiles": sql.prepare(`
+    SELECT * from tile_owners
+  `),
   "get_tile_owner": sql.prepare(`
     SELECT * from tile_owners where tile = ?
   `),
