@@ -37,6 +37,7 @@ client.on("ready", () => {
   client.removeVote = db.remove_vote;
   client.addSiege = db.add_siege;
   client.getSiegeIDBetweenHouses = db.get_all_siege_id_between_two_houses;
+  client.getExpiredSiege = db.get_expired_siege;
   client.removeSiege = db.remove_siege;
   client.addPledge = db.add_pledge;
   client.getPledgesForSiege = db.get_all_pledges_for_siege;
@@ -47,6 +48,7 @@ client.on("ready", () => {
   client.getWarBetweenHouses = db.get_war_between_houses;
   client.addWar = db.add_war;
   client.removeWar = db.remove_war;
+  client.updateTileOwner = db.update_tile_owner;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -321,7 +323,7 @@ setInterval(() => {
   });
 
   // Resolve expired war votes
-  const expiration_time = now - utils.hours_to_ms(0.01);
+  const expiration_time = now - utils.hours_to_ms(0.05);
   let expired_war_vote = client.getExpiredVotes.get("war", expiration_time);
 
   while(expired_war_vote) {
@@ -525,5 +527,174 @@ setInterval(() => {
 
     // Get next truce to try and resolve, if exists
     expired_truce_vote = client.getExpiredTruceVotes.get(expiration_time);
+  }
+
+  let expired_siege = client.getExpiredSiege.get(now);
+
+  while(expired_siege) {
+    // Get pledges for the siege
+    const pledges = client.getPledgesForSiege.all(expired_siege);
+    const attack_pledges = pledges.filter(pledge => pledge.choice ===
+      "attack");
+    const defend_pledges = pledges.filter(pledge => pledge.choice ===
+      "defend");
+
+    let siege_reply = `The siege on ${expired_siege.tile} is over. `;
+
+    if(attack_pledges.length || defend_pledges.length) {
+      // Get men counts
+      let attacker_count = 0;
+      let defender_count = 0;
+
+      const attackers = {};
+      const defenders = {};
+      const all_pledgers = {};
+
+      attack_pledges.forEach(pledge => {
+        attacker_count += pledge.men;
+        attackers[pledge.user] = pledge.men;
+
+        if(!(pledge.user in all_pledgers)) {
+          all_pledgers[pledge.user] = client.getPlayer.get(pledge.user);
+        }
+      });
+
+      defend_pledges.forEach(pledge => {
+        defender_count += pledge.men;
+        defenders[pledge.user] = pledge.men;
+
+        if(!(pledge.user in all_pledgers)) {
+          all_pledgers[pledge.user] = client.getPlayer.get(pledge.user);
+        }
+      });
+
+      // Determine chance to win, the reward pots, and the losses
+      let win_chance = Math.round(attacker_count /
+        (attacker_count + defender_count) * 100);
+
+      if(win_chance < 0) {
+        win_chance = 0;
+      } else if(win_chance > 100) {
+        win_chance = 100;
+      }
+
+      const win_pot = 6000 * (attack_pledges.length + defend_pledges.length);
+      const lose_pot = 20 * (attack_pledges.length + defend_pledges.length);
+      const attacker_losses = utils.get_percent_of_value_given_range(
+        defender_count,
+        1,
+        30
+      );
+      const defender_losses = utils.get_percent_of_value_given_range(
+        attacker_count,
+        1,
+        30
+      );
+
+      const chance = utils.get_random_value_in_range(1, 100);
+
+      // Determine the outcome
+      if(win_chance >= chance) {
+        // Attacker wins!
+
+        // Handle winnings for all attackers
+        for(const att in attackers) {
+          if(att in attackers && att in all_pledgers) {
+            const winnings = Math.round(win_pot * attackers[att] /
+              attacker_count);
+            let troops_returned = attackers[att] - Math.round(attacker_losses *
+              attackers[att] / attacker_count);
+
+            troops_returned = troops_returned < 0
+              ? 0
+              : troops_returned;
+            all_pledgers[att].money += winnings;
+            all_pledgers[att].men += troops_returned;
+          }
+        }
+
+        // Handle winnings for all defenders
+        for(const att in defenders) {
+          if(att in defenders && att in all_pledgers) {
+            const winnings = Math.round(lose_pot * defenders[att] /
+              defender_count);
+            let troops_returned = defenders[att] - Math.round(defender_losses *
+              defenders[att] / defender_count);
+
+            troops_returned = troops_returned < 0
+              ? 0
+              : troops_returned;
+            all_pledgers[att].men += winnings + troops_returned;
+          }
+        }
+
+        // Reassign the tile
+        client.updateTileOwner.run(expired_siege.attacker, expired_siege.tile);
+        siege_reply += `<@&${expired_siege.attacker}> has won the siege`;
+      } else {
+        // Defender wins!
+
+        // Handle winnings for all defenders
+        for(const att in defenders) {
+          if(att in defenders && att in all_pledgers) {
+            const winnings = Math.round(win_pot * defenders[att] /
+              defender_count);
+            let troops_returned = defenders[att] - Math.round(defender_losses *
+              defenders[att] / defender_count);
+
+            troops_returned = troops_returned < 0
+              ? 0
+              : troops_returned;
+            all_pledgers[att].money += winnings;
+            all_pledgers[att].men += troops_returned;
+          }
+        }
+
+        // Handle winnings for all attackers
+        for(const att in attackers) {
+          if(att in attackers && att in all_pledgers) {
+            const winnings = Math.round(lose_pot * attackers[att] /
+              attacker_count);
+            let troops_returned = attackers[att] - Math.round(attacker_losses *
+              attackers[att] / attacker_count);
+
+            troops_returned = troops_returned < 0
+              ? 0
+              : troops_returned;
+            all_pledgers[att].men += winnings + troops_returned;
+          }
+        }
+
+        siege_reply += `<@&${expired_siege.attacker}> has lost the siege`;
+      }
+
+      // Update all the player data
+      for(const pledger in all_pledgers) {
+        if(pledger in all_pledgers) {
+          client.setPlayer.run(all_pledgers[pledger]);
+        }
+      }
+
+      // Iterate over each pledge and remove it
+      attack_pledges.forEach(pledge => {
+        client.removePledge.run(pledge);
+      });
+
+      defend_pledges.forEach(pledge => {
+        client.removePledge.run(pledge);
+      });
+    } else {
+      // No one pledged
+      siege_reply += "No one pledged to support the siege. Nothing is done.";
+    }
+
+    // Remove the siege
+    client.removeSiege.run(expired_siege);
+
+    // Send the reply
+    guild.channels.get(assets.reply_channels.battle_reports).send(siege_reply);
+
+    // Get next truce to try and resolve, if exists
+    expired_siege = client.getExpiredSiege.get(expiration_time);
   }
 }, 10 * 1000);

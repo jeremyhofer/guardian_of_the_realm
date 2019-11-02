@@ -278,6 +278,9 @@ module.exports = {
         )
       )
   `),
+  "get_expired_siege": sql.prepare(`
+    SELECT * from sieges WHERE time <= ?
+  `),
   "remove_siege": sql.prepare(`
     DELETE FROM sieges WHERE siege_id = @siege_id
   `),
@@ -292,6 +295,9 @@ module.exports = {
   `),
   "remove_pledge": sql.prepare(`
     DELETE FROM pledges WHERE pledge_id = @pledge_id
+  `),
+  "update_tile_owner": sql.prepare(`
+    UPDATE tile_owners SET house = ? WHERE tile = ?
   `),
   "get_last_payout": sql.prepare(`
     SELECT * FROM last_payout WHERE payout_type = "all"
