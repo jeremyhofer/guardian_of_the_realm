@@ -229,6 +229,9 @@ module.exports = {
   "get_expired_votes_by_type": sql.prepare(`
     SELECT * FROM votes WHERE type = ? and time <= ?
   `),
+  "get_expired_truce_vote": sql.prepare(`
+    SELECT * FROM votes WHERE type like "truce%" and time <= ?
+  `),
   "get_all_house_votes_by_type": sql.prepare(`
     SELECT * FROM votes WHERE type = ? and user in (
       SELECT user FROM player_data WHERE house = ?)
@@ -246,6 +249,9 @@ module.exports = {
     SELECT * from wars WHERE (house_a = @house1 and house_b = @house2)
       or (house_a = @house2 and house_b = @house1)
   `),
+  "remove_war": sql.prepare(`
+    DELETE FROM wars WHERE war_id = @war_id
+  `),
   "get_tile_owner": sql.prepare(`
     SELECT * from tile_owners where tile = ?
   `),
@@ -258,11 +264,34 @@ module.exports = {
     VALUES (
       @tile, @attacker, @time);
   `),
+  "get_all_siege_id_between_two_houses": sql.prepare(`
+    SELECT siege_id FROM sieges, tile_owners
+    WHERE
+      tile_owners.tile = sieges.tile
+      AND (
+        (attacker = @house_a
+         AND tile_owners.house = @house_b
+        )
+        OR
+        (attacker = @house_b
+         AND tile_owners.house = @house_a
+        )
+      )
+  `),
+  "remove_siege": sql.prepare(`
+    DELETE FROM sieges WHERE siege_id = @siege_id
+  `),
   "add_pledge": sql.prepare(`
     INSERT INTO pledges (
       siege, user, men, choice)
     VALUES (
       @siege, @user, @men, @choice);
+  `),
+  "get_all_pledges_for_siege": sql.prepare(`
+    SELECT * FROM pledges WHERE siege = @siege_id
+  `),
+  "remove_pledge": sql.prepare(`
+    DELETE FROM pledges WHERE pledge_id = @pledge_id
   `),
   "get_last_payout": sql.prepare(`
     SELECT * FROM last_payout WHERE payout_type = "all"
@@ -287,5 +316,5 @@ module.exports = {
     "thief_last_time": 0,
     "train_last_time": 0,
     "work_last_time": 0
-  },
+  }
 };

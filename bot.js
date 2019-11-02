@@ -32,14 +32,21 @@ client.on("ready", () => {
   client.defaultPlayerData = db.default_player;
   client.addVote = db.add_vote;
   client.getExpiredVotes = db.get_expired_votes_by_type;
+  client.getExpiredTruceVotes = db.get_expired_truce_vote;
   client.getAllVotesByHouse = db.get_all_house_votes_by_type;
   client.removeVote = db.remove_vote;
   client.addSiege = db.add_siege;
+  client.getSiegeIDBetweenHouses = db.get_all_siege_id_between_two_houses;
+  client.removeSiege = db.remove_siege;
   client.addPledge = db.add_pledge;
+  client.getPledgesForSiege = db.get_all_pledges_for_siege;
+  client.removePledge = db.remove_pledge;
   client.getLastPayout = db.get_last_payout;
   client.updateLastPayout = db.update_last_payout;
   client.getAllPlayers = db.get_all_players;
+  client.getWarBetweenHouses = db.get_war_between_houses;
   client.addWar = db.add_war;
+  client.removeWar = db.remove_war;
 
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -314,7 +321,7 @@ setInterval(() => {
   });
 
   // Resolve expired war votes
-  const expiration_time = now - utils.hours_to_ms(0.1);
+  const expiration_time = now - utils.hours_to_ms(0.01);
   let expired_war_vote = client.getExpiredVotes.get("war", expiration_time);
 
   while(expired_war_vote) {
@@ -400,5 +407,123 @@ setInterval(() => {
 
     // Get next vote to resolve, if exists
     expired_war_vote = client.getExpiredVotes.get("war", expiration_time);
+  }
+
+  let expired_truce_vote = client.getExpiredTruceVotes.get(expiration_time);
+
+  while(expired_truce_vote) {
+    // Get the data for the player who made this vote
+    const player_data = client.getPlayer.get(expired_truce_vote.user);
+    const other_house = expired_truce_vote.choice;
+
+    // Get all votes for both houses
+    const p_house_votes_yes = client.getAllVotesByHouse.all(
+      "truce_yes",
+      player_data.house
+    );
+    const p_house_votes_no = client.getAllVotesByHouse.all(
+      "truce_no",
+      player_data.house
+    );
+    const o_house_votes_yes = client.getAllVotesByHouse.all(
+      "truce_yes",
+      other_house
+    );
+    const o_house_votes_no = client.getAllVotesByHouse.all(
+      "truce_no",
+      other_house
+    );
+
+    // Filter all the votes by vote type and specific truce vote
+    const p_house_yes = p_house_votes_yes.filter(vote => vote.choice ===
+      other_house);
+    const p_house_no = p_house_votes_no.filter(vote => vote.choice ===
+      other_house);
+    const o_house_yes = o_house_votes_yes.filter(vote => vote.choice ===
+      player_data.house);
+    const o_house_no = o_house_votes_no.filter(vote => vote.choice ===
+      player_data.house);
+
+    // Get the votes for/against
+    const p_yes_count = p_house_yes.length;
+    const p_no_count = p_house_no.length;
+    const o_yes_count = o_house_yes.length;
+    const o_no_count = o_house_no.length;
+
+    const p_house_vote_count = p_yes_count + p_no_count;
+    const o_house_vote_count = o_yes_count + o_no_count;
+
+    let vote_reply = `A truce vote between <@&${player_data.house}> and ` +
+          `<@&${other_house}> has finished. `;
+
+    // Determine the vote outcome
+    if(p_house_vote_count > 0 && o_house_vote_count > 0) {
+      if(p_house_yes > p_house_no && o_house_yes > o_house_no) {
+        // We have a truce! Remove the war
+        const war = client.getWarBetweenHouses.get({
+          "house1": player_data.house,
+          "house2": other_house
+        });
+
+        client.removeWar.run(war);
+
+        /*
+         * If there were any sieges between the houses, remove them
+         * and return the pledged troops
+         */
+
+        const sieges_between_houses = client.getSiegeIDBetweenHouses.all({
+          "house_a": player_data.house,
+          "house_b": other_house
+        });
+
+        // Iterate over each siege
+        sieges_between_houses.forEach(siege => {
+          const pledges = client.getPledgesForSiege.all(siege);
+
+          // Iterate over each pledge. Return the men and remore the pledge
+          pledges.forEach(pledge => {
+            const pledger_data = client.getPlayer.get(pledge.user);
+            pledger_data.men += pledge.men;
+            client.setPlayer.run(pledger_data);
+            client.removePledge.run(pledge);
+          });
+
+          // Remove the siege
+          client.removeSiege.run(siege);
+        });
+
+        vote_reply += "A truce has been declared - the war is over!";
+      } else {
+        // We continue to WAR
+        vote_reply += "A truce was not reached - war continues!";
+      }
+    } else {
+      // This should indicate that the other house did not vote. War continues
+      vote_reply += "A truce was not reached - war continues!";
+    }
+
+    // Send the reply
+    guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
+
+    // Remove all associated votes
+    p_house_yes.forEach(vote => {
+      client.removeVote.run(vote);
+    });
+
+    p_house_no.forEach(vote => {
+      client.removeVote.run(vote);
+    });
+
+    o_house_yes.forEach(vote => {
+      client.removeVote.run(vote);
+    });
+
+    o_house_no.forEach(vote => {
+      client.removeVote.run(vote);
+    });
+
+    // Get next truce to try and resolve, if exists
+    expired_truce_vote = client.getExpiredTruceVotes.get(expiration_time);
   }
 }, 10 * 1000);
