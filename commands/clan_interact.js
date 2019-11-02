@@ -158,8 +158,14 @@ const siege = ({args, player_data}) => {
               "time": Date.now() + utils.hours_to_ms(6)
             };
 
-            command_return.reply = "you have initiated a siege on " +
-              `<@&${tile_owner.house}>'s castle at ${selected_tile}`;
+            command_return.send = {
+              "message": "A siege has been initiated on " +
+              `<@&${tile_owner.house}>'s castle at ${selected_tile} ` +
+              `by <@&${player_data.house}>`,
+              "channel": assets.reply_channels.battle_reports
+            };
+
+            delete command_return.reply;
           }
         } else {
           command_return.reply = "your house is not at war with " +

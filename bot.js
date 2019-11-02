@@ -71,7 +71,7 @@ client.on('message', msg => {
 
       if (!player_data) {
         player_data = {...client.defaultPlayerData};
-        player_data.user = msg.author.id;
+        player_data.user = msg.member.id;
       }
 
       let cooldown = false;
@@ -205,7 +205,16 @@ client.on('message', msg => {
             }
 
             if('send' in command_return) {
-              msg.channel.send(command_return.send, {"split": true});
+              if('message' in command_return.send) {
+                if('channel' in command_return.send) {
+                  msg.guild.channels.get(command_return.send.channel).send(
+                    command_return.send.message,
+                    {"split": true}
+                  );
+                } else {
+                  msg.channel.send(command_return.send.message, {"split": true});
+                }
+              }
             }
 
             if('loans' in command_return) {

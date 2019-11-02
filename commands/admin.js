@@ -47,7 +47,9 @@ const map = () => {
     [e.Row12, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea]
   ];
 
-  let send = "";
+  const send = {
+    "message": ""
+  };
 
   /*
   map_data.forEach(row => {
@@ -60,7 +62,7 @@ const map = () => {
 
   const tile_owners = db.get_all_tiles.all();
   tile_owners.forEach(tile => {
-    send += `${tile.tile}: <@&${tile.house}>\n`;
+    send.message += `${tile.tile}: <@&${tile.house}>\n`;
   });
 
   return {send};
