@@ -166,5 +166,9 @@ module.exports = {
   "daily_costs": {
     "men": 2,
     "ships": 20
+  },
+  "reply_channels": {
+    "command_tent": "572265598193500160",
+    "battle_reports": "597614956732612613"
   }
 };

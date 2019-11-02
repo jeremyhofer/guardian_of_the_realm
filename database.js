@@ -109,6 +109,25 @@ if (!owners_table['count(*)']) {
       house TEXT
     );
   `).run();
+
+  // Add default tile owners for now
+  sql.prepare(`
+    INSERT INTO tile_owners VALUES
+    ("c2", "572288999843168266"),
+    ("b3", "572288816652484608"),
+    ("g3", "572288151419355136"),
+    ("d4", "572290551357898781"),
+    ("f5", "572289104742580254"),
+    ("g5", "572288999843168266"),
+    ("b6", "572288492101435408"),
+    ("d6", "572288492101435408"),
+    ("e6", "572290551357898781"),
+    ("d7", "572289104742580254"),
+    ("g9", "572288816652484608"),
+    ("b10", "572291484288548929"),
+    ("c10", "572288151419355136"),
+    ("d10", "572291484288548929");
+  `).run();
 }
 
 const siege_table = sql.prepare(`
@@ -214,6 +233,9 @@ module.exports = {
   "remove_loan": sql.prepare(`
     DELETE FROM loans WHERE loan_id = @loan_id;
   `),
+  "get_due_loans": sql.prepare(`
+    SELECT * FROM loans WHERE time_due <= ?
+  `),
   "get_player_vote_by_type": sql.prepare(`
     SELECT * FROM votes WHERE user = ? and type = ?
   `),
@@ -223,9 +245,34 @@ module.exports = {
     VALUES (
       @type, @user, @choice, @time);
   `),
+  "get_expired_votes_by_type": sql.prepare(`
+    SELECT * FROM votes WHERE type = ? and time <= ?
+  `),
+  "get_expired_truce_vote": sql.prepare(`
+    SELECT * FROM votes WHERE type like "truce%" and time <= ?
+  `),
+  "get_all_house_votes_by_type": sql.prepare(`
+    SELECT * FROM votes WHERE type = ? and user in (
+      SELECT user FROM player_data WHERE house = ?)
+  `),
+  "remove_vote": sql.prepare(`
+    DELETE FROM votes WHERE vote_id = @vote_id
+  `),
+  "add_war": sql.prepare(`
+    INSERT INTO wars (
+      house_a, house_b)
+    VALUES (
+      @house_a, @house_b);
+  `),
   "get_war_between_houses": sql.prepare(`
     SELECT * from wars WHERE (house_a = @house1 and house_b = @house2)
       or (house_a = @house2 and house_b = @house1)
+  `),
+  "remove_war": sql.prepare(`
+    DELETE FROM wars WHERE war_id = @war_id
+  `),
+  "get_all_tiles": sql.prepare(`
+    SELECT * from tile_owners
   `),
   "get_tile_owner": sql.prepare(`
     SELECT * from tile_owners where tile = ?
@@ -239,11 +286,40 @@ module.exports = {
     VALUES (
       @tile, @attacker, @time);
   `),
+  "get_all_siege_id_between_two_houses": sql.prepare(`
+    SELECT siege_id FROM sieges, tile_owners
+    WHERE
+      tile_owners.tile = sieges.tile
+      AND (
+        (attacker = @house_a
+         AND tile_owners.house = @house_b
+        )
+        OR
+        (attacker = @house_b
+         AND tile_owners.house = @house_a
+        )
+      )
+  `),
+  "get_expired_siege": sql.prepare(`
+    SELECT * from sieges WHERE time <= ?
+  `),
+  "remove_siege": sql.prepare(`
+    DELETE FROM sieges WHERE siege_id = @siege_id
+  `),
   "add_pledge": sql.prepare(`
     INSERT INTO pledges (
       siege, user, men, choice)
     VALUES (
       @siege, @user, @men, @choice);
+  `),
+  "get_all_pledges_for_siege": sql.prepare(`
+    SELECT * FROM pledges WHERE siege = @siege_id
+  `),
+  "remove_pledge": sql.prepare(`
+    DELETE FROM pledges WHERE pledge_id = @pledge_id
+  `),
+  "update_tile_owner": sql.prepare(`
+    UPDATE tile_owners SET house = ? WHERE tile = ?
   `),
   "get_last_payout": sql.prepare(`
     SELECT * FROM last_payout WHERE payout_type = "all"
@@ -268,5 +344,5 @@ module.exports = {
     "thief_last_time": 0,
     "train_last_time": 0,
     "work_last_time": 0
-  },
+  }
 };

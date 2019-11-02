@@ -158,8 +158,14 @@ const siege = ({args, player_data}) => {
               "time": Date.now() + utils.hours_to_ms(6)
             };
 
-            command_return.reply = "you have initiated a siege on " +
-              `<@&${tile_owner.house}>'s castle at ${selected_tile}`;
+            command_return.send = {
+              "message": "A siege has been initiated on " +
+              `<@&${tile_owner.house}>'s castle at ${selected_tile} ` +
+              `by <@&${player_data.house}>`,
+              "channel": assets.reply_channels.battle_reports
+            };
+
+            delete command_return.reply;
           }
         } else {
           command_return.reply = "your house is not at war with " +
@@ -347,9 +353,17 @@ const war = ({args, player_data, role_mention}) => {
        * Add the player's vote to the database
        * Ensure the player does not vote for their own house
        */
+
+      const existing_war = db.get_war_between_houses.get({
+        "house1": player_data.house,
+        "house2": player_choice
+      });
+      console.log(existing_war);
       if(player_choice === player_data.house) {
         command_return.reply = "you cannot vote for your own house";
-      } else {
+      } else if(existing_war) {
+        command_return.reply = "you are already at war with that house";
+      }else {
         command_return.votes.add = {
           "type": "war",
           "user": player_data.user,
