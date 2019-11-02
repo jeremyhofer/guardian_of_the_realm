@@ -347,9 +347,17 @@ const war = ({args, player_data, role_mention}) => {
        * Add the player's vote to the database
        * Ensure the player does not vote for their own house
        */
+
+      const existing_war = db.get_war_between_houses.get({
+        "house1": player_data.house,
+        "house2": player_choice
+      });
+      console.log(existing_war);
       if(player_choice === player_data.house) {
         command_return.reply = "you cannot vote for your own house";
-      } else {
+      } else if(existing_war) {
+        command_return.reply = "you are already at war with that house";
+      }else {
         command_return.votes.add = {
           "type": "war",
           "user": player_data.user,
