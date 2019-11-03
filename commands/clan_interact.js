@@ -12,7 +12,8 @@ const join = ({player_data, role_mention}) => {
     "update": {
       "player_data": {...player_data},
       "roles": {
-        "add": []
+        "add": [],
+        "remove": []
       }
     },
     "reply": ""
@@ -25,6 +26,10 @@ const join = ({player_data, role_mention}) => {
     // Add the player to the house
     command_return.update.player_data.house = role_mention;
     command_return.update.roles.add.push(role_mention);
+    command_return.update.roles.remove.push(utils.find_role_id_given_name(
+      "unsworn",
+      assets.game_roles
+    ));
     command_return.reply = `you successfully joined <@&${role_mention}>!`;
   } else {
     command_return.reply = "you must @ mention a house to join";

@@ -168,6 +168,22 @@ client.on('message', msg => {
                     }
                   });
                 }
+
+                if('remove' in command_return.update.roles) {
+                  // Adjust the player's roles
+                  command_return.update.roles.remove.forEach(remove_role => {
+                    const server_role = remove_role in assets.game_roles
+                      ? remove_role
+                      : utils.find_role_id_given_name(
+                          remove_role,
+                          assets.game_roles
+                        );
+                    if(server_role) {
+                      // Add role to player
+                      msg.member.removeRole(server_role).catch(console.error);
+                    }
+                  });
+                }
               }
             } else if(cooldown && 'success' in
               command_return && command_return.success) {
