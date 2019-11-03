@@ -94,6 +94,15 @@ const pledge = ({args, player_data, player_roles}) => {
       const existing_siege = db.get_siege_on_tile.get(selected_tile);
 
       if(existing_siege) {
+        // See if the player already has a pledge on the siege.
+        const existing_pledge = db.get_player_pledge_for_siege.get({
+          "user": player_data.user,
+          "siege": existing_siege.siege_id
+        });
+
+        if(existing_pledge) {
+          command_return.pledges.remove = existing_pledge;
+        }
         // Add the pledge
         command_return.pledges.add = {
           "siege": existing_siege.siege_id,

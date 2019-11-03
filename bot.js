@@ -243,6 +243,11 @@ client.on('message', msg => {
                 // Add the pledge to the database
                 db.add_pledge.run(command_return.pledges.add);
               }
+
+              if('remove' in command_return.pledges) {
+                // Remove the pledge
+                db.remove_pledge.run(command_return.pledges.remove);
+              }
             }
           } else {
             msg.reply(command + ' is not yet implemented');
