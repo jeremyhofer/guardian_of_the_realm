@@ -96,6 +96,12 @@ client.on('message', msg => {
             role_mention = mentioned_role.id;
           }
 
+          const player_roles = [];
+
+          msg.member.roles.forEach(value => {
+            player_roles.push(value.name.toLowerCase());
+          });
+
           const loans = db.get_loan.all(player_data.user);
 
           command_dispatch[command].args.forEach(required_arg => {
@@ -114,6 +120,9 @@ client.on('message', msg => {
                 break;
               case 'role_mention':
                 call_args.role_mention = role_mention;
+                break;
+              case 'player_roles':
+                call_args.player_roles = player_roles;
                 break;
               default:
                 break;
