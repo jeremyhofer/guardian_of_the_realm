@@ -335,7 +335,7 @@ setInterval(() => {
   });
 
   // Resolve expired war votes
-  const expiration_time = now - utils.hours_to_ms(0.05);
+  const expiration_time = now - utils.hours_to_ms(6.0);
   let expired_war_vote = db.get_expired_votes_by_type.get("war", expiration_time);
 
   while(expired_war_vote) {
@@ -709,4 +709,4 @@ setInterval(() => {
     // Get next truce to try and resolve, if exists
     expired_siege = db.get_expired_siege.get(expiration_time);
   }
-}, 10 * 1000);
+}, 60 * 1000);
