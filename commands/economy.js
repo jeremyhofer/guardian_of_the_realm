@@ -54,7 +54,10 @@ const buy = ({args, player_data, player_roles}) => {
                   `${item_requires} title to buy`;
               } else {
                 command_return.update.roles.add.push(item);
-                command_return.update.roles.remove.push(item_requires);
+
+                if(item_requires) {
+                  command_return.update.roles.remove.push(item_requires);
+                }
                 command_return.reply = `you successfully bought the ${item} ` +
                   `title for ${total_cost}`;
                 deduct_cost = true;
