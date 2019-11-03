@@ -5,7 +5,7 @@ const utils = require('../utils.js');
  * Buy some item in a quantity. titles only one, cant buy more or same
  * again.  <OBJECT> <AMOUNT>
  */
-const buy = ({args, player_data}) => {
+const buy = ({args, player_data, player_roles}) => {
   const command_return = {
     "reply": "",
     "update": {
@@ -37,14 +37,31 @@ const buy = ({args, player_data}) => {
           // Good to buy!
           const item_type = assets.store_items[item].type;
           let deduct_cost = false;
+          let item_requires = null;
+
+          if("requires" in assets.store_items[item]) {
+            item_requires = assets.store_items[item].requires;
+          }
 
           // If this is a title type set the roles to adjust
           switch(item_type) {
             case "title":
-              command_return.update.roles.add.push(item);
-              command_return.reply = `you successfully bought the ${item} ` +
-                `title for ${total_cost}`;
-              deduct_cost = true;
+              if(player_roles.includes(item)) {
+                command_return.reply = `you already have the ${item} title`;
+              } else if(item_requires &&
+                !player_roles.includes(item_requires)) {
+                command_return.reply = `the ${item} title requires the ` +
+                  `${item_requires} title to buy`;
+              } else {
+                command_return.update.roles.add.push(item);
+
+                if(item_requires) {
+                  command_return.update.roles.remove.push(item_requires);
+                }
+                command_return.reply = `you successfully bought the ${item} ` +
+                  `title for ${total_cost}`;
+                deduct_cost = true;
+              }
               break;
             case "men":
             case "ships":
@@ -220,7 +237,8 @@ module.exports = {
       "function": buy,
       "args": [
         "args",
-        "player_data"
+        "player_data",
+        "player_roles"
       ]
     },
     "loan": {

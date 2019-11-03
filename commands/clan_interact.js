@@ -7,27 +7,38 @@ const utils = require('../utils.js');
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = ({player_data, role_mention}) => {
+const join = ({args, player_data, role_mention}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data},
       "roles": {
-        "add": []
+        "add": [],
+        "remove": []
       }
     },
     "reply": ""
   };
 
+  const selected_house = role_mention
+    ? role_mention
+    : utils.find_role_id_given_name(args[0], assets.game_roles);
+
   // See if the player is in a house. If they are they cannot join another one
   if(player_data.house) {
     command_return.reply = "you are already part of a house";
-  } else if(role_mention && assets.houses.includes(role_mention)) {
+  } else if(selected_house) {
     // Add the player to the house
-    command_return.update.player_data.house = role_mention;
-    command_return.update.roles.add.push(role_mention);
-    command_return.reply = `you successfully joined <@&${role_mention}>!`;
+    assets.houses.includes(selected_house)
+    command_return.update.player_data.house = selected_house;
+    command_return.update.roles.add.push(selected_house);
+    command_return.update.roles.remove.push(utils.find_role_id_given_name(
+      "unsworn",
+      assets.game_roles
+    ));
+    command_return.reply = `you successfully joined <@&${selected_house}>!`;
   } else {
-    command_return.reply = "you must @ mention a house to join";
+    command_return.reply = "you must @ the house to join, use their name, " +
+      "or use their Men at Arms";
   }
 
   return command_return;
@@ -39,7 +50,7 @@ const join = ({player_data, role_mention}) => {
  *
  * deduct the men from the player's count when the pledge is made
  */
-const pledge = ({args, player_data}) => {
+const pledge = ({args, player_data, player_roles}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -55,6 +66,16 @@ const pledge = ({args, player_data}) => {
     const num_men = parseInt(args[1], 10);
     const action = args[2].toLowerCase();
 
+    let role_limit = 100;
+
+    if(player_roles.includes("duke")) {
+      role_limit = 1000;
+    } else if (player_roles.includes("earl")) {
+      role_limit = 600;
+    } else if (player_roles.includes("baron")) {
+      role_limit = 300;
+    }
+
     const tile_owner = db.get_tile_owner.get(selected_tile);
     const p_men = player_data.men;
 
@@ -64,6 +85,8 @@ const pledge = ({args, player_data}) => {
       command_return.reply = "number of men must be a positive number";
     } else if(num_men > p_men) {
       command_return.reply = `you do not have ${num_men} men`;
+    } else if (num_men > role_limit) {
+      command_return.reply = `you may only send at most ${role_limit} men`;
     } else if(action !== "attack" && action !== "defend") {
       command_return.reply = "action must be ATTACK or DEFEND";
     } else {
@@ -71,6 +94,15 @@ const pledge = ({args, player_data}) => {
       const existing_siege = db.get_siege_on_tile.get(selected_tile);
 
       if(existing_siege) {
+        // See if the player already has a pledge on the siege.
+        const existing_pledge = db.get_player_pledge_for_siege.get({
+          "user": player_data.user,
+          "siege": existing_siege.siege_id
+        });
+
+        if(existing_pledge) {
+          command_return.pledges.remove = existing_pledge;
+        }
         // Add the pledge
         command_return.pledges.add = {
           "siege": existing_siege.siege_id,
@@ -394,6 +426,7 @@ module.exports = {
     "join": {
       "function": join,
       "args": [
+        "args",
         "player_data",
         "role_mention"
       ]
@@ -402,7 +435,8 @@ module.exports = {
       "function": pledge,
       "args": [
         "args",
-        "player_data"
+        "player_data",
+        "player_roles"
       ]
     },
     "siege": {

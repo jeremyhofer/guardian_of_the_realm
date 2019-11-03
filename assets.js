@@ -60,11 +60,13 @@ module.exports = {
     },
     "duke": {
       "type": "title",
-      "cost": 15000
+      "cost": 15000,
+      "requires": "earl"
     },
     "earl": {
       "type": "title",
-      "cost": 10000
+      "cost": 10000,
+      "requires": "baron"
     },
     "men": {
       "type": "men",

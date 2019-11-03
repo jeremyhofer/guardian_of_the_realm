@@ -312,6 +312,9 @@ module.exports = {
     VALUES (
       @siege, @user, @men, @choice);
   `),
+  "get_player_pledge_for_siege": sql.prepare(`
+    SELECT * FROM pledges WHERE user = @user and siege = @siege
+  `),
   "get_all_pledges_for_siege": sql.prepare(`
     SELECT * FROM pledges WHERE siege = @siege_id
   `),
