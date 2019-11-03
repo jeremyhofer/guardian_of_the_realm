@@ -50,7 +50,7 @@ const join = ({args, player_data, role_mention}) => {
  *
  * deduct the men from the player's count when the pledge is made
  */
-const pledge = ({args, player_data}) => {
+const pledge = ({args, player_data, player_roles}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -66,6 +66,16 @@ const pledge = ({args, player_data}) => {
     const num_men = parseInt(args[1], 10);
     const action = args[2].toLowerCase();
 
+    let role_limit = 100;
+
+    if(player_roles.includes("duke")) {
+      role_limit = 1000;
+    } else if (player_roles.includes("earl")) {
+      role_limit = 600;
+    } else if (player_roles.includes("baron")) {
+      role_limit = 300;
+    }
+
     const tile_owner = db.get_tile_owner.get(selected_tile);
     const p_men = player_data.men;
 
@@ -75,6 +85,8 @@ const pledge = ({args, player_data}) => {
       command_return.reply = "number of men must be a positive number";
     } else if(num_men > p_men) {
       command_return.reply = `you do not have ${num_men} men`;
+    } else if (num_men > role_limit) {
+      command_return.reply = `you may only send at most ${role_limit} men`;
     } else if(action !== "attack" && action !== "defend") {
       command_return.reply = "action must be ATTACK or DEFEND";
     } else {
@@ -414,7 +426,8 @@ module.exports = {
       "function": pledge,
       "args": [
         "args",
-        "player_data"
+        "player_data",
+        "player_roles"
       ]
     },
     "siege": {
