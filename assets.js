@@ -52,7 +52,7 @@ module.exports = {
     },
     "baron": {
       "type": "title",
-      "cost": 5000
+      "cost": 2500
     },
     "blacksmith": {
       "type": "title",
@@ -60,12 +60,12 @@ module.exports = {
     },
     "duke": {
       "type": "title",
-      "cost": 15000,
+      "cost": 10000,
       "requires": "earl"
     },
     "earl": {
       "type": "title",
-      "cost": 10000,
+      "cost": 5000,
       "requires": "baron"
     },
     "men": {
