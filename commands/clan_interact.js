@@ -7,7 +7,7 @@ const utils = require('../utils.js');
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = ({player_data, role_mention}) => {
+const join = ({args, player_data, role_mention}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data},
@@ -19,20 +19,26 @@ const join = ({player_data, role_mention}) => {
     "reply": ""
   };
 
+  const selected_house = role_mention
+    ? role_mention
+    : utils.find_role_id_given_name(args[0], assets.game_roles);
+
   // See if the player is in a house. If they are they cannot join another one
   if(player_data.house) {
     command_return.reply = "you are already part of a house";
-  } else if(role_mention && assets.houses.includes(role_mention)) {
+  } else if(selected_house) {
     // Add the player to the house
-    command_return.update.player_data.house = role_mention;
-    command_return.update.roles.add.push(role_mention);
+    assets.houses.includes(selected_house)
+    command_return.update.player_data.house = selected_house;
+    command_return.update.roles.add.push(selected_house);
     command_return.update.roles.remove.push(utils.find_role_id_given_name(
       "unsworn",
       assets.game_roles
     ));
-    command_return.reply = `you successfully joined <@&${role_mention}>!`;
+    command_return.reply = `you successfully joined <@&${selected_house}>!`;
   } else {
-    command_return.reply = "you must @ mention a house to join";
+    command_return.reply = "you must @ the house to join, use their name, " +
+      "or use their Men at Arms";
   }
 
   return command_return;
@@ -399,6 +405,7 @@ module.exports = {
     "join": {
       "function": join,
       "args": [
+        "args",
         "player_data",
         "role_mention"
       ]
