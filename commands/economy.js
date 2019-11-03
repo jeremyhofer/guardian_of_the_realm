@@ -37,14 +37,24 @@ const buy = ({args, player_data, player_roles}) => {
           // Good to buy!
           const item_type = assets.store_items[item].type;
           let deduct_cost = false;
+          let item_requires = null;
+
+          if("requires" in assets.store_items[item]) {
+            item_requires = assets.store_items[item].requires;
+          }
 
           // If this is a title type set the roles to adjust
           switch(item_type) {
             case "title":
               if(player_roles.includes(item)) {
                 command_return.reply = `you already have the ${item} title`;
+              } else if(item_requires &&
+                !player_roles.includes(item_requires)) {
+                command_return.reply = `the ${item} title requires the ` +
+                  `${item_requires} title to buy`;
               } else {
                 command_return.update.roles.add.push(item);
+                command_return.update.roles.remove.push(item_requires);
                 command_return.reply = `you successfully bought the ${item} ` +
                   `title for ${total_cost}`;
                 deduct_cost = true;
