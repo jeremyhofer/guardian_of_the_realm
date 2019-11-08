@@ -590,7 +590,7 @@ setInterval(() => {
         win_chance = 100;
       }
 
-      const win_pot = 6000 * (attack_pledges.length + defend_pledges.length);
+      const win_pot = 3000 * (attack_pledges.length + defend_pledges.length);
       const lose_pot = 20 * (attack_pledges.length + defend_pledges.length);
       const attacker_losses = utils.get_percent_of_value_given_range(
         defender_count,
