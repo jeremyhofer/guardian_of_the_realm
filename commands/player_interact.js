@@ -23,24 +23,24 @@ const gift = ({args, player_data, player_mention}) => {
         const amount_to_give = parseInt(args[1], 10);
 
         if(isNaN(amount_to_give) || amount_to_give < 1) {
-          command_return.reply = "amount to give must be a positive number";
+          command_return.reply = "Amount to give must be a positive number";
         } else if(p_money >= amount_to_give) {
           // All good! Grant the cash
           command_return.update.player_data.money -= amount_to_give;
           command_return.update.player_mention.money += amount_to_give;
-          command_return.reply = "you successfully gave " +
+          command_return.reply = "You successfully gave " +
             `<@${player_mention.user}> ${amount_to_give} :moneybag:`;
         } else {
-          command_return.reply = `you only have ${p_money} available`;
+          command_return.reply = `You only have ${p_money} available`;
         }
       } else {
         command_return.reply = "gift usage: .gift @player <money amount>";
       }
     } else {
-      command_return.reply = "you do not have any money to gift";
+      command_return.reply = "You do not have any money to gift";
     }
   } else {
-    command_return.reply = "you must @ mention another player";
+    command_return.reply = "You must @ mention another player";
   }
 
   return command_return;
@@ -105,19 +105,19 @@ const pirate = ({player_data, player_mention}) => {
         command_return.update.player_data.ships -= player_lose;
         command_return.update.player_mention.ships -= mention_lose;
         command_return.reply = winner === 'player'
-          ? `your pirate adventures were successful! You lost ${player_lose} ` +
+          ? `Your pirate adventures were successful! You lost ${player_lose} ` +
             `ships. <@${player_mention.user}> lost ${mention_lose} ships.`
-          : `your pirate adventures were thwarted. You lost ${player_lose} ` +
+          : `Your pirate adventures were thwarted. You lost ${player_lose} ` +
             `ships. <@${player_mention.user}> lost ${mention_lose} ships.`;
         command_return.success = true;
       } else {
-        command_return.reply = "the other player must have at least 5 ships";
+        command_return.reply = "The other player must have at least 5 ships";
       }
     } else {
-      command_return.reply = "you must have a least 5 ships to launch a pirate raid.";
+      command_return.reply = "You must have a least 5 ships to launch a pirate raid.";
     }
   } else {
-    command_return.reply = "you must @ mention another player";
+    command_return.reply = "You must @ mention another player";
   }
 
   return command_return;
@@ -182,20 +182,20 @@ const raid = ({player_data, player_mention}) => {
         command_return.update.player_data.men -= player_lose;
         command_return.update.player_mention.men -= mention_lose;
         command_return.reply = winner === 'player'
-          ? `you successfully raided the encampment! You lost ${player_lose} ` +
+          ? `You successfully raided the encampment! You lost ${player_lose} ` +
             `men. <@${player_mention.user}> lost ${mention_lose} men.`
-          : "scouts spotted your raid part. Defenses were prepared. You lost " +
+          : "Scouts spotted your raid part. Defenses were prepared. You lost " +
             `${player_lose} men. <@${player_mention.user}> lost ` +
             `${mention_lose} men.`;
         command_return.success = true;
       } else {
-        command_return.reply = "the other player must have at least 50 men.";
+        command_return.reply = "The other player must have at least 50 men.";
       }
     } else {
-      command_return.reply = "you must have at least 50 men to launch a raid.";
+      command_return.reply = "You must have at least 50 men to launch a raid.";
     }
   } else {
-    command_return.reply = "you must @ mention another player";
+    command_return.reply = "You must @ mention another player";
   }
 
   return command_return;
@@ -226,10 +226,10 @@ const spy = ({player_data, player_mention}) => {
         `${assets.emojis.Warship}`;
       command_return.success = true;
     } else {
-      command_return.reply = "you do not have enough money. spy costs 200.";
+      command_return.reply = "You do not have enough money. spy costs 200.";
     }
   } else {
-    command_return.reply = "you must @ mention another player";
+    command_return.reply = "You must @ mention another player";
   }
 
   return command_return;
@@ -292,21 +292,21 @@ const thief = ({player_data, player_mention}) => {
         }
 
         command_return.reply = winner === 'player'
-          ? `you successfully raided the cophers! You stole ${money_change} ` +
+          ? `You successfully raided the cophers! You stole ${money_change} ` +
             `from <@${player_mention.user}>.`
-          : "you were caught by the guards. You paid a fine of " +
+          : "You were caught by the guards. You paid a fine of " +
             `${money_change} to <@${player_mention.user}>.`
 
         command_return.success = true;
       } else {
-        command_return.reply = "the other player does not have any money";
+        command_return.reply = "The other player does not have any money";
       }
     } else {
-      command_return.reply = "you are in debt. You should find other ways " +
+      command_return.reply = "You are in debt. You should find other ways " +
         "to make money";
     }
   } else {
-    command_return.reply = "you must @ mention another player";
+    command_return.reply = "You must @ mention another player";
   }
 
   return command_return;

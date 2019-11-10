@@ -45,7 +45,7 @@ const smuggle = ({args, player_data}) => {
     const num_ships = parseInt(args[0], 10);
 
     if(isNaN(num_ships) || num_ships < 1) {
-      command_return.reply = "number of ships must be a positive number";
+      command_return.reply = "The number of ships must be a positive number";
     } else if(player_data.ships >= num_ships) {
       // Player has enough ships. See if they win or lose!
       const chance = utils.get_random_value_in_range(1, 100);
@@ -68,7 +68,7 @@ const smuggle = ({args, player_data}) => {
       }
       command_return.success = true;
     } else {
-      command_return.reply = `you do not have ${num_ships} available`;
+      command_return.reply = `You do not have ${num_ships} available`;
     }
   } else {
     command_return.reply = "smuggle takes one argument: number of ships";

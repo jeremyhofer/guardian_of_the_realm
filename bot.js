@@ -197,7 +197,11 @@ client.on('message', msg => {
             }
 
             if('reply' in command_return) {
-              msg.reply(command_return.reply);
+              // Form an embed and have the reply as the description
+              const embed = {
+                "description": command_return.reply
+              };
+              msg.channel.send({embed});
             }
 
             if('send' in command_return) {
@@ -208,7 +212,10 @@ client.on('message', msg => {
                     {"split": true}
                   );
                 } else {
-                  msg.channel.send(command_return.send.message, {"split": true});
+                  msg.channel.send(
+                    command_return.send.message,
+                    {"split": true}
+                  );
                 }
               }
             }
@@ -336,13 +343,15 @@ setInterval(() => {
 
   // Resolve expired war votes
   const expiration_time = now - utils.hours_to_ms(6.0);
-  let expired_war_vote = db.get_expired_votes_by_type.get("war", expiration_time);
+  let expired_war_vote =
+    db.get_expired_votes_by_type.get("war", expiration_time);
 
   while(expired_war_vote) {
     // Get the data for the player who made this vote
     const player_data = db.get_player.get(expired_war_vote.user);
     // Get all votes for the house
-    const house_votes = db.get_all_house_votes_by_type.all("war", player_data.house);
+    const house_votes =
+      db.get_all_house_votes_by_type.all("war", player_data.house);
     const vote_counts = {};
 
     // Count the votes
@@ -486,10 +495,11 @@ setInterval(() => {
          * and return the pledged troops
          */
 
-        const sieges_between_houses = db.get_all_siege_id_between_two_houses.all({
-          "house_a": player_data.house,
-          "house_b": other_house
-        });
+        const sieges_between_houses =
+          db.get_all_siege_id_between_two_houses.all({
+            "house_a": player_data.house,
+            "house_b": other_house
+          });
 
         // Iterate over each siege
         sieges_between_houses.forEach(siege => {
