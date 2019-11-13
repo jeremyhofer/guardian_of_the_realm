@@ -220,6 +220,16 @@ client.on('message', msg => {
               }
             }
 
+            if('map' in command_return) {
+              msg.channel.send(
+                command_return.map.message,
+                {
+                  "embed": command_return.map.embed,
+                  "split": true
+                }
+              );
+            }
+
             if('loans' in command_return) {
               if('add' in command_return.loans) {
                 // Add the new loan to the database
@@ -342,7 +352,7 @@ setInterval(() => {
   });
 
   // Resolve expired war votes
-  const expiration_time = now - utils.hours_to_ms(6.0);
+  const expiration_time = now - utils.hours_to_ms(6);
   let expired_war_vote =
     db.get_expired_votes_by_type.get("war", expiration_time);
 

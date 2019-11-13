@@ -47,25 +47,55 @@ const map = () => {
     [e.Row12, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea]
   ];
 
-  const send = {
-    "message": ""
-  };
-
-  /*
-  map_data.forEach(row => {
-    row.forEach(column => {
-      send += column;
-    });
-    send += "\n";
-  });
-  */
+  let map_owners = "";
 
   const tile_owners = db.get_all_tiles.all();
   tile_owners.forEach(tile => {
-    send.message += `${tile.tile}: <@&${tile.house}>\n`;
+    const coords = tile.tile;
+    const column = parseInt(coords.slice(0, 1).charCodeAt(0), 10) - 96;
+    const row = parseInt(coords.slice(1), 10);
+    const owner_tile = assets.house_tiles[tile.house];
+    const tile_emoji = e[owner_tile];
+    map_data[row][column] = tile_emoji;
+    map_owners += `${tile.tile.toUpperCase()}: <@&${tile.house}>\n`;
   });
 
-  return {send};
+  let map_tiles = "";
+
+  map_data.forEach(row => {
+    row.forEach(column => {
+      map_tiles += column;
+    });
+    map_tiles += "\n";
+  });
+
+  let active_wars = "";
+  const all_wars = db.get_all_wars.all();
+  all_wars.forEach(war => {
+    active_wars += `<@&${war.house_a}> :crossed_swords: <@&${war.house_b}>\n`;
+  });
+
+  active_wars = active_wars === ""
+    ? "No active wars"
+    : active_wars;
+
+  return {
+    "map": {
+      "message": map_tiles,
+      "embed": {
+        "fields": [
+          {
+            "name": "Owners",
+            "value": map_owners
+          },
+          {
+            "name": "Active Wars",
+            "value": active_wars
+          }
+        ]
+      }
+    }
+  };
 };
 
 /*
