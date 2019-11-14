@@ -320,7 +320,8 @@ module.exports = {
         "args",
         "player_data",
         "player_mention"
-      ]
+      ],
+      "allowed_channels": assets.player_interact_channels
     },
     "pirate": {
       "function": pirate,
@@ -333,7 +334,8 @@ module.exports = {
       "args": [
         "player_data",
         "player_mention"
-      ]
+      ],
+      "allowed_channels": assets.player_interact_channels
     },
     "raid": {
       "function": raid,
@@ -346,7 +348,8 @@ module.exports = {
       "args": [
         "player_data",
         "player_mention"
-      ]
+      ],
+      "allowed_channels": assets.player_interact_channels
     },
     "spy": {
       "function": spy,
@@ -358,7 +361,8 @@ module.exports = {
       "args": [
         "player_data",
         "player_mention"
-      ]
+      ],
+      "allowed_channels": assets.player_interact_channels
     },
     "thief": {
       "function": thief,
@@ -370,7 +374,8 @@ module.exports = {
       "args": [
         "player_data",
         "player_mention"
-      ]
+      ],
+      "allowed_channels": assets.player_interact_channels
     }
   }
 };

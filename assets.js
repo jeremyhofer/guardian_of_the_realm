@@ -181,5 +181,12 @@ module.exports = {
   "reply_channels": {
     "command_tent": "572265598193500160",
     "battle_reports": "597614956732612613"
-  }
+  },
+  "blocked_channels": [
+    "592985410536210433",
+    "572265535828393999",
+    "628759338579918856"
+  ],
+  "player_interact_channels": ["572265598193500160"],
+  "developer_role": "572264297883762688"
 };
