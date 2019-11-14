@@ -57,5 +57,21 @@ module.exports = {
     }
 
     return role_id;
+  },
+  template_replace (template, mappings) {
+    // Replaces {key} with value in mapping for each key in mapping
+    let filled_template = template;
+
+    for(const key in mappings) {
+      if(key in mappings) {
+        const re = new RegExp(`\\{${key}\\}`, "gu");
+        filled_template = filled_template.replace(re, mappings[key]);
+      }
+    }
+
+    return filled_template;
+  },
+  random_element (array) {
+    return array[Math.floor(Math.random() * array.length)];
   }
 };

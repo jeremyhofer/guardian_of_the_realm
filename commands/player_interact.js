@@ -1,5 +1,6 @@
 const assets = require("../assets.js");
 const utils = require("../utils.js");
+const flavor = require('../data/flavor.json');
 
 /*
  * Give another player money
@@ -69,7 +70,7 @@ const pirate = ({player_data, player_mention}) => {
       if(m_ships >= 5) {
         // Both have at least 5 ship. Figure out who wins!
         let fail_risk = Math.round(p_ships /
-          (m_ships + (2 * p_ships)) * 100);
+          (m_ships + 2 * p_ships) * 100);
 
         if(fail_risk < 0) {
           fail_risk = 0;
@@ -104,17 +105,28 @@ const pirate = ({player_data, player_mention}) => {
 
         command_return.update.player_data.ships -= player_lose;
         command_return.update.player_mention.ships -= mention_lose;
-        command_return.reply = winner === 'player'
-          ? `Your pirate adventures were successful! You lost ${player_lose} ` +
-            `ships. <@${player_mention.user}> lost ${mention_lose} ships.`
-          : `Your pirate adventures were thwarted. You lost ${player_lose} ` +
-            `ships. <@${player_mention.user}> lost ${mention_lose} ships.`;
+        const success_reply_template =
+          utils.random_element(flavor.pirate_success);
+        const fail_reply_template = utils.random_element(flavor.pirate_fail);
+        const used_template = winner === 'player'
+          ? success_reply_template
+          : fail_reply_template;
+        command_return.reply = utils.template_replace(
+          used_template,
+          {
+            "myLost": player_lose,
+            "enemyLost": mention_lose,
+            "target_mention": `<@${player_mention.user}>`,
+            "e_Warship": assets.emojis.Warship
+          }
+        );
         command_return.success = true;
       } else {
         command_return.reply = "The other player must have at least 5 ships";
       }
     } else {
-      command_return.reply = "You must have a least 5 ships to launch a pirate raid.";
+      command_return.reply =
+        "You must have a least 5 ships to launch a pirate raid.";
     }
   } else {
     command_return.reply = "You must @ mention another player";
@@ -146,7 +158,7 @@ const raid = ({player_data, player_mention}) => {
       if(m_men >= 50) {
         // Both have at least 50 men. Figure out who wins!
         let fail_risk = Math.round(p_men /
-          (m_men + (2 * p_men)) * 100);
+          (m_men + 2 * p_men) * 100);
 
         if(fail_risk < 0) {
           fail_risk = 0;
@@ -181,12 +193,21 @@ const raid = ({player_data, player_mention}) => {
 
         command_return.update.player_data.men -= player_lose;
         command_return.update.player_mention.men -= mention_lose;
-        command_return.reply = winner === 'player'
-          ? `You successfully raided the encampment! You lost ${player_lose} ` +
-            `men. <@${player_mention.user}> lost ${mention_lose} men.`
-          : "Scouts spotted your raid part. Defenses were prepared. You lost " +
-            `${player_lose} men. <@${player_mention.user}> lost ` +
-            `${mention_lose} men.`;
+        const success_reply_template =
+          utils.random_element(flavor.raid_success);
+        const fail_reply_template = utils.random_element(flavor.raid_fail);
+        const used_template = winner === 'player'
+          ? success_reply_template
+          : fail_reply_template;
+        command_return.reply = utils.template_replace(
+          used_template,
+          {
+            "myLost": player_lose,
+            "enemyLost": mention_lose,
+            "target_mention": `<@${player_mention.user}>`,
+            "e_MenAtArms": assets.emojis.MenAtArms
+          }
+        );
         command_return.success = true;
       } else {
         command_return.reply = "The other player must have at least 50 men.";
@@ -268,7 +289,7 @@ const thief = ({player_data, player_mention}) => {
 
         const chance = utils.get_random_value_in_range(1, 100);
 
-        let money_change = 0
+        let money_change = 0;
         let winner = 'player';
 
         if(chance >= fail_risk) {
@@ -291,12 +312,20 @@ const thief = ({player_data, player_mention}) => {
           command_return.update.player_mention.money += money_change;
         }
 
-        command_return.reply = winner === 'player'
-          ? `You successfully raided the cophers! You stole ${money_change} ` +
-            `from <@${player_mention.user}>.`
-          : "You were caught by the guards. You paid a fine of " +
-            `${money_change} to <@${player_mention.user}>.`
-
+        const success_reply_template =
+          utils.random_element(flavor.thief_success);
+        const fail_reply_template = utils.random_element(flavor.thief_fail);
+        const used_template = winner === 'player'
+          ? success_reply_template
+          : fail_reply_template;
+        command_return.reply = utils.template_replace(
+          used_template,
+          {
+            "amount": money_change,
+            "target_mention": `<@${player_mention.user}>`,
+            "e_MenAtArms": assets.emojis.MenAtArms
+          }
+        );
         command_return.success = true;
       } else {
         command_return.reply = "The other player does not have any money";
