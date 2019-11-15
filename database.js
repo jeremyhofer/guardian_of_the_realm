@@ -143,6 +143,7 @@ if (!siege_table['count(*)']) {
       tile TEXT,
       attacker TEXT,
       time INTEGER,
+      message TEXT,
       FOREIGN KEY(tile) REFERENCES tile_owners(tile)
     );
   `).run();
