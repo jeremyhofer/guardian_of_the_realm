@@ -281,6 +281,9 @@ module.exports = {
   "get_tile_owner": sql.prepare(`
     SELECT * from tile_owners where tile = ?
   `),
+  "get_siege_by_id": sql.prepare(`
+    SELECT * from sieges where siege_id = ?
+  `),
   "get_siege_on_tile": sql.prepare(`
     SELECT * from sieges where tile = ?
   `),
@@ -289,6 +292,9 @@ module.exports = {
       tile, attacker, time)
     VALUES (
       @tile, @attacker, @time);
+  `),
+  "update_siege_message": sql.prepare(`
+    UPDATE sieges SET message = ? where siege_id = ?
   `),
   "get_all_siege_id_between_two_houses": sql.prepare(`
     SELECT siege_id FROM sieges, tile_owners

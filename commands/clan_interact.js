@@ -189,14 +189,6 @@ const siege = ({args, player_data}) => {
               "attacker": player_data.house,
               "time": Date.now() + utils.hours_to_ms(6)
             };
-
-            command_return.send = {
-              "message": "A siege has been initiated on " +
-              `<@&${tile_owner.house}>'s castle at ${selected_tile} ` +
-              `by <@&${player_data.house}>`,
-              "channel": assets.reply_channels.battle_reports
-            };
-
             delete command_return.reply;
           }
         } else {

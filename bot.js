@@ -262,7 +262,20 @@ client.on('message', msg => {
               if('sieges' in command_return) {
                 if('add' in command_return.sieges) {
                   // Add the siege to the database
-                  db.add_siege.run(command_return.sieges.add);
+                  const info = db.add_siege.run(command_return.sieges.add);
+                  const siege_embed = game_tasks.generate_siege_embed(
+                    msg.guild.roles,
+                    info.lastInsertRowid
+                  );
+                  const br_channel = assets.reply_channels.battle_reports;
+                  const channel =
+                    msg.guild.channels.get(br_channel);
+                  channel.send({"embed": siege_embed}).then(message => {
+                    db.update_siege_message.run(
+                      message.id,
+                      info.lastInsertRowid
+                    );
+                  });
                 }
               }
 

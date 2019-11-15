@@ -452,5 +452,49 @@ module.exports = {
       // Get next siege to try and resolve, if exists
       expired_siege = db.get_expired_siege.get(current_time);
     }
+  },
+  "generate_siege_embed": (guild_roles, siege_id) => {
+
+    /*
+     * Embed will consist of the following:
+     * Title: Siege on <tile>
+     * Field1:
+     *  Name: Attaching House: @house
+     *  Value: # :ManAtArms: pledged
+     * Field2:
+     *  Name: Defending House: @house
+     *  Value: # :ManAtArms: pledged
+     */
+    const siege = db.get_siege_by_id.get(siege_id);
+    const tile_owner = db.get_tile_owner.get(siege.tile);
+    const pledges = db.get_all_pledges_for_siege.all(siege);
+
+    let num_attackers = 0;
+    let num_defenders = 0;
+
+    pledges.forEach(pledge => {
+      if(pledge.choice === 'attack') {
+        num_attackers += pledge.men;
+      } else if(pledge.choice === 'defend') {
+        num_defenders += pledge.men;
+      }
+    });
+
+    const attacker_name = guild_roles.get(siege.attacker).name;
+    const defender_name = guild_roles.get(tile_owner.house).name
+
+    return {
+      "title": `Siege on ${siege.tile.toUpperCase()}`,
+      "fields": [
+        {
+          "name": `Attacking House: ${attacker_name}`,
+          "value": `${num_attackers} ${assets.emojis.MenAtArms} pledged`
+        },
+        {
+          "name": `Defending House: ${defender_name}`,
+          "value": `${num_defenders} ${assets.emojis.MenAtArms} pledged`
+        }
+      ]
+    };
   }
 };
