@@ -259,6 +259,18 @@ client.on('message', msg => {
                 }
               }
 
+              if('pledges' in command_return) {
+                if('add' in command_return.pledges) {
+                  // Add the pledge to the database
+                  db.add_pledge.run(command_return.pledges.add);
+                }
+
+                if('remove' in command_return.pledges) {
+                  // Remove the pledge
+                  db.remove_pledge.run(command_return.pledges.remove);
+                }
+              }
+
               if('sieges' in command_return) {
                 if('add' in command_return.sieges) {
                   // Add the siege to the database
@@ -277,17 +289,18 @@ client.on('message', msg => {
                     );
                   });
                 }
-              }
-
-              if('pledges' in command_return) {
-                if('add' in command_return.pledges) {
-                  // Add the pledge to the database
-                  db.add_pledge.run(command_return.pledges.add);
-                }
-
-                if('remove' in command_return.pledges) {
-                  // Remove the pledge
-                  db.remove_pledge.run(command_return.pledges.remove);
+                if('update' in command_return.sieges) {
+                  const siege = command_return.sieges.update;
+                  const siege_embed = game_tasks.generate_siege_embed(
+                    msg.guild.roles,
+                    siege.siege_id
+                  );
+                  const br_channel = assets.reply_channels.battle_reports;
+                  const channel =
+                    msg.guild.channels.get(br_channel);
+                  channel.fetchMessage(siege.message).then(message => {
+                    message.edit({"embed": siege_embed});
+                  });
                 }
               }
             } else {

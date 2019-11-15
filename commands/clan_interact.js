@@ -52,6 +52,7 @@ const join = ({args, player_data, role_mention}) => {
  */
 const pledge = ({args, player_data, player_roles}) => {
   const command_return = {
+    "sieges": {},
     "update": {
       "player_data": {...player_data}
     },
@@ -113,6 +114,7 @@ const pledge = ({args, player_data, player_roles}) => {
         command_return.update.player_data.men -= num_men;
         command_return.reply = `You successfully pledged ${num_men} to ` +
           `${action} ${selected_tile.toUpperCase()}`;
+        command_return.sieges.update = existing_siege;
       } else {
         command_return.reply = `There is no active siege on ${selected_tile}`;
       }

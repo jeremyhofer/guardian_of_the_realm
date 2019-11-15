@@ -481,7 +481,7 @@ module.exports = {
     });
 
     const attacker_name = guild_roles.get(siege.attacker).name;
-    const defender_name = guild_roles.get(tile_owner.house).name
+    const defender_name = guild_roles.get(tile_owner.house).name;
 
     return {
       "title": `Siege on ${siege.tile.toUpperCase()}`,
