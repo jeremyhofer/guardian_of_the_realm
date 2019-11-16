@@ -6,7 +6,7 @@ module.exports = {
   "role_payouts": (guild, current_time) => {
     const hours_between_payout = 12;
     const payout_percent = hours_between_payout / 24;
-    const last_payout = db.get_last_payout.get();
+    const last_payout = db.get_tracker_by_name.get("payout_time");
 
     if(last_payout.time +
       utils.hours_to_ms(hours_between_payout) <= current_time) {
@@ -48,7 +48,7 @@ module.exports = {
         player.money -= ship_cost;
         db.set_player.run(player);
       });
-      db.update_last_payout.run(current_time);
+      db.update_tracker_by_name.run(current_time, "payout_time");
     }
   },
   "collect_loans": (guild, current_time) => {
@@ -289,7 +289,13 @@ module.exports = {
       const defend_pledges = pledges.filter(pledge => pledge.choice ===
         "defend");
 
-      let siege_reply = `The siege on ${expired_siege.tile} is over. `;
+      const tile_owner = db.get_tile_owner.get(expired_siege.tile);
+      const attacker_name = guild.roles.get(expired_siege.attacker).name;
+      const defender_name = guild.roles.get(tile_owner.house).name;
+      const embed = {
+        "title": `FINISHED siege on ${expired_siege.tile.toUpperCase()}`,
+        "fields": []
+      };
 
       if(attack_pledges.length || defend_pledges.length) {
         // Get men counts
@@ -318,6 +324,17 @@ module.exports = {
           }
         });
 
+        embed.fields.push(
+          {
+            "name": `Attacking House: ${attacker_name}`,
+            "value": `${attacker_count} ${assets.emojis.MenAtArms} pledged`
+          },
+          {
+            "name": `Defending House: ${defender_name}`,
+            "value": `${defender_count} ${assets.emojis.MenAtArms} pledged`
+          }
+        );
+
         // Determine chance to win, the reward pots, and the losses
         let win_chance = Math.round(attacker_count /
           (attacker_count + defender_count) * 100);
@@ -328,8 +345,9 @@ module.exports = {
           win_chance = 100;
         }
 
-        const win_pot = 3000 * (attack_pledges.length + defend_pledges.length);
-        const lose_pot = 20 * (attack_pledges.length + defend_pledges.length);
+        const num_pledgers = attack_pledges.length + defend_pledges.length;
+        const win_pot = 3000 * num_pledgers;
+        const lose_pot = 20 * num_pledgers;
         const attacker_losses = utils.get_percent_of_value_given_range(
           defender_count,
           1,
@@ -342,6 +360,7 @@ module.exports = {
         );
 
         const chance = utils.get_random_value_in_range(1, 100);
+        let win_message = "";
 
         // Determine the outcome
         if(win_chance >= chance) {
@@ -382,7 +401,7 @@ module.exports = {
 
           // Reassign the tile
           db.update_tile_owner.run(expired_siege.attacker, expired_siege.tile);
-          siege_reply += `<@&${expired_siege.attacker}> has won the siege`;
+          win_message = `${attacker_name} successfully captured the tile!`;
         } else {
           // Defender wins!
 
@@ -419,8 +438,15 @@ module.exports = {
             }
           }
 
-          siege_reply += `<@&${expired_siege.attacker}> has lost the siege`;
+          win_message = `${defender_name} successfully defended the tile!`;
         }
+
+        embed.fields.push({
+          "name": win_message,
+          "value": `${num_pledgers} contributed to this siege. ${win_pot} ` +
+            `:moneybag: has been paid to the attackers. ${lose_pot} ` +
+            `${assets.emojis.MenAtArms} has been paid to the defenders.`
+        });
 
         // Update all the player data
         for(const pledger in all_pledgers) {
@@ -439,15 +465,19 @@ module.exports = {
         });
       } else {
         // No one pledged
-        siege_reply += "No one pledged to support the siege. Nothing is done.";
+        embed.fields.push({
+          "name": `${defender_name} has kept their tile.`,
+          "value": "No one pledged to the siege."
+        });
       }
+
+      const channel = guild.channels.get(assets.reply_channels.battle_reports);
+      channel.fetchMessage(expired_siege.message).then(message => {
+        message.edit({embed});
+      });
 
       // Remove the siege
       db.remove_siege.run(expired_siege);
-
-      // Send the reply
-      const channel = guild.channels.get(assets.reply_channels.battle_reports);
-      channel.send(siege_reply);
 
       // Get next siege to try and resolve, if exists
       expired_siege = db.get_expired_siege.get(current_time);

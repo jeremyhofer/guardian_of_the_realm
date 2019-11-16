@@ -179,25 +179,26 @@ if (!pledge_table['count(*)']) {
   `).run();
 }
 
-const last_payout_table = sql.prepare(`
+const tracker_table = sql.prepare(`
   SELECT count(*) FROM sqlite_master
-  WHERE type='table' AND name = 'last_payout';
+  WHERE type='table' AND name = 'tracker';
 `).get();
 
-if (!last_payout_table['count(*)']) {
+if (!tracker_table['count(*)']) {
   // If the table isn't there, create it and setup the database correctly.
   sql.prepare(`
-    CREATE TABLE last_payout (
-      payout_type TEXT,
-      time INTEGER
+    CREATE TABLE tracker (
+      name TEXT,
+      value INTEGER
     );
   `).run();
 
   sql.prepare(`
-    INSERT INTO last_payout (
-      payout_type, time)
+    INSERT INTO tracker
+      (name, value)
     VALUES
-      ("all", 0);
+      ("payout_time", 0),
+      ("game_active", 1);
   `).run();
 }
 
@@ -334,11 +335,11 @@ module.exports = {
   "update_tile_owner": sql.prepare(`
     UPDATE tile_owners SET house = ? WHERE tile = ?
   `),
-  "get_last_payout": sql.prepare(`
-    SELECT * FROM last_payout WHERE payout_type = "all"
+  "get_tracker_by_name": sql.prepare(`
+    SELECT * FROM tracker WHERE name = ?
   `),
-  "update_last_payout": sql.prepare(`
-    UPDATE last_payout SET time = ? WHERE payout_type = "all"
+  "update_tracker_by_name": sql.prepare(`
+    UPDATE tracker SET value = ? WHERE name = ?
   `),
   "default_player": {
     "user": '',
