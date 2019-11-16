@@ -84,8 +84,6 @@ const pledge = ({args, player_data, player_roles}) => {
       command_return.reply = `${selected_tile.toUpperCase()} is not a castle`;
     } else if(isNaN(num_men) || num_men < 1) {
       command_return.reply = "The number of men must be a positive number";
-    } else if(num_men > p_men) {
-      command_return.reply = `You do not have ${num_men} men`;
     } else if (num_men > role_limit) {
       command_return.reply = `You may only send at most ${role_limit} men`;
     } else if(action !== "attack" && action !== "defend") {
@@ -101,20 +99,36 @@ const pledge = ({args, player_data, player_roles}) => {
           "siege": existing_siege.siege_id
         });
 
+        let valid = false;
+        let men_to_deduct = 0;
+
         if(existing_pledge) {
-          command_return.pledges.remove = existing_pledge;
+          if(num_men > p_men + existing_pledge.men) {
+            command_return.reply = `You do not have ${num_men} men`;
+          } else {
+            men_to_deduct = existing_pledge.men;
+            command_return.pledges.remove = existing_pledge;
+            valid = true;
+          }
+        } else if(num_men > p_men) {
+          command_return.reply = `You do not have ${num_men} men`;
+        } else {
+          valid = true;
         }
-        // Add the pledge
-        command_return.pledges.add = {
-          "siege": existing_siege.siege_id,
-          "user": player_data.user,
-          "men": num_men,
-          "choice": action
-        };
-        command_return.update.player_data.men -= num_men;
-        command_return.reply = `You successfully pledged ${num_men} to ` +
-          `${action} ${selected_tile.toUpperCase()}`;
-        command_return.sieges.update = existing_siege;
+
+        if(valid) {
+          // Add the pledge
+          command_return.pledges.add = {
+            "siege": existing_siege.siege_id,
+            "user": player_data.user,
+            "men": num_men,
+            "choice": action
+          };
+          command_return.update.player_data.men -= (num_men - men_to_deduct);
+          command_return.reply = `You successfully pledged ${num_men} to ` +
+            `${action} ${selected_tile.toUpperCase()}`;
+          command_return.sieges.update = existing_siege;
+        }
       } else {
         command_return.reply = `There is no active siege on ${selected_tile}`;
       }
