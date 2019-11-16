@@ -18,7 +18,11 @@ const command_dispatch = {
   ...economy.dispatch,
   ...general.dispatch,
   ...player_interact.dispatch,
-  ...tasks.dispatch
+  ...tasks.dispatch,
+  "map": {
+    "function": guild => game_tasks.post_updated_map(guild),
+    "args": ["guild"]
+  }
 };
 
 let client_ready = false;
@@ -133,6 +137,9 @@ client.on('message', msg => {
                   break;
                 case 'player_roles':
                   call_args.player_roles = player_roles;
+                  break;
+                case 'guild':
+                  call_args.guild = msg.guild;
                   break;
                 default:
                   break;

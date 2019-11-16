@@ -188,8 +188,10 @@ if (!tracker_table['count(*)']) {
   // If the table isn't there, create it and setup the database correctly.
   sql.prepare(`
     CREATE TABLE tracker (
+      tracker_id INTEGER PRIMARY KEY,
       name TEXT,
-      value INTEGER
+      value INTEGER,
+      text TEXT
     );
   `).run();
 
@@ -338,8 +340,17 @@ module.exports = {
   "get_tracker_by_name": sql.prepare(`
     SELECT * FROM tracker WHERE name = ?
   `),
+  "add_tracker": sql.prepare(`
+    INSERT INTO tracker
+      (name, value, text)
+    VALUES
+      (@name, @value, @text);
+  `),
   "update_tracker_by_name": sql.prepare(`
     UPDATE tracker SET value = ? WHERE name = ?
+  `),
+  "remove_tracker": sql.prepare(`
+    DELETE FROM tracker WHERE tracker_id = @tracker_id
   `),
   "default_player": {
     "user": '',

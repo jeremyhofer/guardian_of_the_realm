@@ -398,7 +398,6 @@ const war = ({args, player_data, role_mention}) => {
         "house1": player_data.house,
         "house2": player_choice
       });
-      console.log(existing_war);
       if(player_choice === player_data.house) {
         command_return.reply = "You cannot vote for your own house";
       } else if(existing_war) {

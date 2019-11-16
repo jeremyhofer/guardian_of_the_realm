@@ -180,7 +180,8 @@ module.exports = {
   },
   "reply_channels": {
     "command_tent": "572265598193500160",
-    "battle_reports": "597614956732612613"
+    "battle_reports": "597614956732612613",
+    "overworld": "629077475745595402"
   },
   "blocked_channels": [
     "592985410536210433",

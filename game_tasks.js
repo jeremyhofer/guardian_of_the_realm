@@ -113,6 +113,7 @@ module.exports = {
       }
 
       let vote_reply = "";
+      let regen_map = false;
 
       // WAR OR PEACE
       if(top_choice === "peace") {
@@ -143,6 +144,8 @@ module.exports = {
 
         vote_reply = `<@&${player_data.house}> has declared war on ` +
           `<@&${top_choice}>`;
+
+        regen_map = true;
       }
 
       // Send the reply
@@ -152,6 +155,10 @@ module.exports = {
       house_votes.forEach(vote => {
         db.remove_vote.run(vote);
       });
+
+      if(regen_map) {
+        module.exports.post_updated_map({guild});
+      }
 
       // Get next vote to resolve, if exists
       expired_war_vote =
@@ -204,7 +211,9 @@ module.exports = {
       const o_house_vote_count = o_yes_count + o_no_count;
 
       let vote_reply = `A truce vote between <@&${player_data.house}> and ` +
-            `<@&${other_house}> has finished. `;
+        `<@&${other_house}> has finished. `;
+
+      let regen_map = false;
 
       // Determine the vote outcome
       if(p_house_vote_count > 0 && o_house_vote_count > 0) {
@@ -245,6 +254,7 @@ module.exports = {
           });
 
           vote_reply += "A truce has been declared - the war is over!";
+          regen_map = true;
         } else {
           // We continue to WAR
           vote_reply += "A truce was not reached - war continues!";
@@ -274,6 +284,10 @@ module.exports = {
         db.remove_vote.run(vote);
       });
 
+      if(regen_map) {
+        module.exports.post_updated_map({guild});
+      }
+
       // Get next truce to try and resolve, if exists
       expired_truce_vote = db.get_expired_truce_vote.get(expiration_time);
     }
@@ -296,6 +310,8 @@ module.exports = {
         "title": `FINISHED siege on ${expired_siege.tile.toUpperCase()}`,
         "fields": []
       };
+
+      let regen_map = false;
 
       if(attack_pledges.length || defend_pledges.length) {
         // Get men counts
@@ -373,7 +389,7 @@ module.exports = {
                 attacker_count);
               let troops_returned =
                 attackers[att] - Math.round(attacker_losses *
-                attackers[att] / attacker_count);
+                  attackers[att] / attacker_count);
 
               troops_returned = troops_returned < 0
                 ? 0
@@ -390,7 +406,7 @@ module.exports = {
                 defender_count);
               let troops_returned =
                 defenders[att] - Math.round(defender_losses *
-                defenders[att] / defender_count);
+                  defenders[att] / defender_count);
 
               troops_returned = troops_returned < 0
                 ? 0
@@ -402,6 +418,7 @@ module.exports = {
           // Reassign the tile
           db.update_tile_owner.run(expired_siege.attacker, expired_siege.tile);
           win_message = `${attacker_name} successfully captured the tile!`;
+          regen_map = true;
         } else {
           // Defender wins!
 
@@ -412,7 +429,7 @@ module.exports = {
                 defender_count);
               let troops_returned =
                 defenders[att] - Math.round(defender_losses *
-                defenders[att] / defender_count);
+                  defenders[att] / defender_count);
 
               troops_returned = troops_returned < 0
                 ? 0
@@ -429,7 +446,7 @@ module.exports = {
                 attacker_count);
               let troops_returned =
                 attackers[att] - Math.round(attacker_losses *
-                attackers[att] / attacker_count);
+                  attackers[att] / attacker_count);
 
               troops_returned = troops_returned < 0
                 ? 0
@@ -444,8 +461,8 @@ module.exports = {
         embed.fields.push({
           "name": win_message,
           "value": `${num_pledgers} contributed to this siege. ${win_pot} ` +
-            `:moneybag: has been paid to the attackers. ${lose_pot} ` +
-            `${assets.emojis.MenAtArms} has been paid to the defenders.`
+          `:moneybag: has been paid to the attackers. ${lose_pot} ` +
+          `${assets.emojis.MenAtArms} has been paid to the defenders.`
         });
 
         // Update all the player data
@@ -481,6 +498,10 @@ module.exports = {
 
       // Get next siege to try and resolve, if exists
       expired_siege = db.get_expired_siege.get(current_time);
+
+      if(regen_map) {
+        module.exports.post_updated_map({guild});
+      }
     }
   },
   "generate_siege_embed": (guild_roles, siege_id) => {
@@ -526,5 +547,120 @@ module.exports = {
         }
       ]
     };
+  },
+  "post_updated_map": ({guild}) => {
+
+    /*
+     * Generates a map. 8x12 (tiles are emojis). top row and left column are
+     * positions (A1, etc.) outer edge all sea. inner random. 14 castles on
+     * grid owned by houses are what matter
+     */
+    const e = assets.emojis;
+    const castles = [
+      ['c', 2],
+      ['b', 3],
+      ['g', 3],
+      ['d', 4],
+      ['f', 5],
+      ['g', 5],
+      ['b', 6],
+      ['d', 6],
+      ['e', 6],
+      ['d', 7],
+      ['g', 9],
+      ['b', 10],
+      ['c', 10],
+      ['d', 10]
+    ];
+    const map_data = [
+      [e.RowCompass, e.ColumnA, e.ColumnB, e.ColumnC, e.ColumnD, e.ColumnE, e.ColumnF, e.ColumnG, e.ColumnH],
+      [e.Row1, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea],
+      [e.Row2, e.TileSea, e.TileField, e.TileLion, e.TileSea, e.TileSea, e.TileField, e.TileSea, e.TileSea],
+      [e.Row3, e.TileSea, e.TileFalcon, e.TileForest, e.TileBadland, e.TileSea, e.TileBadland, e.TileBear, e.TileSea],
+      [e.Row4, e.TileSea, e.TileMount, e.TileMount, e.TileScorpion, e.TileMount, e.TileSea, e.TileField, e.TileSea],
+      [e.Row5, e.TileSea, e.TileField, e.TileBadland, e.TileField, e.TileSea, e.TileHydra, e.TileLion, e.TileSea],
+      [e.Row6, e.TileSea, e.TileDragon, e.TileSea, e.TileDragon, e.TileScorpion, e.TileSea, e.TileForest, e.TileSea],
+      [e.Row7, e.TileSea, e.TileField, e.TileSea, e.TileHydra, e.TileForest, e.TileBadland, e.TileBadland, e.TileSea],
+      [e.Row8, e.TileSea, e.TileField, e.TileField, e.TileBadland, e.TileSea, e.TileForest, e.TileField, e.TileSea],
+      [e.Row9, e.TileSea, e.TileMount, e.TileSea, e.TileBadland, e.TileSea, e.TileMount, e.TileFalcon, e.TileSea],
+      [e.Row10, e.TileSea, e.TileWolf, e.TileBear, e.TileWolf, e.TileBadland, e.TileSea, e.TileSea, e.TileSea],
+      [e.Row11, e.TileSea, e.TileField, e.TileMount, e.TileSea, e.TileSea, e.TileMount, e.TileSea, e.TileSea],
+      [e.Row12, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea, e.TileSea]
+    ];
+
+    let map_owners = "";
+
+    const tile_owners = db.get_all_tiles.all();
+    tile_owners.forEach(tile => {
+      const coords = tile.tile;
+      const column = parseInt(coords.slice(0, 1).charCodeAt(0), 10) - 96;
+      const row = parseInt(coords.slice(1), 10);
+      const owner_tile = assets.house_tiles[tile.house];
+      const tile_emoji = e[owner_tile];
+      map_data[row][column] = tile_emoji;
+      map_owners += `${tile.tile.toUpperCase()}: <@&${tile.house}>\n`;
+    });
+
+    let map_tiles = "";
+
+    map_data.forEach(row => {
+      row.forEach(column => {
+        map_tiles += column;
+      });
+      map_tiles += "\n";
+    });
+
+    let active_wars = "";
+    const all_wars = db.get_all_wars.all();
+    all_wars.forEach(war => {
+      active_wars += `<@&${war.house_a}> :crossed_swords: <@&${war.house_b}>\n`;
+    });
+
+    active_wars = active_wars === ""
+      ? "No active wars"
+      : active_wars;
+
+    const embed = {
+      "fields": [
+        {
+          "name": "Owners",
+          "value": map_owners
+        },
+        {
+          "name": "Active Wars",
+          "value": active_wars
+        }
+      ]
+    };
+
+    const channel = guild.channels.get(assets.reply_channels.overworld);
+    const existing_map_messages = db.get_tracker_by_name.all("map");
+
+    existing_map_messages.forEach(to_delete => {
+      channel.fetchMessage(to_delete.text).then(message => {
+        message.delete();
+      });
+      db.remove_tracker.run(to_delete);
+    });
+
+    channel.send(
+      map_tiles,
+      {
+        embed,
+        "split": true
+      }
+    ).then(messages => {
+      if(Array.isArray(messages)) {
+        messages.forEach(message => {
+          db.add_tracker.run({
+            "name": "map",
+            "value": null,
+            "text": message.id
+          });
+        });
+      }
+    });
+
+    return {};
   }
 };
