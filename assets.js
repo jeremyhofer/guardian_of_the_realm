@@ -31,17 +31,17 @@ module.exports = {
     "Row9": "<:Row9:627733734036340741>",
     "RowCompass": "<:RowCompass:627939971713466409>",
     "TileBadland": "<:TileBadland:626172222658183220>",
-    "TileBear": "<:TileBear:626166938250379304>",
-    "TileDragon": "<:TileDragon:626166961880956929>",
-    "TileFalcon": "<:TileFalcon:626167111114555422>",
+    "TileBear": "<:TileBear:643216329033121822>",
+    "TileDragon": "<:TileDragon:643216360612298754>",
+    "TileFalcon": "<:TileFalcon:643216389154537549>",
     "TileField": "<:TileField:626172979373539348>",
     "TileForest": "<:TileForest:626171896286806084>",
-    "TileHydra": "<:TileHydra:626167159239999518>",
-    "TileLion": "<:TileLion:626167202189541377>",
+    "TileHydra": "<:TileHydra:643216419554590730>",
+    "TileLion": "<:TileLion:643216451263660052>",
     "TileMount": "<:TileMount:626172914693046273>",
-    "TileScorpion": "<:TileScorpion:626167372218105857>",
+    "TileScorpion": "<:TileScorpion:643216480942686219>",
     "TileSea": "<:TileSea:626169322322133004>",
-    "TileWolf": "<:TileWolf:626167395052027904>",
+    "TileWolf": "<:TileWolf:643216538760904704>",
     "Unsworn": "<:Unsworn:575488619389779979>",
     "Warship": "<:Warship:627639570565038140>"
   },
@@ -155,6 +155,15 @@ module.exports = {
     "572289104742580254",
     "572288492101435408"
   ],
+  "house_tiles": {
+    "572290551357898781": "TileScorpion",
+    "572288816652484608": "TileFalcon",
+    "572291484288548929": "TileWolf",
+    "572288999843168266": "TileLion",
+    "572288151419355136": "TileBear",
+    "572289104742580254": "TileHydra",
+    "572288492101435408": "TileDragon"
+  },
   "daily_payouts": {
     "apothecary": 600,
     "blacksmith": 500,
@@ -171,6 +180,14 @@ module.exports = {
   },
   "reply_channels": {
     "command_tent": "572265598193500160",
-    "battle_reports": "597614956732612613"
-  }
+    "battle_reports": "597614956732612613",
+    "overworld": "629077475745595402"
+  },
+  "blocked_channels": [
+    "592985410536210433",
+    "572265535828393999",
+    "628759338579918856"
+  ],
+  "player_interact_channels": ["572265598193500160"],
+  "developer_role": "572264297883762688"
 };

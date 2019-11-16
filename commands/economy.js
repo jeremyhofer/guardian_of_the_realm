@@ -28,7 +28,7 @@ const buy = ({args, player_data, player_roles}) => {
     if(item in assets.store_items) {
       // Ensure we have a valid quanity value
       if(isNaN(quantity)) {
-        command_return.reply = "quantity to buy must be a number";
+        command_return.reply = "Quantity to buy must be a number";
       } else {
         // Make sure the user has enough money for the item
         const total_cost = quantity * assets.store_items[item].cost;
@@ -47,10 +47,10 @@ const buy = ({args, player_data, player_roles}) => {
           switch(item_type) {
             case "title":
               if(player_roles.includes(item)) {
-                command_return.reply = `you already have the ${item} title`;
+                command_return.reply = `You already have the ${item} title`;
               } else if(item_requires &&
                 !player_roles.includes(item_requires)) {
-                command_return.reply = `the ${item} title requires the ` +
+                command_return.reply = `The ${item} title requires the ` +
                   `${item_requires} title to buy`;
               } else {
                 command_return.update.roles.add.push(item);
@@ -58,7 +58,7 @@ const buy = ({args, player_data, player_roles}) => {
                 if(item_requires) {
                   command_return.update.roles.remove.push(item_requires);
                 }
-                command_return.reply = `you successfully bought the ${item} ` +
+                command_return.reply = `You successfully bought the ${item} ` +
                   `title for ${total_cost}`;
                 deduct_cost = true;
               }
@@ -66,12 +66,12 @@ const buy = ({args, player_data, player_roles}) => {
             case "men":
             case "ships":
               command_return.update.player_data[item_type] += quantity;
-              command_return.reply = `you successfully bought ${quantity} ` +
+              command_return.reply = `You successfully bought ${quantity} ` +
                 `${item} for ${total_cost}`;
               deduct_cost = true;
               break;
             default:
-              command_return.reply = `item type ${item_type} not ` +
+              command_return.reply = `Item type ${item_type} not ` +
                 "supported. Please contact a bot dev.";
           }
 
@@ -79,7 +79,7 @@ const buy = ({args, player_data, player_roles}) => {
             command_return.update.player_data.money -= total_cost;
           }
         } else {
-          command_return.reply = "you do not have enough money to make " +
+          command_return.reply = "You do not have enough money to make " +
             "the purchase";
         }
       }
@@ -115,7 +115,7 @@ const loan = ({args, player_data, loans}) => {
     if(action === 'get') {
       // See if player has a loan
       if(Array.isArray(loans) && loans.length) {
-        command_return.reply = "you already have an outstanding loan";
+        command_return.reply = "You already have an outstanding loan";
       } else {
         // Ensure a value was specified and that it is valid
         const loan_amount = args.length === 2
@@ -124,9 +124,9 @@ const loan = ({args, player_data, loans}) => {
         const max_loan_allowed = Math.floor(player_data.money / 2);
 
         if(isNaN(loan_amount) || loan_amount < 1) {
-          command_return.reply = "loan amount must be a positive number";
+          command_return.reply = "Loan amount must be a positive number";
         } else if(loan_amount > max_loan_allowed) {
-          command_return.reply = "the maximum loan amount you may get is " +
+          command_return.reply = "The maximum loan amount you may get is " +
             `${max_loan_allowed}`;
         } else {
           // Good to go! Grant player loan amount. Determine interest
@@ -141,7 +141,7 @@ const loan = ({args, player_data, loans}) => {
             "amount_due": loan_amount + interest,
             "time_due": Date.now() + utils.hours_to_ms(24)
           };
-          command_return.reply = "you successfully received a loan of " +
+          command_return.reply = "You successfully received a loan of " +
             `${loan_amount}. You have been charged ${interest} in interest. ` +
             "The loan is due in 24 hours";
         }
@@ -168,9 +168,9 @@ const loan = ({args, player_data, loans}) => {
         }
 
         if(isNaN(pay_amount) || pay_amount < 1) {
-          command_return.reply = "pay amount must be a positive number";
+          command_return.reply = "Pay amount must be a positive number";
         } else if(pay_amount > player_data.money) {
-          command_return.reply = "you do not have enough money";
+          command_return.reply = "You do not have enough money";
         } else {
           // Good to go! Adjust amount due. If paid off, delete the loan
           loan_info.amount_due -= pay_amount;
@@ -178,18 +178,18 @@ const loan = ({args, player_data, loans}) => {
           if(loan_info.amount_due <= 0) {
             // Loan is paid! Delete it
             command_return.loans.remove = loan_info;
-            command_return.reply = "you have paid off your loan!";
+            command_return.reply = "You have paid off your loan!";
           } else {
             // Still have money due
             command_return.loans.update = loan_info;
-            command_return.reply = `you paid ${pay_amount} toward your ` +
+            command_return.reply = `You paid ${pay_amount} toward your ` +
               `loan. You still owe ${loan_info.amount_due}`;
           }
 
           command_return.update.player_data.money -= pay_amount;
         }
       } else {
-        command_return.reply = "you do not have an outstanding loan";
+        command_return.reply = "You do not have an outstanding loan";
       }
     } else if(action === 'show') {
       if(Array.isArray(loans) && loans.length) {
@@ -199,11 +199,11 @@ const loan = ({args, player_data, loans}) => {
           const due_string = time_until_due > 0
             ? "due in " + utils.get_time_until_string(time_until_due)
             : "past due";
-          command_return.reply = `you owe ${this_loan.amount_due} on your ` +
+          command_return.reply = `You owe ${this_loan.amount_due} on your ` +
             "loan. The loan is " + due_string;
         });
       } else {
-        command_return.reply = "you do not have any loans";
+        command_return.reply = "You do not have any loans";
       }
     } else {
       command_return.reply = `${action} is not a valid loan action`;

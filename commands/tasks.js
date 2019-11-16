@@ -1,4 +1,6 @@
+const assets = require('../assets.js');
 const utils = require('../utils.js');
+const flavor = require('../data/flavor.json');
 
 /*
  * Possibly earn money. 1h cooldown
@@ -19,9 +21,11 @@ const pray = ({player_data}) => {
    */
   const payout = utils.get_random_value_in_range(0, 200);
   command_return.update.player_data.money += payout;
-  const player_money = command_return.update.player_data.money;
-  command_return.reply = "Your prayers were heard! " +
-    `You received ${payout} bringing you to ${player_money}`;
+  const reply_template = utils.random_element(flavor.pray);
+  command_return.reply = utils.template_replace(
+    reply_template,
+    {"amount": payout}
+  );
 
   return command_return;
 };
@@ -45,7 +49,7 @@ const smuggle = ({args, player_data}) => {
     const num_ships = parseInt(args[0], 10);
 
     if(isNaN(num_ships) || num_ships < 1) {
-      command_return.reply = "number of ships must be a positive number";
+      command_return.reply = "The number of ships must be a positive number";
     } else if(player_data.ships >= num_ships) {
       // Player has enough ships. See if they win or lose!
       const chance = utils.get_random_value_in_range(1, 100);
@@ -53,8 +57,11 @@ const smuggle = ({args, player_data}) => {
         // They win! Determine payout
         const payout = utils.get_random_value_in_range(400, 1000) * num_ships;
         command_return.update.player_data.money += payout;
-        command_return.reply = "Arg matey! You successfully plundered " +
-          `${payout}!`;
+        const reply_template = utils.random_element(flavor.smuggle_success);
+        command_return.reply = utils.template_replace(
+          reply_template,
+          {"amount": payout}
+        );
       } else {
         // They lose! Determine penalty
         const penalty = utils.get_percent_of_value_given_range(
@@ -63,12 +70,18 @@ const smuggle = ({args, player_data}) => {
           20
         );
         command_return.update.player_data.ships -= penalty;
-        command_return.reply = "You lost the favor of Calypso today. " +
-          `${penalty} of your ships were sent to Davy Jones' locker`;
+        const reply_template = utils.random_element(flavor.smuggle_fail);
+        command_return.reply = utils.template_replace(
+          reply_template,
+          {
+            "amount": penalty,
+            "e_Warship": assets.emojis.Warship
+          }
+        );
       }
       command_return.success = true;
     } else {
-      command_return.reply = `you do not have ${num_ships} available`;
+      command_return.reply = `You do not have ${num_ships} available`;
     }
   } else {
     command_return.reply = "smuggle takes one argument: number of ships";
@@ -96,17 +109,20 @@ const subvert = ({player_data}) => {
     // Success! Pay reward
     const payout = utils.get_random_value_in_range(1000, 4000);
     command_return.update.player_data.money += payout;
-    const player_money = command_return.update.player_data.money;
-    command_return.reply = "You caught the ear of a wealthy noble. " +
-      `They granted you ${payout} bringing you to ${player_money}`;
+    const reply_template = utils.random_element(flavor.subvert_success);
+    command_return.reply = utils.template_replace(
+      reply_template,
+      {"amount": payout}
+    );
   } else {
     // Failure. Take penalty.
     const penalty = utils.get_random_value_in_range(200, 1000);
     command_return.update.player_data.money -= penalty;
-    const player_money = command_return.update.player_data.money;
-    command_return.reply = "The watch have caught on to your ways. You " +
-      `have been tried and fined ${penalty} bringing you to ` +
-      `${player_money}`;
+    const reply_template = utils.random_element(flavor.subvert_fail);
+    command_return.reply = utils.template_replace(
+      reply_template,
+      {"amount": penalty}
+    );
   }
 
   return command_return;
@@ -131,17 +147,23 @@ const train = ({player_data}) => {
     // Success! Pay reward
     const payout = utils.get_random_value_in_range(1, 20);
     command_return.update.player_data.men += payout;
-    const player_men = command_return.update.player_data.men;
-    command_return.reply = `You have successfully recruited ${payout} ` +
-      `men to your cause bringing you to ${player_men} men`;
+    const reply_template = utils.random_element(flavor.train_success);
+    command_return.reply = utils.template_replace(
+      reply_template,
+      {
+        "amount": payout,
+        "e_MenAtArms": assets.emojis.MenAtArms
+      }
+    );
   } else {
     // Failure. Take penalty.
     const penalty = utils.get_random_value_in_range(10, 100);
     command_return.update.player_data.money -= penalty;
-    const player_money = command_return.update.player_data.money;
-    command_return.reply = "You spoke with a variety of people, but " +
-      `none joined your cause. You spent ${penalty} in the process ` +
-      `bringing you to ${player_money}`;
+    const reply_template = utils.random_element(flavor.train_fail);
+    command_return.reply = utils.template_replace(
+      reply_template,
+      {"amount": penalty}
+    );
   }
 
   return command_return;
@@ -166,9 +188,11 @@ const work = ({player_data}) => {
    */
   const payout = utils.get_random_value_in_range(500, 2000);
   command_return.update.player_data.money += payout;
-  const player_money = command_return.update.player_data.money;
-  command_return.reply = "Your hard work has paid off! " +
-    `You received ${payout} bringing you to ${player_money}`;
+  const reply_template = utils.random_element(flavor.work);
+  command_return.reply = utils.template_replace(
+    reply_template,
+    {"amount": payout}
+  );
 
   return command_return;
 };

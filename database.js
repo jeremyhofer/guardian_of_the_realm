@@ -143,6 +143,7 @@ if (!siege_table['count(*)']) {
       tile TEXT,
       attacker TEXT,
       time INTEGER,
+      message TEXT,
       FOREIGN KEY(tile) REFERENCES tile_owners(tile)
     );
   `).run();
@@ -178,25 +179,28 @@ if (!pledge_table['count(*)']) {
   `).run();
 }
 
-const last_payout_table = sql.prepare(`
+const tracker_table = sql.prepare(`
   SELECT count(*) FROM sqlite_master
-  WHERE type='table' AND name = 'last_payout';
+  WHERE type='table' AND name = 'tracker';
 `).get();
 
-if (!last_payout_table['count(*)']) {
+if (!tracker_table['count(*)']) {
   // If the table isn't there, create it and setup the database correctly.
   sql.prepare(`
-    CREATE TABLE last_payout (
-      payout_type TEXT,
-      time INTEGER
+    CREATE TABLE tracker (
+      tracker_id INTEGER PRIMARY KEY,
+      name TEXT,
+      value INTEGER,
+      text TEXT
     );
   `).run();
 
   sql.prepare(`
-    INSERT INTO last_payout (
-      payout_type, time)
+    INSERT INTO tracker
+      (name, value)
     VALUES
-      ("all", 0);
+      ("payout_time", 0),
+      ("game_active", 1);
   `).run();
 }
 
@@ -264,6 +268,9 @@ module.exports = {
     VALUES (
       @house_a, @house_b);
   `),
+  "get_all_wars": sql.prepare(`
+    SELECT * from wars
+  `),
   "get_war_between_houses": sql.prepare(`
     SELECT * from wars WHERE (house_a = @house1 and house_b = @house2)
       or (house_a = @house2 and house_b = @house1)
@@ -277,6 +284,9 @@ module.exports = {
   "get_tile_owner": sql.prepare(`
     SELECT * from tile_owners where tile = ?
   `),
+  "get_siege_by_id": sql.prepare(`
+    SELECT * from sieges where siege_id = ?
+  `),
   "get_siege_on_tile": sql.prepare(`
     SELECT * from sieges where tile = ?
   `),
@@ -285,6 +295,9 @@ module.exports = {
       tile, attacker, time)
     VALUES (
       @tile, @attacker, @time);
+  `),
+  "update_siege_message": sql.prepare(`
+    UPDATE sieges SET message = ? where siege_id = ?
   `),
   "get_all_siege_id_between_two_houses": sql.prepare(`
     SELECT siege_id FROM sieges, tile_owners
@@ -324,11 +337,20 @@ module.exports = {
   "update_tile_owner": sql.prepare(`
     UPDATE tile_owners SET house = ? WHERE tile = ?
   `),
-  "get_last_payout": sql.prepare(`
-    SELECT * FROM last_payout WHERE payout_type = "all"
+  "get_tracker_by_name": sql.prepare(`
+    SELECT * FROM tracker WHERE name = ?
   `),
-  "update_last_payout": sql.prepare(`
-    UPDATE last_payout SET time = ? WHERE payout_type = "all"
+  "add_tracker": sql.prepare(`
+    INSERT INTO tracker
+      (name, value, text)
+    VALUES
+      (@name, @value, @text);
+  `),
+  "update_tracker_by_name": sql.prepare(`
+    UPDATE tracker SET value = ? WHERE name = ?
+  `),
+  "remove_tracker": sql.prepare(`
+    DELETE FROM tracker WHERE tracker_id = @tracker_id
   `),
   "default_player": {
     "user": '',
