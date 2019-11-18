@@ -26,9 +26,8 @@ const join = ({args, player_data, role_mention}) => {
   // See if the player is in a house. If they are they cannot join another one
   if(player_data.house) {
     command_return.reply = "You are already part of a house";
-  } else if(selected_house) {
+  } else if(selected_house && assets.houses.includes(selected_house)) {
     // Add the player to the house
-    assets.houses.includes(selected_house);
     command_return.update.player_data.house = selected_house;
     command_return.update.roles.add.push(selected_house);
     command_return.update.roles.remove.push(utils.find_role_id_given_name(
