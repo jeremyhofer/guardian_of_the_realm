@@ -1,57 +1,60 @@
 {
   "pray": [
-    "After contemplating your many sins and debaucheries, you are quietly disturbed by the beguiling chapel abbess.  She coyly divulges that she has retrieved alms for The Patriarch and Matriarch. Then she slips you a pouch with {amount} :moneybags:, whispering of the sins she wishes to commit with you - all in service of The Faith.",
+    "After contemplating your many sins and debaucheries, you are quietly disturbed by the beguiling chapel abbess.  She coyly divulges that she has retrieved alms for The Patriarch and Matriarch. Then she slips you a pouch with {amount} :moneybag:, whispering of the sins she wishes to commit with you - all in service of The Faith.",
     "You are hard at work in the castle-yard when your page arrives. He has a letter, and a small purse from the abbess. The letter smells of honeysuckle, and the purse displays the sigil of The Matriarch, a cavorting satyr and goddess.  You return the purse to her that night, and keep the {amount} :moneybag:.",
     "As you prayerfully consider your upcoming schemes, you are interrupted by your steward. He informs you that there was {amount} :moneybag: that was incorrectly accounted for from your tithes to The Faith.",
     "The Faith has decreed that alms should be given to the faithful poor of each abbey. You arranged to received {amount} :moneybag: from their coffers. The funds will surely not be missed.",
     "You are summoned to the chapel by the abbot. It seems there has been a robbery involving the alms for The Patriarch and Matriarch. You promise to investigate the matter.  Later when you march out the front of the chapel, a light fingered associate of yours slips you {amount} :moneybag:.",
     "You are accosted by the abbot outside your stables. He informs you that money is unaccounted for, and that he is determined to find the culprit. You return to chapel with the abbot. Once you arrive, you're escorted by abbess to her chambers and vigorously questioned. You leave with {amount} :moneybag: - an amount that's suspiciously familiar.",
-    "You prayed, and later your steward told you that you had earned {amount} from a lucky happenstance.",
-    "Your prayers were heard, and you found {amount} in unaccounted taxes.",
-    "A local poacher was caught in the Duke's forest with a prize stag. You fined him, and sold the stag. You earned {amount}."
+    "You prayed, and later your steward told you that you had earned {amount} :moneybag: from a lucky happenstance.",
+    "Your prayers were heard, and you found {amount} :moneybag: in unaccounted taxes.",
+    "A local poacher was caught in the Duke's forest with a prize stag. You fined him, and sold the stag. You earned {amount} :moneybag:."
   ],
   "work": [
     "Your steward reports that your lands and castle earned {amount} :moneybag:.",
     "You worked hard, and gained {amount} :moneybag: for today's labors.",
     "Your steward reports that you earned {amount} :moneybag: in fines and levies.",
     "You sold several wagon-loads of goods for {amount} :moneybag:.",
-    "Several cords of oak, and ceder timbers were sold from your estate for {amount}.",
+    "Several cords of oak, and ceder timbers were sold from your estate for {amount} :moneybag:.",
     "You earned {amount} :moneybag: in profits from trade tariffs on your lands.",
     "You and your men drove a herd of cattle to a local fair. You sold them for {amount} :moneybag:.",
     "You allowed another lord to hunt on your land, and in return he paid you {amount} :moneybag:.",
-    "Your steward informs you that he sold timber and grazing rights on your land for {amount} :moneybag:."
+    "Your steward informs you that he sold timber and grazing rights on your land for {amount} :moneybag:.",
+    "You were once told that many hands make light work, and today you eaned {amount} :moneybag:"
   ],
   "train_fail" : [
     "A nervous looking villein comes to your castle late one evening, and tells you that a young woman was taken by bandits. He says he can lead you to them. You swiftly rally a few Men-at-Arms, and tell them to only bring a drab cloak, weapons, and chain-mail. Your vengeful band silently slip out of your castle. Later that evening, you find the bandits around their campfire. Your men are ambushed just before you order the attack. You managed to kill the treacherous spy, but you are badly wounded. Your men manage to drag your half conscious carcass back to your castle. You lose {amount} :moneybag: in medical expenses, and bonuses for your men.",
     "You spent a few hours training in the barracks with your Men-at-Arms. It was not your finest showing. You left bruised, and your armor was rather dented. You had to pay the blacksmith {amount} :moneybag: to repaint your helmet, and beat the dents out of your armor."
   ],
   "train_success": [
-    "A nervous looking villein comes to your castle late one evening, and tells you that a young woman was taken by bandits. He says he can lead you to them. You swiftly rally a few Men-at-Arms, and tell them to only bring a drab cloak, weapons and chain-mail. Your vengeful band silently slip out of your castle. Later that evening, you find the bandits around their campfire - none survived your attack. You managed to save the young woman from dishonor, and everal men from her village offer to fight for you if you train them. {amount} {e_MenAtArms} have joined your army!",
-    "You spent a few hours training in the barracks with your Men-at-Arms. Afterwards some enthusiastic farms-hands offered to fight for you if you would train, equip, and feed them. You agreed. {amount} {e_MenAtArms} have joined your army!"
+    "A nervous looking villein comes to your castle late one evening, and tells you that a young woman was taken by bandits. He says he can lead you to them. You swiftly rally a few Men-at-Arms, and tell them to only bring a drab cloak, weapons and chain-mail. Your vengeful band silently slip out of your castle. Later that evening, you find the bandits around their campfire - none survived your attack. You managed to save the young woman from dishonor, and several men from her village offer to fight for you if you train them. {amount} {e_MenAtArms} have joined your army!",
+    "You spent a few hours training in the barracks with your Men-at-Arms. Afterwards some enthusiastic farms-hands offered to fight for you if you would train, equip, and feed them. You agreed. {amount} {e_MenAtArms} have joined your army!",
+    "You heard from a local shepard that there several poachers who were caught by the woods marshal. You head to the dungeon, and offer the men a chance to fight for you. They accept, and you commute their sentances. {amount} {e_MenAtArms} have joined your army."
   ],
   "subvert_fail": [
-    "My liege, you were caught doing things a lord shouldn't be seen doing. You've been fined {amount}.",
-    "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The next morning you find {amount} missing, and a two merchants murdered. Both merchants likely hired the minstrels to kill the other. It's likely they killed both and kept all the money.",
-    "Several mercenaries arrive at your castle asking to speak with you.  Sensing trouble you don chain mail, and head to meet them at the gate. They warn you of an approaching enemy army. You and your men ride out. You are ambushed, and barely make it back to your castle alive. This skirmish has cost you {amount} in damages.",
-    "While you were hunting, your horse was wounded by a boar. You had to cancel your plans for the evening, and pay {amount} to buy a new horse.",
-    "While you were hunting, your horse stumbled and threw you into a pond. Your men found you half drowned. You lost your sword, and had to pay {amount} to forge another one.",
-    "Winds from the badlands bring a sudden disaster. Your lands are ruined by ravenous hordes. There is nothing you can do. You suddenly jerk awake, and hit your head on the wooden table above you. Your head is pounding, and you cannot remember the last night's feast. Your cloak and and coin bag are gone.  You've lost {amount}.",
-    "Your king held a grand tournament. It was a disaster. You lost and had to pay {amount} to ransom yourself.",
-    "You are stricken with the plague. Your priest calls for a doctor from The Capital. He nods, and putters about your bedside before administering a herbal potion that stinks of fish and bitters. He charges you {amount}. You recover within the week, but The Faith says you were visited by a witch.",
-    "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The music is horrible. The next morning you find that they stole {amount}, and a local farm girl is also missing."
+    "My liege, you were caught doing things a lord shouldn't be seen doing. You've been fined {amount} :moneybag:.",
+    "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The next morning you find {amount} :moneybag: missing, and a two merchants murdered. Both merchants likely hired the minstrels to kill the other. It's likely they killed both and kept all the money.",
+    "Several mercenaries arrive at your castle asking to speak with you.  Sensing trouble you don chain mail, and head to meet them at the gate. They warn you of an approaching enemy army. You and your men ride out. You are ambushed, and barely make it back to your castle alive. This skirmish has cost you {amount} :moneybag: in damages.",
+    "While you were hunting, your horse was wounded by a boar. You had to cancel your plans for the evening, and pay {amount} :moneybag: to buy a new horse.",
+    "While you were hunting, your horse stumbled and threw you into a pond. Your men found you half drowned. You lost your sword, and had to pay {amount} :moneybag: to forge another one.",
+    "Winds from the badlands bring a sudden disaster. Your lands are ruined by ravenous hordes. There is nothing you can do. You suddenly jerk awake, and hit your head on the wooden tabile above you. Your head is pounding, and you cannot remember the last night's feast. Your cloak and and coin bag are gone.  You've lost {amount} :moneybag:.",
+    "Your king held a grand tournament. It was a disaster. You lost and had to pay {amount} :moneybag: to ransom yourself.",
+    "You are stricken with the plague. Your priest calls for a doctor from The Capital. He nods, and putters about your bedside before administering a herbal potion that stinks of fish and bitters. He charges you {amount} :moneybag:. You recover within the week, but The Faith says you were visited by a witch.",
+    "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The music is horrible. The next morning you find that they stole {amount}, :moneybag: and a local farm girl is also missing.",
+    "You spent the evening in the company of a fetching entertainer from a far away land. The experiance was breathtakingly surreal. In the morning you realized it cost you {amount} :moneybag:. You were less then thrilled."
   ],
   "subvert_success": [
-    "You spent an afternoon hunting with local lords and ladies. They agreed to pay you {amount}.",
-    "You meet a wealthy baroness at a party. After much persuasion she agrees to give you {amount} for your services.",
-    "Three brothers ask you to kill their father-in-law. They will inherit his castle, and will pay you {amount}. You silently wonder which brother will be alive in three months.",
-    "Late one night several vagabonds attack you in a rose garden, while you are *ahhum* delicately engaged. You hastily slay them. Afterwards while donning undergarments, you find a purse with {amount} in it. No doubt an enemy of yours hired these thugs to kill you.",
-    "You persuaded the local merchants guild to pay you {amount} for your protection.",
+    "You spent an afternoon hunting with local lords and ladies. They agreed to pay you {amount} :moneybag:.",
+    "You meet a wealthy baroness at a party. After much persuasion she agrees to give you {amount} :moneybag: for your services.",
+    "Three brothers ask you to kill their father-in-law. They will inherit his castle, and will pay you {amount} :moneybag:. You silently wonder which brother will be alive in three months.",
+    "Late one night several vagabonds attack you in a rose garden, while you are *ahhum* delicately engaged. You hastily slay them. Afterwards while donning undergarments, you find a purse with {amount} :moneybag: in it. No doubt an enemy of yours hired these thugs to kill you.",
+    "You persuaded the local merchants guild to pay you {amount} :moneybag: for your protection.",
     "Your king held a grand tournament. It was marvelous! You earned {amount} in prize money!",
-    "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The next morning you find {amount} under your pillow, and a note from the raven haired, dreamy voiced singer you spent the evening with.",
-    "Several mercenaries arrive at your castle gate asking to speak with you.  Sensing trouble you don chain mail, and head to meet them at the gate. When you step beyond the gate they draw their weapons and attack you. In the scrum one of them manages to grab your squire. The outlaw demands a ransom for the boy. An eagle eyed archer puts an arrow through the outlaw. While looting the bodies you find {amount}. Someone put them up to this.",
+    "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The next morning you find {amount} :moneybag: under your pillow, and a note from the raven haired, dreamy voiced singer you spent the evening with.",
+    "Several mercenaries arrive at your castle gate asking to speak with you.  Sensing trouble you don chain mail, and head to meet them at the gate. When you step beyond the gate they draw their weapons and attack you. In the scrum one of them manages to grab your squire. The outlaw demands a ransom for the boy. An eagle eyed archer puts an arrow through the outlaw. While looting the bodies you find {amount} :moneybag:. Someone put them up to this.",
     "A band of traveling minstrels stops at your castle. You allow them to spend the night in return for a performance. The whole castle thunders along with them throughout the whole evening! The next morning everyone is drunk, but you find {amount} :moneybag: and a note from the minstrels thanking you for a great time.",
-    "While you were hunting, your horse stumbled and threw you into a pond. You found a wooden chest in the pond. After hacking off the lock, you found {amount}.",
-    "Several mercenaries arrive at your castle asking to speak with you.  Sensing trouble you don your chain mail, and then head to the gate to meet them. They warn you of an approaching enemy. You and your men ride out to ambush your enemies. After the victorious skirmish you keep {amount} in loot as your portion.",
+    "While you were hunting, your horse stumbled and threw you into a pond. You found a wooden chest in the pond. After hacking off the lock, you found {amount} :moneybag:.",
+    "Several mercenaries arrive at your castle asking to speak with you.  Sensing trouble you don your chain mail, and then head to the gate to meet them. They warn you of an approaching enemy. You and your men ride out to ambush your enemies. After the victorious skirmish you keep {amount} :moneybag: in loot as your portion.",
     "You spent a memorable evening with a wealthy patroness of The Matriarchy. In the morning you are left with delectable memories, and a heafty bag of gold worth {amount} :moneybag:.",
     "You spent a pleasurable evening with an influential bishop of The Patriarchy. In the morning you are left with a hangover, and a lack of memories about last nights escapades, but the bishop donated {amount} :moneybag: to you."
   ],
@@ -67,22 +70,23 @@
     "You slip out to sea to engage in a bit of free booting. Your fleet is ambushed. You manage to sink {enemyLost} {e_Warship} of {target_mention}, but your fleet took heavy damage, and lost {myLost} {e_Warship}. Your men are morose on the journey home."
   ],
   "pirate_success": [
-    "You slip out to sea to engage in a bit of free booting. Your able to sink {enemyLost} {e_Warship} of {target_mention}, and you only lost {myLost} {e_Warship}. This incursion was a success, and your men are well pleased with the result!"
+    "You slip out to sea to engage in a bit of free booting. Your able to sink {enemyLost} {e_Warship} of {target_mention}, and you only lost {myLost} {e_Warship}. This incursion was a success, and your sailors are well pleased with the result!"
   ],
   "smuggle_fail": [
-    "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Unfortunately, those same criminal elements also don't mind informing the Inquisition about the less then holy intents of your ships. {amount} {e_Warship} were seized in the harbor, and your ship barely escaped their grasp."
+    "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Unfortunately, those same criminal elements also don't mind informing the Inquisition about the less then holy intents of your ships. {amount} {e_Warship} were seized in the harbor, and your ship barely escaped their grasp.",
+    "Your fleet sailed into a distant port, and retrieved a single man with a mysterious cargo. He had hired your whole fleet for a flabbergasting sum of money on the condition that he arrive safely at another port. Your sailors failed to navigate the dangerous shaols of the port, and you lost {amount} {e_Warship}."
   ],
   "smuggle_success": [
-    "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Spices, sugars, weapons, and other tainted artifacts can turn a pretty penny. Today you were lucky, the seas favored you, and your ships returned with {amount} :moneybag:."
+    "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Spices, sugars, weapons, and other tainted artifacts can turn a pretty penny. Today you were lucky, the seas favored you, and your ships returned with {amount} :moneybag:.",
+    "Your fleet sailed into a distant port, and retrieved a single man with a mysterious cargo. He had hired your whole fleet for a flabbergasting {amount} :moneybag: on the condition that he arrive safely at another port. Your sailors were able to safely navigate the dangerous shaols of the port."
   ],
   "thief_success": [
     "Your thief successfully absconded from the castle with {amount} :moneybag:. You payed him his cut, and he vanished into the night before {target_mention} even knew what happened."
   ],
   "thief_fail": [
     "Guards found your thief, carrying your seal. You were indited, found guilty, and had to pay {amount} :moneybag: in damages, and bail. {target_mention} found out later - much to his amusement.",
-    "You wake up the next morning to find the thief you hired has stolen {amount}. He didn't even try to steal from {target_mention}. Your steward is livid, and demands you never hire another thief again. You seem to recall that you have heard this from him before.",
     "You wake up the next morning to find the thief you hired has stolen {amount} :moneybag:. He didn't even try to steal from {target_mention}. Your steward is livid, and demands you never hire another thief again. You seem to recall that you have heard this from him before.",
-    "Two unsavory fellows approached you with information about the thief that you hired. It seems he was spotted in the fleshpots of The Capital living large. You will not be able to recover the {amount} :moneybag: that was stolen from @Darkness, but at least he is poorer for it. Regardless, you hire a poisoner to murder the thief.",
-    "One of your men tells you that he saw the thief charting a ship to the Southern Isles. It seems his heist was a success, but he has betrayed you and ran off with {amount} :moneybag:"
+    "Two unsavory fellows approached you with information about the thief that you hired. It seems he was spotted in the fleshpots of The Capital living large. You will not be able to recover the {amount} :moneybag: that was stolen from {target_mention}, but at least he is poorer for it. Regardless, you hire a poisoner to murder the thief.",
+    "One of your men tells you that he saw the thief charting a ship to the Southern Isles. It seems his heist was a success, but he has betrayed you and ran off with {amount} :moneybag: from {target_mention}."
   ]
 }
