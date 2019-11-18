@@ -125,6 +125,8 @@ const loan = ({args, player_data, loans}) => {
 
         if(isNaN(loan_amount) || loan_amount < 1) {
           command_return.reply = "Loan amount must be a positive number";
+        } else if(player_data.money < 0) {
+          command_return.reply = "You are in debt and may not buy a loan";
         } else if(loan_amount > max_loan_allowed) {
           command_return.reply = "The maximum loan amount you may get is " +
             `${max_loan_allowed}`;

@@ -49,10 +49,12 @@ module.exports = {
      */
     let role_id = "";
 
-    for(const key in role_obj) {
-      if(key in role_obj && role_obj[key].includes(name.toLowerCase())) {
-        role_id = key;
-        break;
+    if(name) {
+      for(const key in role_obj) {
+        if(key in role_obj && role_obj[key].includes(name.toLowerCase())) {
+          role_id = key;
+          break;
+        }
       }
     }
 
