@@ -8,7 +8,7 @@ module.exports = {
     const payout_percent = hours_between_payout / 24;
     const last_payout = db.get_tracker_by_name.get("payout_time");
 
-    if(last_payout.time +
+    if(last_payout.value +
       utils.hours_to_ms(hours_between_payout) <= current_time) {
       // Payout roles
       for(const title in assets.daily_payouts) {
