@@ -130,10 +130,6 @@ module.exports = {
       "ronin",
       "dragon"
     ],
-    "572288011862278154": [
-      "unsworn",
-      "mercenaries"
-    ],
     "575048350915756050": ["workshop"],
     "575048286059102209": ["tavern"],
     "629752243440058388": ["stable"],

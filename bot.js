@@ -3,6 +3,7 @@ const db = require('./database.js');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
+const args = require('./args.js');
 const admin = require('./commands/admin.js');
 const clan_interact = require('./commands/clan_interact.js');
 const economy = require('./commands/economy.js');
@@ -21,7 +22,9 @@ const command_dispatch = {
   ...tasks.dispatch,
   "map": {
     "function": guild => game_tasks.post_updated_map(guild),
-    "args": ["guild"]
+    "args": ["guild"],
+    "command_args": [[]],
+    "usage": []
   }
 };
 
@@ -83,33 +86,10 @@ client.on('message', msg => {
 
         // If we do not have a cooldown or the cooldown is passed, continue
         if(!cooldown || cooldown_passed) {
-          // See if command should have additional arguments. If not, error
-          if(other_tokens.length &&
-              !command_dispatch[command].args.includes('args') &&
-              !command_dispatch[command].args.includes('player_mention') &&
-              !command_dispatch[command].args.includes('role_mention')) {
-            msg.reply(`${command} does not take any additional arguments`);
-          } else {
-
-            let player_mention = {};
-            const mentioned_player = msg.mentions.members.first();
-
-            if(mentioned_player) {
-              player_mention = db.get_player.get(mentioned_player.user.id);
-
-              if(!player_mention) {
-                player_mention = {...db.default_player};
-                player_mention.user = mentioned_player.user.id;
-              }
-            }
-
-            let role_mention = "";
-            const mentioned_role = msg.mentions.roles.first();
-
-            if(mentioned_role) {
-              role_mention = mentioned_role.id;
-            }
-
+          // Parse and validate the arguments for the command
+          const parsed_args = args.parse_command_args(other_tokens);
+          const expected_args = command_dispatch[command].command_args;
+          if(args.valid(parsed_args.types, expected_args)) {
             const player_roles = [];
 
             msg.member.roles.forEach(value => {
@@ -121,19 +101,13 @@ client.on('message', msg => {
             command_dispatch[command].args.forEach(required_arg => {
               switch(required_arg) {
                 case 'args':
-                  call_args.args = tokens.slice(1);
+                  call_args.args = parsed_args.values;
                   break;
                 case 'player_data':
                   call_args.player_data = player_data;
                   break;
-                case 'player_mention':
-                  call_args.player_mention = player_mention;
-                  break;
                 case 'loans':
                   call_args.loans = loans;
-                  break;
-                case 'role_mention':
-                  call_args.role_mention = role_mention;
                   break;
                 case 'player_roles':
                   call_args.player_roles = player_roles;
@@ -313,6 +287,14 @@ client.on('message', msg => {
             } else {
               msg.reply(command + ' is not yet implemented');
             }
+          } else {
+            // Incorrect arguments supplied. Print usage information
+            const command_usage = command_dispatch[command].usage;
+            const usage_info = ["Usage:"];
+            command_usage.forEach(use => {
+              usage_info.push(`${PREFIX}${command} ${use}`);
+            });
+            msg.reply(usage_info.join("\n"));
           }
         } else {
           // Cooldown failed. Reply.

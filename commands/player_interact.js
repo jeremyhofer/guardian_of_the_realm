@@ -1,3 +1,4 @@
+const args_js = require("../args.js");
 const assets = require("../assets.js");
 const utils = require("../utils.js");
 const flavor = require('../data/flavor.json');
@@ -6,7 +7,7 @@ const flavor = require('../data/flavor.json');
  * Give another player money
  * @player <VALUE>
  */
-const gift = ({args, player_data, player_mention}) => {
+const gift = ({args, player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -14,34 +15,33 @@ const gift = ({args, player_data, player_mention}) => {
     "reply": ""
   };
 
-  if(Object.keys(player_mention).length) {
-    command_return.update.player_mention = {...player_mention};
-    // Make sure the player has enough money
-    const p_money = player_data.money;
-    if(p_money > 0) {
-      // Ensure the args are valid
-      if(Array.isArray(args) && args.length === 2) {
-        const amount_to_give = parseInt(args[1], 10);
+  const [
+    player_mention,
+    amount_to_give
+  ] = args;
 
-        if(isNaN(amount_to_give) || amount_to_give < 1) {
-          command_return.reply = "Amount to give must be a positive number";
-        } else if(p_money >= amount_to_give) {
-          // All good! Grant the cash
-          command_return.update.player_data.money -= amount_to_give;
-          command_return.update.player_mention.money += amount_to_give;
-          command_return.reply = "You successfully gave " +
-            `<@${player_mention.user}> ${amount_to_give} :moneybag:`;
-        } else {
-          command_return.reply = `You only have ${p_money} available`;
-        }
+  command_return.update.player_mention = {...player_mention};
+  // Make sure the player has enough money
+  const p_money = player_data.money;
+  if(p_money > 0) {
+    // Ensure the args are valid
+    if(Array.isArray(args) && args.length === 2) {
+      if(isNaN(amount_to_give) || amount_to_give < 1) {
+        command_return.reply = "Amount to give must be a positive number";
+      } else if(p_money >= amount_to_give) {
+        // All good! Grant the cash
+        command_return.update.player_data.money -= amount_to_give;
+        command_return.update.player_mention.money += amount_to_give;
+        command_return.reply = "You successfully gave " +
+          `<@${player_mention.user}> ${amount_to_give} :moneybag:`;
       } else {
-        command_return.reply = "gift usage: .gift @player <money amount>";
+        command_return.reply = `You only have ${p_money} available`;
       }
     } else {
-      command_return.reply = "You do not have any money to gift";
+      command_return.reply = "gift usage: .gift @player <money amount>";
     }
   } else {
-    command_return.reply = "You must @ mention another player";
+    command_return.reply = "You do not have any money to gift";
   }
 
   return command_return;
@@ -52,7 +52,7 @@ const gift = ({args, player_data, player_mention}) => {
  * fail lose 5-15, other 1-9. win lose 1-9, other 10-20
  * <PLAYER>
  */
-const pirate = ({player_data, player_mention}) => {
+const pirate = ({args, player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -61,75 +61,73 @@ const pirate = ({player_data, player_mention}) => {
     "success": false
   };
 
-  if(Object.keys(player_mention).length) {
-    command_return.update.player_mention = {...player_mention};
-    // Make sure both have enough ships
-    const p_ships = player_data.ships;
-    const m_ships = player_mention.ships;
-    if(p_ships >= 5) {
-      if(m_ships >= 5) {
-        // Both have at least 5 ship. Figure out who wins!
-        let fail_risk = Math.round(p_ships /
-          (m_ships + 2 * p_ships) * 100);
+  const [player_mention] = args;
 
-        if(fail_risk < 0) {
-          fail_risk = 0;
-        } else if(fail_risk > 100) {
-          fail_risk = 100;
-        }
+  command_return.update.player_mention = {...player_mention};
+  // Make sure both have enough ships
+  const p_ships = player_data.ships;
+  const m_ships = player_mention.ships;
+  if(p_ships >= 5) {
+    if(m_ships >= 5) {
+      // Both have at least 5 ship. Figure out who wins!
+      let fail_risk = Math.round(p_ships /
+        (m_ships + 2 * p_ships) * 100);
 
-        const chance = utils.get_random_value_in_range(1, 100);
-
-        let player_lose = 0;
-        let mention_lose = 0;
-        let winner = 'player';
-
-        if(chance >= fail_risk) {
-          // Player wins! Adjust ships
-          player_lose = utils.get_random_value_in_range(0, 5);
-          mention_lose = utils.get_random_value_in_range(5, 10);
-        } else {
-          // Mention wins! Adjust ships
-          player_lose = utils.get_random_value_in_range(5, 8);
-          mention_lose = utils.get_random_value_in_range(3, 6);
-          winner = 'mention';
-        }
-
-        player_lose = player_lose > p_ships
-          ? p_ships
-          : player_lose;
-
-        mention_lose = mention_lose > m_ships
-          ? m_ships
-          : mention_lose;
-
-        command_return.update.player_data.ships -= player_lose;
-        command_return.update.player_mention.ships -= mention_lose;
-        const success_reply_template =
-          utils.random_element(flavor.pirate_success);
-        const fail_reply_template = utils.random_element(flavor.pirate_fail);
-        const used_template = winner === 'player'
-          ? success_reply_template
-          : fail_reply_template;
-        command_return.reply = utils.template_replace(
-          used_template,
-          {
-            "myLost": player_lose,
-            "enemyLost": mention_lose,
-            "target_mention": `<@${player_mention.user}>`,
-            "e_Warship": assets.emojis.Warship
-          }
-        );
-        command_return.success = true;
-      } else {
-        command_return.reply = "The other player must have at least 5 ships";
+      if(fail_risk < 0) {
+        fail_risk = 0;
+      } else if(fail_risk > 100) {
+        fail_risk = 100;
       }
+
+      const chance = utils.get_random_value_in_range(1, 100);
+
+      let player_lose = 0;
+      let mention_lose = 0;
+      let winner = 'player';
+
+      if(chance >= fail_risk) {
+        // Player wins! Adjust ships
+        player_lose = utils.get_random_value_in_range(0, 5);
+        mention_lose = utils.get_random_value_in_range(5, 10);
+      } else {
+        // Mention wins! Adjust ships
+        player_lose = utils.get_random_value_in_range(5, 8);
+        mention_lose = utils.get_random_value_in_range(3, 6);
+        winner = 'mention';
+      }
+
+      player_lose = player_lose > p_ships
+        ? p_ships
+        : player_lose;
+
+      mention_lose = mention_lose > m_ships
+        ? m_ships
+        : mention_lose;
+
+      command_return.update.player_data.ships -= player_lose;
+      command_return.update.player_mention.ships -= mention_lose;
+      const success_reply_template =
+        utils.random_element(flavor.pirate_success);
+      const fail_reply_template = utils.random_element(flavor.pirate_fail);
+      const used_template = winner === 'player'
+        ? success_reply_template
+        : fail_reply_template;
+      command_return.reply = utils.template_replace(
+        used_template,
+        {
+          "myLost": player_lose,
+          "enemyLost": mention_lose,
+          "target_mention": `<@${player_mention.user}>`,
+          "e_Warship": assets.emojis.Warship
+        }
+      );
+      command_return.success = true;
     } else {
-      command_return.reply =
-        "You must have a least 5 ships to launch a pirate raid.";
+      command_return.reply = "The other player must have at least 5 ships";
     }
   } else {
-    command_return.reply = "You must @ mention another player";
+    command_return.reply =
+      "You must have a least 5 ships to launch a pirate raid.";
   }
 
   return command_return;
@@ -140,7 +138,7 @@ const pirate = ({player_data, player_mention}) => {
  * fail lose 50-150, other 10-90. win lose 10-90, other 100-150
  * <PLAYER>.
  */
-const raid = ({player_data, player_mention}) => {
+const raid = ({args, player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -149,74 +147,72 @@ const raid = ({player_data, player_mention}) => {
     "success": false
   };
 
-  if(Object.keys(player_mention).length) {
-    command_return.update.player_mention = {...player_mention};
-    // Make sure both have enough men
-    const p_men = player_data.men;
-    const m_men = player_mention.men;
-    if(p_men >= 50) {
-      if(m_men >= 50) {
-        // Both have at least 50 men. Figure out who wins!
-        let fail_risk = Math.round(p_men /
-          (m_men + 2 * p_men) * 100);
+  const [player_mention] = args;
 
-        if(fail_risk < 0) {
-          fail_risk = 0;
-        } else if(fail_risk > 100) {
-          fail_risk = 100;
-        }
+  command_return.update.player_mention = {...player_mention};
+  // Make sure both have enough men
+  const p_men = player_data.men;
+  const m_men = player_mention.men;
+  if(p_men >= 50) {
+    if(m_men >= 50) {
+      // Both have at least 50 men. Figure out who wins!
+      let fail_risk = Math.round(p_men /
+        (m_men + 2 * p_men) * 100);
 
-        const chance = utils.get_random_value_in_range(1, 100);
-
-        let player_lose = 0;
-        let mention_lose = 0;
-        let winner = 'player';
-
-        if(chance >= fail_risk) {
-          // Player wins! Adjust men
-          player_lose = utils.get_random_value_in_range(0, 50);
-          mention_lose = utils.get_random_value_in_range(50, 100);
-        } else {
-          // Mention wins! Adjust men
-          player_lose = utils.get_random_value_in_range(50, 80);
-          mention_lose = utils.get_random_value_in_range(30, 60);
-          winner = 'mention';
-        }
-
-        player_lose = player_lose > p_men
-          ? p_men
-          : player_lose;
-
-        mention_lose = mention_lose > m_men
-          ? m_men
-          : mention_lose;
-
-        command_return.update.player_data.men -= player_lose;
-        command_return.update.player_mention.men -= mention_lose;
-        const success_reply_template =
-          utils.random_element(flavor.raid_success);
-        const fail_reply_template = utils.random_element(flavor.raid_fail);
-        const used_template = winner === 'player'
-          ? success_reply_template
-          : fail_reply_template;
-        command_return.reply = utils.template_replace(
-          used_template,
-          {
-            "myLost": player_lose,
-            "enemyLost": mention_lose,
-            "target_mention": `<@${player_mention.user}>`,
-            "e_MenAtArms": assets.emojis.MenAtArms
-          }
-        );
-        command_return.success = true;
-      } else {
-        command_return.reply = "The other player must have at least 50 men.";
+      if(fail_risk < 0) {
+        fail_risk = 0;
+      } else if(fail_risk > 100) {
+        fail_risk = 100;
       }
+
+      const chance = utils.get_random_value_in_range(1, 100);
+
+      let player_lose = 0;
+      let mention_lose = 0;
+      let winner = 'player';
+
+      if(chance >= fail_risk) {
+        // Player wins! Adjust men
+        player_lose = utils.get_random_value_in_range(0, 50);
+        mention_lose = utils.get_random_value_in_range(50, 100);
+      } else {
+        // Mention wins! Adjust men
+        player_lose = utils.get_random_value_in_range(50, 80);
+        mention_lose = utils.get_random_value_in_range(30, 60);
+        winner = 'mention';
+      }
+
+      player_lose = player_lose > p_men
+        ? p_men
+        : player_lose;
+
+      mention_lose = mention_lose > m_men
+        ? m_men
+        : mention_lose;
+
+      command_return.update.player_data.men -= player_lose;
+      command_return.update.player_mention.men -= mention_lose;
+      const success_reply_template =
+        utils.random_element(flavor.raid_success);
+      const fail_reply_template = utils.random_element(flavor.raid_fail);
+      const used_template = winner === 'player'
+        ? success_reply_template
+        : fail_reply_template;
+      command_return.reply = utils.template_replace(
+        used_template,
+        {
+          "myLost": player_lose,
+          "enemyLost": mention_lose,
+          "target_mention": `<@${player_mention.user}>`,
+          "e_MenAtArms": assets.emojis.MenAtArms
+        }
+      );
+      command_return.success = true;
     } else {
-      command_return.reply = "You must have at least 50 men to launch a raid.";
+      command_return.reply = "The other player must have at least 50 men.";
     }
   } else {
-    command_return.reply = "You must @ mention another player";
+    command_return.reply = "You must have at least 50 men to launch a raid.";
   }
 
   return command_return;
@@ -226,7 +222,7 @@ const raid = ({player_data, player_mention}) => {
  * View money, ships, men of a player. costs 400
  * <PLAYER>
  */
-const spy = ({player_data, player_mention}) => {
+const spy = ({args, player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -235,22 +231,20 @@ const spy = ({player_data, player_mention}) => {
     "success": false
   };
 
-  if(Object.keys(player_mention).length) {
-    command_return.update.player_mention = {...player_mention};
-    // Make sure both have enough money
-    const p_money = player_data.money;
-    if(p_money >= 200) {
-      command_return.update.player_data.money -= 200;
-      command_return.reply = `<@${player_mention.user}> has ` +
-        `${player_mention.money} :moneybag: ${player_mention.men} ` +
-        `${assets.emojis.MenAtArms} ${player_mention.ships} ` +
-        `${assets.emojis.Warship}`;
-      command_return.success = true;
-    } else {
-      command_return.reply = "You do not have enough money. spy costs 200.";
-    }
+  const [player_mention] = args;
+
+  command_return.update.player_mention = {...player_mention};
+  // Make sure both have enough money
+  const p_money = player_data.money;
+  if(p_money >= 200) {
+    command_return.update.player_data.money -= 200;
+    command_return.reply = `<@${player_mention.user}> has ` +
+      `${player_mention.money} :moneybag: ${player_mention.men} ` +
+      `${assets.emojis.MenAtArms} ${player_mention.ships} ` +
+      `${assets.emojis.Warship}`;
+    command_return.success = true;
   } else {
-    command_return.reply = "You must @ mention another player";
+    command_return.reply = "You do not have enough money. spy costs 200.";
   }
 
   return command_return;
@@ -261,7 +255,7 @@ const spy = ({player_data, player_mention}) => {
  * on succeed, take 2-10%. fail pay 100-1000 to player
  * <PLAYER>
  */
-const thief = ({player_data, player_mention}) => {
+const thief = ({args, player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -270,72 +264,70 @@ const thief = ({player_data, player_mention}) => {
     "success": false
   };
 
-  if(Object.keys(player_mention).length) {
-    command_return.update.player_mention = {...player_mention};
-    // Make sure both have enough money, and no debt.
-    const p_money = player_data.money;
-    const m_money = player_mention.money;
-    if(p_money >= 0) {
-      if(m_money > 0) {
-        // Both have at least some money. Figure out who wins!
-        let fail_risk = Math.round(p_money /
-          (m_money + p_money) * 100);
+  const [player_mention] = args;
 
-        if(fail_risk < 0) {
-          fail_risk = 0;
-        } else if(fail_risk > 100) {
-          fail_risk = 100;
-        }
+  command_return.update.player_mention = {...player_mention};
+  // Make sure both have enough money, and no debt.
+  const p_money = player_data.money;
+  const m_money = player_mention.money;
+  if(p_money >= 0) {
+    if(m_money > 0) {
+      // Both have at least some money. Figure out who wins!
+      let fail_risk = Math.round(p_money /
+        (m_money + p_money) * 100);
 
-        const chance = utils.get_random_value_in_range(1, 100);
-
-        let money_change = 0;
-        let winner = 'player';
-
-        if(chance >= fail_risk) {
-          // Player wins! Adjust money
-          money_change = utils.get_percent_of_value_given_range(m_money, 2, 10);
-        } else {
-          // Mention wins! Adjust money
-          money_change = utils.get_random_value_in_range(100, 1000);
-          winner = 'mention';
-        }
-
-        if(winner === 'player') {
-          money_change = money_change > m_money
-            ? m_money
-            : money_change;
-          command_return.update.player_data.money += money_change;
-          command_return.update.player_mention.money -= money_change;
-        } else {
-          command_return.update.player_data.money -= money_change;
-          command_return.update.player_mention.money += money_change;
-        }
-
-        const success_reply_template =
-          utils.random_element(flavor.thief_success);
-        const fail_reply_template = utils.random_element(flavor.thief_fail);
-        const used_template = winner === 'player'
-          ? success_reply_template
-          : fail_reply_template;
-        command_return.reply = utils.template_replace(
-          used_template,
-          {
-            "amount": money_change,
-            "target_mention": `<@${player_mention.user}>`,
-            "e_MenAtArms": assets.emojis.MenAtArms
-          }
-        );
-        command_return.success = true;
-      } else {
-        command_return.reply = "The other player does not have any money";
+      if(fail_risk < 0) {
+        fail_risk = 0;
+      } else if(fail_risk > 100) {
+        fail_risk = 100;
       }
+
+      const chance = utils.get_random_value_in_range(1, 100);
+
+      let money_change = 0;
+      let winner = 'player';
+
+      if(chance >= fail_risk) {
+        // Player wins! Adjust money
+        money_change = utils.get_percent_of_value_given_range(m_money, 2, 10);
+      } else {
+        // Mention wins! Adjust money
+        money_change = utils.get_random_value_in_range(100, 1000);
+        winner = 'mention';
+      }
+
+      if(winner === 'player') {
+        money_change = money_change > m_money
+          ? m_money
+          : money_change;
+        command_return.update.player_data.money += money_change;
+        command_return.update.player_mention.money -= money_change;
+      } else {
+        command_return.update.player_data.money -= money_change;
+        command_return.update.player_mention.money += money_change;
+      }
+
+      const success_reply_template =
+        utils.random_element(flavor.thief_success);
+      const fail_reply_template = utils.random_element(flavor.thief_fail);
+      const used_template = winner === 'player'
+        ? success_reply_template
+        : fail_reply_template;
+      command_return.reply = utils.template_replace(
+        used_template,
+        {
+          "amount": money_change,
+          "target_mention": `<@${player_mention.user}>`,
+          "e_MenAtArms": assets.emojis.MenAtArms
+        }
+      );
+      command_return.success = true;
     } else {
-      command_return.reply = "You are in debt. You should find other ways " +
-        "to make money";
+      command_return.reply = "The other player does not have any money";
     }
   } else {
-    command_return.reply = "You must @ mention another player";
+    command_return.reply = "You are in debt. You should find other ways " +
+      "to make money";
   }
 
   return command_return;
@@ -347,9 +339,15 @@ module.exports = {
       "function": gift,
       "args": [
         "args",
-        "player_data",
-        "player_mention"
+        "player_data"
       ],
+      "command_args": [
+        [
+          args_js.arg_types.player_mention,
+          args_js.arg_types.number
+        ]
+      ],
+      "usage": ["@PLAYER MONEY"],
       "allowed_channels": assets.player_interact_channels
     },
     "pirate": {
@@ -361,9 +359,11 @@ module.exports = {
           "They are due to leave in"
       },
       "args": [
-        "player_data",
-        "player_mention"
+        "args",
+        "player_data"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     },
     "raid": {
@@ -375,9 +375,11 @@ module.exports = {
           "Your party may leave again in"
       },
       "args": [
-        "player_data",
-        "player_mention"
+        "args",
+        "player_data"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     },
     "spy": {
@@ -388,9 +390,11 @@ module.exports = {
         "reply": "The spy is out to lunch and will be back in"
       },
       "args": [
-        "player_data",
-        "player_mention"
+        "args",
+        "player_data"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     },
     "thief": {
@@ -398,12 +402,15 @@ module.exports = {
       "cooldown": {
         "time": utils.hours_to_ms(24),
         "field": "thief_last_time",
-        "reply": "The guards are on the aleart for thieves. Maybe you can try again in"
+        "reply": "The guards are on the alert for thieves. " +
+          "Maybe you can try again in"
       },
       "args": [
-        "player_data",
-        "player_mention"
+        "args",
+        "player_data"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     }
   }

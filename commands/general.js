@@ -17,11 +17,15 @@ module.exports = {
   "dispatch": {
     "help": {
       "function": help,
-      "args": []
+      "args": [],
+      "command_args": [[]],
+      "usage": []
     },
     "bal": {
       "function": bal,
-      "args": ["player_data"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": []
     }
   }
 };
