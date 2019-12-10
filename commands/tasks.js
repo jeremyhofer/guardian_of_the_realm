@@ -1,4 +1,4 @@
-const args = require('../args.js');
+const args_js = require('../args.js');
 const assets = require('../assets.js');
 const utils = require('../utils.js');
 const flavor = require('../data/flavor.json');
@@ -45,47 +45,43 @@ const smuggle = ({args, player_data}) => {
     "success": false
   };
 
-  if (Array.isArray(args) && args.length === 1) {
-    // Check to make sure the player has enough ships
-    const num_ships = parseInt(args[0], 10);
+  // Check to make sure the player has enough ships
+  const [num_ships] = args;
 
-    if(isNaN(num_ships) || num_ships < 1) {
-      command_return.reply = "The number of ships must be a positive number";
-    } else if(player_data.ships >= num_ships) {
-      // Player has enough ships. See if they win or lose!
-      const chance = utils.get_random_value_in_range(1, 100);
-      if(chance >= 50) {
-        // They win! Determine payout
-        const payout = utils.get_random_value_in_range(400, 1000) * num_ships;
-        command_return.update.player_data.money += payout;
-        const reply_template = utils.random_element(flavor.smuggle_success);
-        command_return.reply = utils.template_replace(
-          reply_template,
-          {"amount": payout}
-        );
-      } else {
-        // They lose! Determine penalty
-        const penalty = utils.get_percent_of_value_given_range(
-          num_ships,
-          10,
-          20
-        );
-        command_return.update.player_data.ships -= penalty;
-        const reply_template = utils.random_element(flavor.smuggle_fail);
-        command_return.reply = utils.template_replace(
-          reply_template,
-          {
-            "amount": penalty,
-            "e_Warship": assets.emojis.Warship
-          }
-        );
-      }
-      command_return.success = true;
+  if(isNaN(num_ships) || num_ships < 1) {
+    command_return.reply = "The number of ships must be a positive number";
+  } else if(player_data.ships >= num_ships) {
+    // Player has enough ships. See if they win or lose!
+    const chance = utils.get_random_value_in_range(1, 100);
+    if(chance >= 50) {
+      // They win! Determine payout
+      const payout = utils.get_random_value_in_range(400, 1000) * num_ships;
+      command_return.update.player_data.money += payout;
+      const reply_template = utils.random_element(flavor.smuggle_success);
+      command_return.reply = utils.template_replace(
+        reply_template,
+        {"amount": payout}
+      );
     } else {
-      command_return.reply = `You do not have ${num_ships} available`;
+      // They lose! Determine penalty
+      const penalty = utils.get_percent_of_value_given_range(
+        num_ships,
+        10,
+        20
+      );
+      command_return.update.player_data.ships -= penalty;
+      const reply_template = utils.random_element(flavor.smuggle_fail);
+      command_return.reply = utils.template_replace(
+        reply_template,
+        {
+          "amount": penalty,
+          "e_Warship": assets.emojis.Warship
+        }
+      );
     }
+    command_return.success = true;
   } else {
-    command_return.reply = "smuggle takes one argument: number of ships";
+    command_return.reply = `You do not have ${num_ships} available`;
   }
 
   return command_return;
@@ -223,7 +219,7 @@ module.exports = {
         "args",
         "player_data"
       ],
-      "command_args": [[args.arg_types.number]],
+      "command_args": [[args_js.arg_types.number]],
       "usage": ["NUMBER_OF_SHIPS"]
     },
     "subvert": {

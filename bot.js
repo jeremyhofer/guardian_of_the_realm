@@ -22,7 +22,9 @@ const command_dispatch = {
   ...tasks.dispatch,
   "map": {
     "function": guild => game_tasks.post_updated_map(guild),
-    "args": ["guild"]
+    "args": ["guild"],
+    "command_args": [[]],
+    "usage": []
   }
 };
 
@@ -88,25 +90,6 @@ client.on('message', msg => {
           const parsed_args = args.parse_command_args(other_tokens);
           const expected_args = command_dispatch[command].command_args;
           if(args.valid(parsed_args.types, expected_args)) {
-            let player_mention = {};
-            const mentioned_player = msg.mentions.members.first();
-
-            if(mentioned_player) {
-              player_mention = db.get_player.get(mentioned_player.user.id);
-
-              if(!player_mention) {
-                player_mention = {...db.default_player};
-                player_mention.user = mentioned_player.user.id;
-              }
-            }
-
-            let role_mention = "";
-            const mentioned_role = msg.mentions.roles.first();
-
-            if(mentioned_role) {
-              role_mention = mentioned_role.id;
-            }
-
             const player_roles = [];
 
             msg.member.roles.forEach(value => {
@@ -118,19 +101,13 @@ client.on('message', msg => {
             command_dispatch[command].args.forEach(required_arg => {
               switch(required_arg) {
                 case 'args':
-                  call_args.args = tokens.slice(1);
+                  call_args.args = parsed_args.values;
                   break;
                 case 'player_data':
                   call_args.player_data = player_data;
                   break;
-                case 'player_mention':
-                  call_args.player_mention = player_mention;
-                  break;
                 case 'loans':
                   call_args.loans = loans;
-                  break;
-                case 'role_mention':
-                  call_args.role_mention = role_mention;
                   break;
                 case 'player_roles':
                   call_args.player_roles = player_roles;

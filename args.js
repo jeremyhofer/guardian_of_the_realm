@@ -51,7 +51,7 @@ module.exports = {
         args.values.push(channel_mention.groups.channel_id);
         args.types.push(module.exports.arg_types.channel_mention);
       } else if(number_match) {
-        args.values.push(number_match.groups.number);
+        args.values.push(parseInt(number_match.groups.number, 10));
         args.types.push(module.exports.arg_types.number);
       } else {
         const game_role =

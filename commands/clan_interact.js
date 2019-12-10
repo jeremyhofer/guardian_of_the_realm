@@ -1,5 +1,4 @@
 const args_js = require('../args.js');
-const assets = require('../assets.js');
 const db = require('../database.js');
 const utils = require('../utils.js');
 
@@ -8,7 +7,7 @@ const utils = require('../utils.js');
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = ({args, player_data, role_mention}) => {
+const join = ({args, player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data},
@@ -19,21 +18,16 @@ const join = ({args, player_data, role_mention}) => {
     "reply": ""
   };
 
-  const selected_house = role_mention
-    ? role_mention
-    : utils.find_role_id_given_name(args[0], assets.game_roles);
+  const [selected_house] = args;
 
   // See if the player is in a house. If they are they cannot join another one
   if(player_data.house) {
     command_return.reply = "You are already part of a house";
-  } else if(selected_house && assets.houses.includes(selected_house)) {
+  } else {
     // Add the player to the house
     command_return.update.player_data.house = selected_house;
     command_return.update.roles.add.push(selected_house);
     command_return.reply = `You successfully joined <@&${selected_house}>!`;
-  } else {
-    command_return.reply = "You must @ the house to join, use their name, " +
-      "or use their Men at Arms";
   }
 
   return command_return;
@@ -55,81 +49,76 @@ const pledge = ({args, player_data, player_roles}) => {
     "reply": ""
   };
 
-  // Check args
-  if(Array.isArray(args) && args.length === 3) {
-    // Validate args
-    const selected_tile = args[0].toLowerCase();
-    const num_men = parseInt(args[1], 10);
-    const action = args[2].toLowerCase();
+  // Validate args
+  const selected_tile = args[0].toLowerCase();
+  const num_men = parseInt(args[1], 10);
+  const action = args[2].toLowerCase();
 
-    let role_limit = 100;
+  let role_limit = 100;
 
-    if(player_roles.includes("duke")) {
-      role_limit = 1000;
-    } else if (player_roles.includes("earl")) {
-      role_limit = 600;
-    } else if (player_roles.includes("baron")) {
-      role_limit = 300;
-    }
+  if(player_roles.includes("duke")) {
+    role_limit = 1000;
+  } else if (player_roles.includes("earl")) {
+    role_limit = 600;
+  } else if (player_roles.includes("baron")) {
+    role_limit = 300;
+  }
 
-    const tile_owner = db.get_tile_owner.get(selected_tile);
-    const p_men = player_data.men;
+  const tile_owner = db.get_tile_owner.get(selected_tile);
+  const p_men = player_data.men;
 
-    if(!tile_owner) {
-      command_return.reply = `${selected_tile.toUpperCase()} is not a castle`;
-    } else if(isNaN(num_men) || num_men < 1) {
-      command_return.reply = "The number of men must be a positive number";
-    } else if (num_men > role_limit) {
-      command_return.reply = `You may only send at most ${role_limit} men`;
-    } else if(action !== "attack" && action !== "defend") {
-      command_return.reply = "The action must be ATTACK or DEFEND";
-    } else {
-      // Ensure a siege exists on the tile
-      const existing_siege = db.get_siege_on_tile.get(selected_tile);
+  if(!tile_owner) {
+    command_return.reply = `${selected_tile.toUpperCase()} is not a castle`;
+  } else if(isNaN(num_men) || num_men < 1) {
+    command_return.reply = "The number of men must be a positive number";
+  } else if (num_men > role_limit) {
+    command_return.reply = `You may only send at most ${role_limit} men`;
+  } else if(action !== "attack" && action !== "defend") {
+    command_return.reply = "The action must be ATTACK or DEFEND";
+  } else {
+    // Ensure a siege exists on the tile
+    const existing_siege = db.get_siege_on_tile.get(selected_tile);
 
-      if(existing_siege) {
-        // See if the player already has a pledge on the siege.
-        const existing_pledge = db.get_player_pledge_for_siege.get({
-          "user": player_data.user,
-          "siege": existing_siege.siege_id
-        });
+    if(existing_siege) {
+      // See if the player already has a pledge on the siege.
+      const existing_pledge = db.get_player_pledge_for_siege.get({
+        "user": player_data.user,
+        "siege": existing_siege.siege_id
+      });
 
-        let valid = false;
-        let men_to_deduct = 0;
+      let valid = false;
+      let men_to_deduct = 0;
 
-        if(existing_pledge) {
-          if(num_men > p_men + existing_pledge.men) {
-            command_return.reply = `You do not have ${num_men} men`;
-          } else {
-            men_to_deduct = existing_pledge.men;
-            command_return.pledges.remove = existing_pledge;
-            valid = true;
-          }
-        } else if(num_men > p_men) {
+      if(existing_pledge) {
+        if(num_men > p_men + existing_pledge.men) {
           command_return.reply = `You do not have ${num_men} men`;
         } else {
+          men_to_deduct = existing_pledge.men;
+          command_return.pledges.remove = existing_pledge;
           valid = true;
         }
-
-        if(valid) {
-          // Add the pledge
-          command_return.pledges.add = {
-            "siege": existing_siege.siege_id,
-            "user": player_data.user,
-            "men": num_men,
-            "choice": action
-          };
-          command_return.update.player_data.men -= (num_men - men_to_deduct);
-          command_return.reply = `You successfully pledged ${num_men} to ` +
-            `${action} ${selected_tile.toUpperCase()}`;
-          command_return.sieges.update = existing_siege;
-        }
+      } else if(num_men > p_men) {
+        command_return.reply = `You do not have ${num_men} men`;
       } else {
-        command_return.reply = `There is no active siege on ${selected_tile}`;
+        valid = true;
       }
+
+      if(valid) {
+        // Add the pledge
+        command_return.pledges.add = {
+          "siege": existing_siege.siege_id,
+          "user": player_data.user,
+          "men": num_men,
+          "choice": action
+        };
+        command_return.update.player_data.men -= num_men - men_to_deduct;
+        command_return.reply = `You successfully pledged ${num_men} to ` +
+          `${action} ${selected_tile.toUpperCase()}`;
+        command_return.sieges.update = existing_siege;
+      }
+    } else {
+      command_return.reply = `There is no active siege on ${selected_tile}`;
     }
-  } else {
-    command_return.reply = "usage: .pledge <tile> <num_men> [ATTACK|DEFEND]";
   }
 
   return command_return;
@@ -171,47 +160,42 @@ const siege = ({args, player_data}) => {
     "reply": ""
   };
 
-  // Make sure the tile arg is correct
-  if(Array.isArray(args) && args.length) {
-    // Check tile
-    const selected_tile = args[0].toLowerCase();
-    const tile_owner = db.get_tile_owner.get(selected_tile);
+  // Check tile
+  const selected_tile = args[0].toLowerCase();
+  const tile_owner = db.get_tile_owner.get(selected_tile);
 
-    if(tile_owner) {
-      // Tile is good. Make sure it is owned by a house at war with
-      if(player_data.house === tile_owner.house) {
-        command_return.reply = "Your house owns this castle";
-      } else {
-        const war = db.get_war_between_houses.get({
-          "house1": player_data.house,
-          "house2": tile_owner.house
-        });
-
-        if(war) {
-          // Make sure a siege does not already exist on this tile
-          const existing_siege = db.get_siege_on_tile.get(selected_tile);
-
-          if(existing_siege) {
-            command_return.reply = "A siege is in progress on that castle";
-          } else {
-            // Good to go! Add the siege
-            command_return.sieges.add = {
-              "tile": selected_tile,
-              "attacker": player_data.house,
-              "time": Date.now() + utils.hours_to_ms(6)
-            };
-            delete command_return.reply;
-          }
-        } else {
-          command_return.reply = "Your house is not at war with " +
-            `<@&${tile_owner.house}>`;
-        }
-      }
+  if(tile_owner) {
+    // Tile is good. Make sure it is owned by a house at war with
+    if(player_data.house === tile_owner.house) {
+      command_return.reply = "Your house owns this castle";
     } else {
-      command_return.reply = `${selected_tile} is not a castle`;
+      const war = db.get_war_between_houses.get({
+        "house1": player_data.house,
+        "house2": tile_owner.house
+      });
+
+      if(war) {
+        // Make sure a siege does not already exist on this tile
+        const existing_siege = db.get_siege_on_tile.get(selected_tile);
+
+        if(existing_siege) {
+          command_return.reply = "A siege is in progress on that castle";
+        } else {
+          // Good to go! Add the siege
+          command_return.sieges.add = {
+            "tile": selected_tile,
+            "attacker": player_data.house,
+            "time": Date.now() + utils.hours_to_ms(6)
+          };
+          delete command_return.reply;
+        }
+      } else {
+        command_return.reply = "Your house is not at war with " +
+          `<@&${tile_owner.house}>`;
+      }
     }
   } else {
-    command_return.reply = "You must specify a castle to attack, e.g. A10";
+    command_return.reply = `${selected_tile} is not a castle`;
   }
 
   return command_return;
@@ -240,85 +224,77 @@ const siege = ({args, player_data}) => {
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const truce = ({args, player_data, role_mention}) => {
+const truce = ({args, player_data}) => {
   const command_return = {
     "votes": {},
     "reply": ""
   };
 
-  // Check args. Make sure a war exists between the houses in question
-  if(Array.isArray(args) && args.length === 2) {
-    // Figure it out
-    const house_vote = role_mention
-      ? role_mention
-      : utils.find_role_id_given_name(args[0], assets.game_roles);
+  // Figure it out
+  var [
+    house_vote,
+    player_choice
+  ] = args;
 
-    if(assets.houses.includes(house_vote)) {
-      // See if the player has already voted for this
-      const yes_votes = db.get_player_vote_by_type.all(
-        player_data.user,
-        "truce_yes"
-      );
-      const no_votes = db.get_player_vote_by_type.all(
-        player_data.user,
-        "truce_no"
-      );
-      const all_votes = yes_votes.concat(no_votes);
+  player_choice = player_choice.toLowerCase();
 
-      const existing_vote = all_votes.filter(vote => vote &&
-        'choice' in vote && vote.choice === house_vote);
+  // See if the player has already voted for this
+  const yes_votes = db.get_player_vote_by_type.all(
+    player_data.user,
+    "truce_yes"
+  );
+  const no_votes = db.get_player_vote_by_type.all(
+    player_data.user,
+    "truce_no"
+  );
+  const all_votes = yes_votes.concat(no_votes);
 
-      if(existing_vote.length) {
-        // Already voted in this truce vote
-        const [vote] = existing_vote;
-        const choice = vote.type === "truce_yes"
-          ? "YES"
-          : "NO";
+  const existing_vote = all_votes.filter(vote => vote &&
+    'choice' in vote && vote.choice === house_vote);
 
-        command_return.reply = `You have already voted ${choice} to a truce ` +
-          `with <@&${vote.choice}>`;
+  if(existing_vote.length) {
+    // Already voted in this truce vote
+    const [vote] = existing_vote;
+    const choice = vote.type === "truce_yes"
+      ? "YES"
+      : "NO";
+
+    command_return.reply = `You have already voted ${choice} to a truce ` +
+      `with <@&${vote.choice}>`;
+  } else {
+    // Ensure a war exists between the houses
+    const war = db.get_war_between_houses.get({
+      "house1": player_data.house,
+      "house2": house_vote
+    });
+
+    if(war) {
+      // Check yes/no choice
+      let truce_type = "";
+
+      if(player_choice === "yes") {
+        truce_type = "truce_yes";
+      } else if(player_choice === "no") {
+        truce_type = "truce_no";
+      }
+
+      if(truce_type) {
+        // Truce vote is good. Add it
+        command_return.votes.add = {
+          "type": truce_type,
+          "user": player_data.user,
+          "choice": house_vote,
+          "time": Date.now()
+        };
+        command_return.reply = `Your choice of ${player_choice} was ` +
+          "recorded";
       } else {
-        // Ensure a war exists between the houses
-        const war = db.get_war_between_houses.get({
-          "house1": player_data.house,
-          "house2": house_vote
-        });
-
-        if(war) {
-          // Check yes/no choice
-          const player_choice = args[1].toLowerCase();
-          let truce_type = "";
-
-          if(player_choice === "yes") {
-            truce_type = "truce_yes";
-          } else if(player_choice === "no") {
-            truce_type = "truce_no";
-          }
-
-          if(truce_type) {
-            // Truce vote is good. Add it
-            command_return.votes.add = {
-              "type": truce_type,
-              "user": player_data.user,
-              "choice": house_vote,
-              "time": Date.now()
-            };
-            command_return.reply = `Your choice of ${player_choice} was ` +
-              "recorded";
-          } else {
-            command_return.reply = "You must vote YES or NO";
-          }
-        } else {
-          command_return.reply = "Your house is not at war with " +
-            `<@&${house_vote}>`;
-        }
+        command_return.reply = "You must vote YES or NO";
       }
     } else {
-      command_return.reply = `${args[0]} is not a house`;
+      command_return.reply = "Your house is not at war with " +
+        `<@&${house_vote}>`;
     }
-  } else {
-    command_return.reply = "You must @ the house to truce, use their name, " +
-      "or use their Men at Arms and vote YES or NO";
   }
 
   return command_return;
@@ -354,7 +330,7 @@ const truce = ({args, player_data, role_mention}) => {
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const war = ({args, player_data, role_mention}) => {
+const war = ({args, player_data}) => {
   const command_return = {
     "votes": {},
     "reply": ""
@@ -368,56 +344,37 @@ const war = ({args, player_data, role_mention}) => {
       ? "peace"
       : `<@&${existing_vote.choice}>`;
     command_return.reply = `You have already voted for ${reply_choice}`;
-  } else if(Array.isArray(args) && args.length === 1) {
-    // See what the arg is
-    let player_choice = '';
-    if(role_mention) {
-      player_choice = role_mention;
-    } else if(args[0].toLowerCase() === 'peace') {
-      player_choice = 'peace';
-    } else {
-      player_choice = utils.find_role_id_given_name(
-        args[0],
-        assets.game_roles
-      );
-    }
-
-    if(player_choice) {
-
-      /*
-       * Add the player's vote to the database
-       * Ensure the player does not vote for their own house
-       */
-
-      const existing_war = db.get_war_between_houses.get({
-        "house1": player_data.house,
-        "house2": player_choice
-      });
-      if(player_choice === player_data.house) {
-        command_return.reply = "You cannot vote for your own house";
-      } else if(existing_war) {
-        command_return.reply = "You are already at war with that house";
-      }else {
-        command_return.votes.add = {
-          "type": "war",
-          "user": player_data.user,
-          "choice": player_choice,
-          "time": Date.now()
-        };
-
-        const reply_choice = player_choice === "peace"
-          ? "peace"
-          : `<@&${player_choice}>`;
-        command_return.reply = "Your choice of " + reply_choice +
-          " was recorded";
-      }
-    } else {
-      command_return.reply = "Your choice is not recognized. Please vote " +
-        "again";
-    }
   } else {
-    command_return.reply = "You must vote for a house or peace. To vote " +
-      "for a house @ the house, use their name, or use their Men at Arms";
+    // See what the arg is
+    const [player_choice] = args;
+
+    /*
+     * Add the player's vote to the database
+     * Ensure the player does not vote for their own house
+     */
+
+    const existing_war = db.get_war_between_houses.get({
+      "house1": player_data.house,
+      "house2": player_choice
+    });
+    if(player_choice === player_data.house) {
+      command_return.reply = "You cannot vote for your own house";
+    } else if(existing_war) {
+      command_return.reply = "You are already at war with that house";
+    }else {
+      command_return.votes.add = {
+        "type": "war",
+        "user": player_data.user,
+        "choice": player_choice,
+        "time": Date.now()
+      };
+
+      const reply_choice = player_choice === "peace"
+        ? "peace"
+        : `<@&${player_choice}>`;
+      command_return.reply = "Your choice of " + reply_choice +
+        " was recorded";
+    }
   }
 
   return command_return;
@@ -429,8 +386,7 @@ module.exports = {
       "function": join,
       "args": [
         "args",
-        "player_data",
-        "role_mention"
+        "player_data"
       ],
       "command_args": [[args_js.arg_types.house]],
       "usage": ["HOUSE"]
@@ -464,8 +420,7 @@ module.exports = {
       "function": truce,
       "args": [
         "args",
-        "player_data",
-        "role_mention"
+        "player_data"
       ],
       "command_args": [
         [
@@ -479,10 +434,12 @@ module.exports = {
       "function": war,
       "args": [
         "args",
-        "player_data",
-        "role_mention"
+        "player_data"
       ],
-      "command_args": [[args_js.arg_types.house]],
+      "command_args": [
+        [args_js.arg_types.house],
+        [args_js.arg_types.string]
+      ],
       "usage": ["HOUSE|peace"]
     }
   }
