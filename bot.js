@@ -3,6 +3,7 @@ const db = require('./database.js');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const PREFIX = '.';
+const args = require('./args.js');
 const admin = require('./commands/admin.js');
 const clan_interact = require('./commands/clan_interact.js');
 const economy = require('./commands/economy.js');
@@ -83,14 +84,10 @@ client.on('message', msg => {
 
         // If we do not have a cooldown or the cooldown is passed, continue
         if(!cooldown || cooldown_passed) {
-          // See if command should have additional arguments. If not, error
-          if(other_tokens.length &&
-              !command_dispatch[command].args.includes('args') &&
-              !command_dispatch[command].args.includes('player_mention') &&
-              !command_dispatch[command].args.includes('role_mention')) {
-            msg.reply(`${command} does not take any additional arguments`);
-          } else {
-
+          // Parse and validate the arguments for the command
+          const parsed_args = args.parse_command_args(other_tokens);
+          const expected_args = command_dispatch[command].command_args;
+          if(args.valid(parsed_args.types, expected_args)) {
             let player_mention = {};
             const mentioned_player = msg.mentions.members.first();
 
@@ -313,6 +310,14 @@ client.on('message', msg => {
             } else {
               msg.reply(command + ' is not yet implemented');
             }
+          } else {
+            // Incorrect arguments supplied. Print usage information
+            const command_usage = command_dispatch[command].usage;
+            const usage_info = ["Usage:"];
+            command_usage.forEach(use => {
+              usage_info.push(`${PREFIX}${command} ${use}`);
+            });
+            msg.reply(usage_info.join("\n"));
           }
         } else {
           // Cooldown failed. Reply.

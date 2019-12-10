@@ -1,3 +1,4 @@
+const args = require('../args.js');
 const assets = require('../assets.js');
 const utils = require('../utils.js');
 const flavor = require('../data/flavor.json');
@@ -206,7 +207,9 @@ module.exports = {
         "field": "pray_last_time",
         "reply": "No one is around to hear your prayers for another"
       },
-      "args": ["player_data"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": [""]
     },
     "smuggle": {
       "function": smuggle,
@@ -219,7 +222,9 @@ module.exports = {
       "args": [
         "args",
         "player_data"
-      ]
+      ],
+      "command_args": [[args.arg_types.number]],
+      "usage": ["NUMBER_OF_SHIPS"]
     },
     "subvert": {
       "function": subvert,
@@ -229,7 +234,9 @@ module.exports = {
         "reply": "The watch is in high presence right now. You should try " +
           "again in another"
       },
-      "args": ["player_data"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": [""]
     },
     "train": {
       "function": train,
@@ -238,7 +245,9 @@ module.exports = {
         "field": "train_last_time",
         "reply": "You have been training tirelessly. You should rest for "
       },
-      "args": ["player_data"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": [""]
     },
     "work": {
       "function": work,
@@ -248,7 +257,9 @@ module.exports = {
         "reply": "You continue to slave away, but you will not be paid for " +
           "another"
       },
-      "args": ["player_data"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": [""]
     }
   }
 };

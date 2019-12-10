@@ -1,3 +1,4 @@
+const args_js = require("../args.js");
 const assets = require("../assets.js");
 const utils = require("../utils.js");
 const flavor = require('../data/flavor.json');
@@ -350,6 +351,13 @@ module.exports = {
         "player_data",
         "player_mention"
       ],
+      "command_args": [
+        [
+          args_js.arg_types.player_mention,
+          args_js.arg_types.number
+        ]
+      ],
+      "usage": ["@PLAYER MONEY"],
       "allowed_channels": assets.player_interact_channels
     },
     "pirate": {
@@ -364,6 +372,8 @@ module.exports = {
         "player_data",
         "player_mention"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     },
     "raid": {
@@ -378,6 +388,8 @@ module.exports = {
         "player_data",
         "player_mention"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     },
     "spy": {
@@ -391,6 +403,8 @@ module.exports = {
         "player_data",
         "player_mention"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     },
     "thief": {
@@ -398,12 +412,15 @@ module.exports = {
       "cooldown": {
         "time": utils.hours_to_ms(24),
         "field": "thief_last_time",
-        "reply": "The guards are on the aleart for thieves. Maybe you can try again in"
+        "reply": "The guards are on the alert for thieves. " +
+          "Maybe you can try again in"
       },
       "args": [
         "player_data",
         "player_mention"
       ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
       "allowed_channels": assets.player_interact_channels
     }
   }

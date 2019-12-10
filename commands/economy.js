@@ -1,3 +1,4 @@
+const args_js = require('../args.js');
 const assets = require('../assets.js');
 const utils = require('../utils.js');
 
@@ -241,6 +242,17 @@ module.exports = {
         "args",
         "player_data",
         "player_roles"
+      ],
+      "command_args": [
+        [args_js.arg_types.game_role],
+        [
+          args_js.arg_types.string,
+          args_js.arg_types.number
+        ]
+      ],
+      "usage": [
+        "ROLE",
+        "ITEM AMOUNT"
       ]
     },
     "loan": {
@@ -249,11 +261,29 @@ module.exports = {
         "args",
         "player_data",
         "loans"
+      ],
+      "command_args": [
+        [args_js.arg_types.string],
+        [
+          args_js.arg_types.string,
+          args_js.arg_types.number
+        ],
+        [
+          args_js.arg_types.string,
+          args_js.arg_types.string
+        ]
+      ],
+      "usage": [
+        "show",
+        "get AMOUNT",
+        "pay AMOUNT|all"
       ]
     },
     "market": {
       "function": market,
-      "args": []
+      "args": [],
+      "command_args": [[]],
+      "usage": []
     }
   }
 };

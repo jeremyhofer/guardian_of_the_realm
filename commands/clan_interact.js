@@ -1,3 +1,4 @@
+const args_js = require('../args.js');
 const assets = require('../assets.js');
 const db = require('../database.js');
 const utils = require('../utils.js');
@@ -435,7 +436,9 @@ module.exports = {
         "args",
         "player_data",
         "role_mention"
-      ]
+      ],
+      "command_args": [[args_js.arg_types.house]],
+      "usage": ["HOUSE"]
     },
     "pledge": {
       "function": pledge,
@@ -443,14 +446,24 @@ module.exports = {
         "args",
         "player_data",
         "player_roles"
-      ]
+      ],
+      "command_args": [
+        [
+          args_js.arg_types.string,
+          args_js.arg_types.number,
+          args_js.arg_types.string
+        ]
+      ],
+      "usage": ["TILE NUMBER attack|defend"]
     },
     "siege": {
       "function": siege,
       "args": [
         "args",
         "player_data"
-      ]
+      ],
+      "command_args": [[args_js.arg_types.string]],
+      "usage": ["TILE"]
     },
     "truce": {
       "function": truce,
@@ -458,7 +471,14 @@ module.exports = {
         "args",
         "player_data",
         "role_mention"
-      ]
+      ],
+      "command_args": [
+        [
+          args_js.arg_types.house,
+          args_js.arg_types.string
+        ]
+      ],
+      "usage": ["HOUSE yes|no"]
     },
     "war": {
       "function": war,
@@ -466,7 +486,9 @@ module.exports = {
         "args",
         "player_data",
         "role_mention"
-      ]
+      ],
+      "command_args": [[args_js.arg_types.house]],
+      "usage": ["HOUSE|peace"]
     }
   }
 };

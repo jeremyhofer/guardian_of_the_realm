@@ -20,15 +20,21 @@ module.exports = {
   "dispatch": {
     "edit": {
       "function": edit,
-      "args": []
+      "args": [],
+      "command_args": [[]],
+      "usage": []
     },
     "take": {
       "function": take,
-      "args": []
+      "args": [],
+      "command_args": [[]],
+      "usage": []
     },
     "view": {
       "function": view,
-      "args": []
+      "args": [],
+      "command_args": [[]],
+      "usage": []
     }
   }
 };
