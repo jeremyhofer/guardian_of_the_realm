@@ -306,10 +306,12 @@ module.exports = {
       const tile_owner = db.get_tile_owner.get(expired_siege.tile);
       const attacker_name = guild.roles.get(expired_siege.attacker).name;
       const defender_name = guild.roles.get(tile_owner.house).name;
-      const embed = {
-        "title": `FINISHED siege on ${expired_siege.tile.toUpperCase()}`,
-        "fields": []
-      };
+      const embed = module.exports.generate_siege_embed(
+        guild.roles,
+        expired_siege.siege_id
+      );
+
+      embed.title = `FINISHED siege on ${expired_siege.tile.toUpperCase()}`;
 
       let regen_map = false;
 
@@ -339,17 +341,6 @@ module.exports = {
             all_pledgers[pledge.user] = db.get_player.get(pledge.user);
           }
         });
-
-        embed.fields.push(
-          {
-            "name": `Attacking House: ${attacker_name}`,
-            "value": `${attacker_count} ${assets.emojis.MenAtArms} pledged`
-          },
-          {
-            "name": `Defending House: ${defender_name}`,
-            "value": `${defender_count} ${assets.emojis.MenAtArms} pledged`
-          }
-        );
 
         // Determine chance to win, the reward pots, and the losses
         let win_chance = Math.round(attacker_count /
@@ -460,9 +451,10 @@ module.exports = {
 
         embed.fields.push({
           "name": win_message,
-          "value": `${num_pledgers} contributed to this siege. ${win_pot} ` +
-          `:moneybag: has been paid to the attackers. ${lose_pot} ` +
-          `${assets.emojis.MenAtArms} has been paid to the defenders.`
+          "value": `${num_pledgers} player(s) contributed to this siege. ` +
+          `${win_pot} :moneybag: has been distributed to the winners. ` +
+          `${lose_pot} ${assets.emojis.MenAtArms} has been distributed to ` +
+          `the losers.`
         });
 
         // Update all the player data
@@ -510,40 +502,113 @@ module.exports = {
      * Embed will consist of the following:
      * Title: Siege on <tile>
      * Field1:
-     *  Name: Attaching House: @house
-     *  Value: # :ManAtArms: pledged
+     *  Name: Attacker: @house #total :ManAtArms: xx%
+     *  Value: # :ManAtArms: <@&house>
      * Field2:
-     *  Name: Defending House: @house
-     *  Value: # :ManAtArms: pledged
+     *  Name: Defender: @house #total :ManAtArms: xx%
+     *  Value: # :ManAtArms: pledged total
+     * Field3:
+     *  Name: Rewards
+     *  Value: Winner: money\nLoser: men
      */
     const siege = db.get_siege_by_id.get(siege_id);
     const tile_owner = db.get_tile_owner.get(siege.tile);
     const pledges = db.get_all_pledges_for_siege.all(siege);
 
-    let num_attackers = 0;
-    let num_defenders = 0;
+    const attacker_counts = {};
+    const defender_counts = {};
+    let attacker_total = 0;
+    let defender_total = 0;
 
     pledges.forEach(pledge => {
+      const player_info = db.get_player.get(pledge.user);
       if(pledge.choice === 'attack') {
-        num_attackers += pledge.men;
+        if(player_info.house in attacker_counts) {
+          attacker_counts[player_info.house] += pledge.men;
+        } else {
+          attacker_counts[player_info.house] = pledge.men;
+        }
+
+        attacker_total += pledge.men;
       } else if(pledge.choice === 'defend') {
-        num_defenders += pledge.men;
+        if(player_info.house in defender_counts) {
+          defender_counts[player_info.house] += pledge.men;
+        } else {
+          defender_counts[player_info.house] = pledge.men;
+        }
+
+        defender_total += pledge.men;
       }
     });
 
     const attacker_name = guild_roles.get(siege.attacker).name;
     const defender_name = guild_roles.get(tile_owner.house).name;
 
+    let attacker_win_chance = 0;
+    let defender_win_chance = 0;
+
+    if(attacker_total) {
+      attacker_win_chance = Math.round(attacker_total /
+        (attacker_total + defender_total) * 100);
+    }
+
+    if(defender_total) {
+      defender_win_chance = 100 - attacker_win_chance;
+    }
+
+    let attackers = "";
+    let defenders = "";
+
+    for(const house in attacker_counts) {
+      if(house in attacker_counts) {
+        const num = attacker_counts[house];
+        attackers += `<@&${house}> ${num} ${assets.emojis.MenAtArms}\n`;
+      }
+    }
+
+    for(const house in defender_counts) {
+      if(house in defender_counts) {
+        const num = defender_counts[house];
+        defenders += `<@&${house}> ${num} ${assets.emojis.MenAtArms}\n`;
+      }
+    }
+
+    attackers = attackers
+      ? attackers
+      : "no pledges";
+
+    defenders = defenders
+      ? defenders
+      : "no pledges";
+
+    const attacker_field_name = `Attacker: ${attacker_name} ` +
+      `${attacker_total} ${assets.emojis.MenAtArms} ` +
+      `${attacker_win_chance}%`;
+
+    const defender_field_name = `Defender: ${defender_name} ` +
+      `${defender_total} ${assets.emojis.MenAtArms} ` +
+      `${defender_win_chance}%`;
+
+    const winner_payout = pledges.length * 3000;
+    const loser_payout = pledges.length * 20;
+
+    const rewards = `Winners: ${winner_payout} :moneybag:\n` +
+      `Losers: ${loser_payout} ${assets.emojis.MenAtArms}`;
+
     return {
       "title": `Siege on ${siege.tile.toUpperCase()}`,
       "fields": [
         {
-          "name": `Attacking House: ${attacker_name}`,
-          "value": `${num_attackers} ${assets.emojis.MenAtArms} pledged`
+          "name": attacker_field_name,
+          "value": attackers
         },
         {
-          "name": `Defending House: ${defender_name}`,
-          "value": `${num_defenders} ${assets.emojis.MenAtArms} pledged`
+          "name": defender_field_name,
+          "value": defenders
+        },
+        {
+          "name": "Rewards",
+          "value": rewards
         }
       ]
     };
