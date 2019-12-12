@@ -23,7 +23,9 @@ const gift = ({args, player_data}) => {
   command_return.update.player_mention = {...player_mention};
   // Make sure the player has enough money
   const p_money = player_data.money;
-  if(p_money > 0) {
+  if(player_data.user === player_mention.user) {
+    command_return.reply = "You cannot gift yourself!";
+  } else if(p_money > 0) {
     // Ensure the args are valid
     if(Array.isArray(args) && args.length === 2) {
       if(isNaN(amount_to_give) || amount_to_give < 1) {
@@ -67,7 +69,9 @@ const pirate = ({args, player_data}) => {
   // Make sure both have enough ships
   const p_ships = player_data.ships;
   const m_ships = player_mention.ships;
-  if(p_ships >= 5) {
+  if(player_data.user === player_mention.user) {
+    command_return.reply = "You cannot pirate yourself!";
+  } else if(p_ships >= 5) {
     if(m_ships >= 5) {
       // Both have at least 5 ship. Figure out who wins!
       let fail_risk = Math.round(p_ships /
@@ -153,7 +157,9 @@ const raid = ({args, player_data}) => {
   // Make sure both have enough men
   const p_men = player_data.men;
   const m_men = player_mention.men;
-  if(p_men >= 50) {
+  if(player_data.user === player_mention.user) {
+    command_return.reply = "You cannot raid yourself!";
+  } else if(p_men >= 50) {
     if(m_men >= 50) {
       // Both have at least 50 men. Figure out who wins!
       let fail_risk = Math.round(p_men /
@@ -236,7 +242,9 @@ const spy = ({args, player_data}) => {
   command_return.update.player_mention = {...player_mention};
   // Make sure both have enough money
   const p_money = player_data.money;
-  if(p_money >= 200) {
+  if(player_data.user === player_mention.user) {
+    command_return.reply = "You cannot spy yourself!";
+  } else if(p_money >= 200) {
     command_return.update.player_data.money -= 200;
     command_return.reply = `<@${player_mention.user}> has ` +
       `${player_mention.money} :moneybag: ${player_mention.men} ` +
@@ -270,7 +278,9 @@ const thief = ({args, player_data}) => {
   // Make sure both have enough money, and no debt.
   const p_money = player_data.money;
   const m_money = player_mention.money;
-  if(p_money >= 0) {
+  if(player_data.user === player_mention.user) {
+    command_return.reply = "You cannot thief yourself!";
+  } else if(p_money >= 0) {
     if(m_money > 0) {
       // Both have at least some money. Figure out who wins!
       let fail_risk = Math.round(p_money /
