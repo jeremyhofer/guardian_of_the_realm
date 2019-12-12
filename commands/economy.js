@@ -20,13 +20,20 @@ const buy = ({args, player_data, player_roles}) => {
 
   if(Array.isArray(args) && args.length) {
     // Get item and quanity. Default quantity is 1
-    const item = args[0].toLowerCase();
+    let item = args[0].toLowerCase();
     const quantity = args.length > 1
       ? parseInt(args[1], 10)
       : 1;
 
+    let item_exists = item in assets.store_items;
+
+    if(!item_exists && item in assets.game_roles) {
+      [item] = assets.game_roles[item];
+      item_exists = true;
+    }
+
     // Ensure the desired item is in the store
-    if(item in assets.store_items) {
+    if(item_exists) {
       // Ensure we have a valid quanity value
       if(isNaN(quantity)) {
         command_return.reply = "Quantity to buy must be a number";
