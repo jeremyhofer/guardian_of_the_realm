@@ -331,6 +331,10 @@ module.exports = {
   "get_all_pledges_for_siege": sql.prepare(`
     SELECT * FROM pledges WHERE siege = @siege_id
   `),
+  "get_all_player_pledges": sql.prepare(`
+    SELECT * FROM pledges, sieges WHERE sieges.siege_id = pledges.siege
+    and pledges.user = @user
+  `),
   "remove_pledge": sql.prepare(`
     DELETE FROM pledges WHERE pledge_id = @pledge_id
   `),
