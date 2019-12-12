@@ -118,7 +118,7 @@ module.exports = {
       // WAR OR PEACE
       if(top_choice === "peace") {
         // Send message that vote ended in peace
-        vote_reply = `<@&${player_data.house} your war vote has resulted in ` +
+        vote_reply = `<@&${player_data.house}> your war vote has resulted in ` +
           "peace";
       } else {
         // WE HAVE WAR
