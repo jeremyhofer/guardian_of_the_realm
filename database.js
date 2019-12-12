@@ -319,6 +319,9 @@ module.exports = {
   "remove_siege": sql.prepare(`
     DELETE FROM sieges WHERE siege_id = @siege_id
   `),
+  "count_house_sieges": sql.prepare(`
+    SELECT count(*) as num_sieges FROM sieges where sieges.attacker = ?
+  `),
   "add_pledge": sql.prepare(`
     INSERT INTO pledges (
       siege, user, men, choice)
