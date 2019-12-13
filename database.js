@@ -319,6 +319,9 @@ module.exports = {
   "remove_siege": sql.prepare(`
     DELETE FROM sieges WHERE siege_id = @siege_id
   `),
+  "count_house_sieges": sql.prepare(`
+    SELECT count(*) as num_sieges FROM sieges where sieges.attacker = ?
+  `),
   "add_pledge": sql.prepare(`
     INSERT INTO pledges (
       siege, user, men, choice)
@@ -330,6 +333,10 @@ module.exports = {
   `),
   "get_all_pledges_for_siege": sql.prepare(`
     SELECT * FROM pledges WHERE siege = @siege_id
+  `),
+  "get_all_player_pledges": sql.prepare(`
+    SELECT * FROM pledges, sieges WHERE sieges.siege_id = pledges.siege
+    and pledges.user = @user
   `),
   "remove_pledge": sql.prepare(`
     DELETE FROM pledges WHERE pledge_id = @pledge_id

@@ -115,6 +115,9 @@ client.on('message', msg => {
                 case 'guild':
                   call_args.guild = msg.guild;
                   break;
+                case 'command_dispatch':
+                  call_args.command_dispatch = command_dispatch;
+                  break;
                 default:
                   break;
               }

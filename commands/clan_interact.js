@@ -163,11 +163,14 @@ const siege = ({args, player_data}) => {
   // Check tile
   const selected_tile = args[0].toLowerCase();
   const tile_owner = db.get_tile_owner.get(selected_tile);
+  const house_sieges = db.count_house_sieges.get(player_data.house);
 
   if(tile_owner) {
     // Tile is good. Make sure it is owned by a house at war with
     if(player_data.house === tile_owner.house) {
       command_return.reply = "Your house owns this castle";
+    } else if(house_sieges.num_sieges >= 3) {
+      command_return.reply = "Your house already has 3 declared sieges";
     } else {
       const war = db.get_war_between_houses.get({
         "house1": player_data.house,
