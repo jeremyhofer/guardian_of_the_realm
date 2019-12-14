@@ -70,6 +70,47 @@ if (!war_table['count(*)']) {
       house_b TEXT
     );
   `).run();
+
+  sql.prepare(`
+    INSERT INTO wars (house_a, house_b) VALUES
+      ("572290551357898781","572288816652484608"),
+      ("572290551357898781","572291484288548929"),
+      ("572290551357898781","572288999843168266"),
+      ("572290551357898781","572288151419355136"),
+      ("572290551357898781","572289104742580254"),
+      ("572290551357898781","572288492101435408"),
+      ("572288816652484608","572291484288548929"),
+      ("572288816652484608","572288999843168266"),
+      ("572288816652484608","572288151419355136"),
+      ("572288816652484608","572289104742580254"),
+      ("572288816652484608","572288492101435408"),
+      ("572291484288548929","572288999843168266"),
+      ("572291484288548929","572288151419355136"),
+      ("572291484288548929","572289104742580254"),
+      ("572291484288548929","572288492101435408"),
+      ("572288999843168266","572288151419355136"),
+      ("572288999843168266","572289104742580254"),
+      ("572288999843168266","572288492101435408"),
+      ("572288151419355136","572289104742580254"),
+      ("572288151419355136","572288492101435408"),
+      ("572289104742580254","572288492101435408")
+    `).run();
+}
+
+const pact_table = sql.prepare(`
+  SELECT count(*) FROM sqlite_master
+  WHERE type='table' AND name = 'pacts';
+`).get();
+
+if (!pact_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE pacts (
+      pact_id INTEGER PRIMARY KEY,
+      house_a TEXT,
+      house_b TEXT
+    );
+  `).run();
 }
 
 const vote_table = sql.prepare(`
@@ -259,6 +300,12 @@ module.exports = {
   "get_expired_truce_vote": sql.prepare(`
     SELECT * FROM votes WHERE type like "truce%" and time <= ?
   `),
+  "get_expired_pact_vote": sql.prepare(`
+    SELECT * FROM votes WHERE type like "pact%" and time <= ?
+  `),
+  "get_expired_war_vote": sql.prepare(`
+    SELECT * FROM votes WHERE type like "war%" and time <= ?
+  `),
   "get_all_house_votes_by_type": sql.prepare(`
     SELECT * FROM votes WHERE type = ? and user in (
       SELECT user FROM player_data WHERE house = ?)
@@ -281,6 +328,22 @@ module.exports = {
   `),
   "remove_war": sql.prepare(`
     DELETE FROM wars WHERE war_id = @war_id
+  `),
+  "add_pact": sql.prepare(`
+    INSERT INTO pacts (
+      house_a, house_b)
+    VALUES (
+      @house_a, @house_b);
+  `),
+  "get_all_pacts": sql.prepare(`
+    SELECT * from pacts
+  `),
+  "get_pact_between_houses": sql.prepare(`
+    SELECT * from pacts WHERE (house_a = @house1 and house_b = @house2)
+      or (house_a = @house2 and house_b = @house1)
+  `),
+  "remove_pact": sql.prepare(`
+    DELETE FROM pacts WHERE pact_id = @pact_id
   `),
   "get_all_tiles": sql.prepare(`
     SELECT * from tile_owners
