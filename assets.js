@@ -170,6 +170,12 @@ module.exports = {
     "tavern": 100,
     "workshop": 1000
   },
+  "role_troop_limits": {
+    "baron": 300,
+    "earl": 600,
+    "duke": 1000,
+    "unsworn": 100
+  },
   "daily_costs": {
     "men": 2,
     "ships": 20

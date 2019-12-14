@@ -1,4 +1,5 @@
 const args_js = require('../args.js');
+const assets = require('../assets.js');
 const db = require('../database.js');
 const utils = require('../utils.js');
 
@@ -54,14 +55,14 @@ const pledge = ({args, player_data, player_roles}) => {
   const num_men = parseInt(args[1], 10);
   const action = args[2].toLowerCase();
 
-  let role_limit = 100;
+  let role_limit = assets.role_troop_limits.unsworn;
 
   if(player_roles.includes("duke")) {
-    role_limit = 1000;
+    role_limit = assets.role_troop_limits.duke;
   } else if (player_roles.includes("earl")) {
-    role_limit = 600;
+    role_limit = assets.role_troop_limits.earl;
   } else if (player_roles.includes("baron")) {
-    role_limit = 300;
+    role_limit = assets.role_troop_limits.baron;
   }
 
   const tile_owner = db.get_tile_owner.get(selected_tile);
