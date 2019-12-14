@@ -224,6 +224,10 @@ module.exports = {
       @train_last_time, @work_last_time);
   `),
   "get_all_players": sql.prepare("SELECT * FROM player_data"),
+  "count_all_players_in_house": sql.prepare(`
+    SELECT house, count(*) as num_members from player_data
+    WHERE house != "" group by house
+  `),
   "get_loan": sql.prepare("SELECT * FROM loans WHERE user = ?"),
   "add_loan": sql.prepare(`
     INSERT INTO loans (

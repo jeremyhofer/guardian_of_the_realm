@@ -8,7 +8,7 @@ const utils = require('../utils.js');
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = ({args, player_data}) => {
+const join = ({player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data},
@@ -19,13 +19,36 @@ const join = ({args, player_data}) => {
     "reply": ""
   };
 
-  const [selected_house] = args;
-
   // See if the player is in a house. If they are they cannot join another one
   if(player_data.house) {
     command_return.reply = "You are already part of a house";
   } else {
-    // Add the player to the house
+    // Add the player to a house with an opening
+    const house_counts = {};
+
+    assets.houses.forEach(house => {
+      house_counts[house] = 0;
+    });
+
+    db.count_all_players_in_house.all().forEach(data => {
+      house_counts[data.house] = data.num_members;
+    });
+
+    const sorted_houses = [];
+
+    for(const key in house_counts) {
+      if(key in house_counts) {
+        sorted_houses.push({
+          "id": key,
+          "count": house_counts[key]
+        });
+      }
+    }
+
+    sorted_houses.sort((first, second) => first.count - second.count);
+
+    const selected_house = sorted_houses[0].id;
+
     command_return.update.player_data.house = selected_house;
     command_return.update.roles.add.push(selected_house);
     command_return.reply = `You successfully joined <@&${selected_house}>!`;
@@ -388,12 +411,9 @@ module.exports = {
   "dispatch": {
     "join": {
       "function": join,
-      "args": [
-        "args",
-        "player_data"
-      ],
-      "command_args": [[args_js.arg_types.house]],
-      "usage": ["HOUSE"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": []
     },
     "pledge": {
       "function": pledge,
