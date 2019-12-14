@@ -272,6 +272,8 @@ client.on('message', msg => {
                       info.lastInsertRowid
                     );
                   });
+
+                  game_tasks.post_updated_map({"guild": msg.guild});
                 }
                 if('update' in command_return.sieges) {
                   const siege = command_return.sieges.update;

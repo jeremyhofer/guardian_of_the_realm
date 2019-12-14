@@ -685,6 +685,17 @@ module.exports = {
       ? "No active wars"
       : active_wars;
 
+    let active_sieges = "";
+    const all_sieges = db.get_all_sieges.all();
+    all_sieges.forEach(siege => {
+      active_sieges += `${siege.tile}: :crossed_swords: ` +
+        `<@&${siege.attacker}>\n`;
+    });
+
+    active_sieges = active_sieges
+      ? active_sieges
+      : "No active sieges";
+
     const embed = {
       "fields": [
         {
@@ -694,6 +705,10 @@ module.exports = {
         {
           "name": "Active Wars",
           "value": active_wars
+        },
+        {
+          "name": "Active Sieges",
+          "value": active_sieges
         }
       ]
     };

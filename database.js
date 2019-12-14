@@ -316,6 +316,9 @@ module.exports = {
   "get_expired_siege": sql.prepare(`
     SELECT * from sieges WHERE time <= ?
   `),
+  "get_all_sieges": sql.prepare(`
+    SELECT * from sieges
+  `),
   "remove_siege": sql.prepare(`
     DELETE FROM sieges WHERE siege_id = @siege_id
   `),
