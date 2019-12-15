@@ -56,12 +56,12 @@ const cooldown = ({player_data, command_dispatch}) => {
       const command_cooldown =
         command_dispatch[cooldown_map[key]].cooldown.time;
       let time_left = player_data[key] - now + command_cooldown;
+      let key_cap = cooldown_map[key][0].toUpperCase() + cooldown_map[key].slice(1);
       time_left = time_left < 0
         ? 0
         : time_left;
-
       const time_until_string = utils.get_time_until_string(time_left);
-      reply += `${cooldown_map[key]} ${time_until_string}\n`;
+      reply += `${key_cap} ${time_until_string}\n`;
     }
   }
 
@@ -90,11 +90,11 @@ const roles = ({player_roles}) => {
   let reply = "Income Roles:\n";
 
   money_roles.forEach(role => {
+    const role_cap = role[0].toUpperCase() + role.slice(1);
     const symbol = player_roles.includes(role)
       ? ":white_check_mark:"
       : ":x:";
-
-    reply += `${symbol} ${role}: ${assets.daily_payouts[role]} :moneybag: ` +
+    reply += `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
       `per Day\n`;
   });
 
@@ -104,6 +104,7 @@ const roles = ({player_roles}) => {
   for(let inc = 0; inc < troop_roles.length; inc += 1) {
     const role = troop_roles[inc];
     const troop_limit = assets.role_troop_limits[role];
+    const role_cap = role[0].toUpperCase() + role.slice(1);
     let role_mark = ":x:";
     if(player_roles.includes(role) || role === "unsworn") {
       if(no_role) {
@@ -116,7 +117,7 @@ const roles = ({player_roles}) => {
       role_mark = ":arrow_down:";
     }
 
-    role_reply = `${role_mark} ${role} ${troop_limit} ` +
+    role_reply = `${role_mark} ${role_cap} ${troop_limit} ` +
           `${assets.emojis.MenAtArms} per Siege\n${role_reply}`;
   }
 

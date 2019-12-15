@@ -252,16 +252,16 @@ module.exports = {
             // Remove the siege
             db.remove_siege.run(siege);
           });
-
-          vote_reply += "A truce has been declared - the war is over!";
+          // Successful Truce Vote
+          vote_reply += "A truce has been brokered - pray the peace lasts!";
           regen_map = true;
         } else {
           // We continue to WAR
-          vote_reply += "A truce was not reached - war continues!";
+          vote_reply += "A truce was not reached - War continues!";
         }
       } else {
         // This should indicate that the other house did not vote. War continues
-        vote_reply += "A truce was not reached - war continues!";
+        vote_reply += "The attempt failed horribly - War continues!";
       }
 
       // Send the reply
@@ -322,12 +322,12 @@ module.exports = {
 
       const p_house_vote_count = p_yes_count + p_no_count;
 
-      let vote_reply = `A war vote between <@&${player_data.house}> and ` +
+      let vote_reply = `A war vote by <@&${player_data.house}> against ` +
         `<@&${other_house}> has finished. `;
 
       let regen_map = false;
 
-      // Determine the vote outcome
+      // Determine the vote outcomey
       if(p_house_vote_count > 0) {
         if(p_house_yes > p_house_no) {
           // We have a war! Remove the pact
@@ -369,16 +369,16 @@ module.exports = {
             // Remove the siege
             db.remove_siege.run(siege);
           });
-
-          vote_reply += "A war has been declared - the war is over!";
+          // War Happens!
+          vote_reply += "Their Pact has been broken - this betrayal means War!";
           regen_map = true;
         } else {
           // We continue to WAR
-          vote_reply += "A war was not reached - war continues!";
+          vote_reply += "The warmongers were shouted down - the Pact holds for now.";
         }
       } else {
         // This should indicate that the other house did not vote. War continues
-        vote_reply += "A war was not reached - war continues!";
+        vote_reply += "Not very many people showed up - the Pact holds.";
       }
 
       vote_reply += `\n<@&${player_data.house}>: ${p_yes_count} yays ` +
@@ -496,16 +496,16 @@ module.exports = {
             // Remove the siege
             db.remove_siege.run(siege);
           });
-
-          vote_reply += "A pact has been declared - the war is over!";
+          // Pact was a success, both agreed.
+          vote_reply += "A Pact has been brokered - pray the peace lasts!";
           regen_map = true;
         } else {
           // We continue to WAR
-          vote_reply += "A pact was not reached - war continues!";
+          vote_reply += "A Pact was not reached - War continues!";
         }
       } else {
         // This should indicate that the other house did not vote. War continues
-        vote_reply += "A pact was not reached - war continues!";
+        vote_reply += "The attempt failed horribly - War continues!";
       }
 
       vote_reply += `\n<@&${player_data.house}>: ${p_yes_count} yays ` +
@@ -1052,7 +1052,7 @@ module.exports = {
 
       reply = "Done";
     } else {
-      reply = "You are not allowed to use this command";
+      reply = "You, player_mention, dare command this of me? Be gone, before you destroy these lands.";
     }
 
     return {reply};
