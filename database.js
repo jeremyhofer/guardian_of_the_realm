@@ -61,14 +61,9 @@ const war_table = sql.prepare(`
   WHERE type='table' AND name = 'wars';
 `).get();
 
-if (!war_table['count(*)']) {
-  // If the table isn't there, create it and setup the database correctly.
+const reset_wars = () => {
   sql.prepare(`
-    CREATE TABLE wars (
-      war_id INTEGER PRIMARY KEY,
-      house_a TEXT,
-      house_b TEXT
-    );
+    DELETE FROM wars;
   `).run();
 
   sql.prepare(`
@@ -95,6 +90,19 @@ if (!war_table['count(*)']) {
       ("572288151419355136","572288492101435408"),
       ("572289104742580254","572288492101435408")
     `).run();
+};
+
+if (!war_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE wars (
+      war_id INTEGER PRIMARY KEY,
+      house_a TEXT,
+      house_b TEXT
+    );
+  `).run();
+
+  reset_wars();
 }
 
 const pact_table = sql.prepare(`
@@ -142,13 +150,9 @@ const owners_table = sql.prepare(`
   WHERE type='table' AND name = 'tile_owners';
 `).get();
 
-if (!owners_table['count(*)']) {
-  // If the table isn't there, create it and setup the database correctly.
+const reset_owners = () => {
   sql.prepare(`
-    CREATE TABLE tile_owners (
-      tile TEXT PRIMARY KEY,
-      house TEXT
-    );
+    DELETE FROM tile_owners
   `).run();
 
   // Add default tile owners for now
@@ -169,6 +173,18 @@ if (!owners_table['count(*)']) {
     ("c10", "572288151419355136"),
     ("d10", "572291484288548929");
   `).run();
+};
+
+if (!owners_table['count(*)']) {
+  // If the table isn't there, create it and setup the database correctly.
+  sql.prepare(`
+    CREATE TABLE tile_owners (
+      tile TEXT PRIMARY KEY,
+      house TEXT
+    );
+  `).run();
+
+  reset_owners();
 }
 
 const siege_table = sql.prepare(`
@@ -446,5 +462,30 @@ module.exports = {
     "thief_last_time": 0,
     "train_last_time": 0,
     "work_last_time": 0
+  },
+  "reset_everything": () => {
+    sql.prepare(`
+      DELETE FROM pledges
+    `).run();
+    sql.prepare(`
+      DELETE FROM sieges
+    `).run();
+    sql.prepare(`
+      DELETE FROM votes
+    `).run();
+    reset_wars();
+    reset_owners();
+    sql.prepare(`
+      DELETE FROM loans
+    `).run();
+    sql.prepare(`
+      DELETE FROM pacts
+    `).run();
+    sql.prepare(`
+      UPDATE tracker SET value = 0 WHERE name = "payout_time"
+    `).run();
+    sql.prepare(`
+      UPDATE tracker SET value = 1 WHERE name = "game_active"
+    `).run();
   }
 };

@@ -995,5 +995,66 @@ module.exports = {
     });
 
     return {};
+  },
+  "reset_everything": ({guild, player_roles}) => {
+    let reply = "";
+
+    if(player_roles.includes("developer")) {
+      // Remove everyone from game roles
+      for(const role_id in assets.game_roles) {
+        if(role_id in assets.game_roles) {
+          guild.roles.get(role_id).members.forEach(member => {
+            member.removeRole(role_id).catch(console.error);
+          });
+        }
+      }
+
+      // Reset everyone's data
+      db.get_all_players.all().forEach(player => {
+        const new_data = {...db.default_player};
+        new_data.user = player.user;
+        db.set_player.run(new_data);
+      });
+
+      db.reset_everything();
+
+      module.exports.post_updated_map({guild});
+
+      const remake_channels = [
+        "house-bear",
+        "house-dragon",
+        "house-falcon",
+        "house-hydra",
+        "house-lion",
+        "house-scorpion",
+        "house-wolf"
+      ];
+
+      const house_cat = guild.channels.find(channel => channel.name ===
+        "The Great Houses");
+
+      if(house_cat) {
+        for(let inc = 0; inc < remake_channels.length; inc += 1) {
+          const channel_to_remake =
+            guild.channels.find(channel => channel.name ===
+              remake_channels[inc]);
+
+          if(channel_to_remake) {
+            channel_to_remake.clone().
+              then(clone => {
+                clone.setParent(house_cat).catch(console.error);
+                channel_to_remake.delete().catch(console.error);
+              }).
+              catch(console.error);
+          }
+        }
+      }
+
+      reply = "Done";
+    } else {
+      reply = "You are not allowed to use this command";
+    }
+
+    return {reply};
   }
 };

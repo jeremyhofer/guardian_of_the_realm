@@ -21,8 +21,17 @@ const command_dispatch = {
   ...player_interact.dispatch,
   ...tasks.dispatch,
   "map": {
-    "function": guild => game_tasks.post_updated_map(guild),
+    "function": cmd_args => game_tasks.post_updated_map(cmd_args),
     "args": ["guild"],
+    "command_args": [[]],
+    "usage": []
+  },
+  "reset": {
+    "function": cmd_args => game_tasks.reset_everything(cmd_args),
+    "args": [
+      "guild",
+      "player_roles"
+    ],
     "command_args": [[]],
     "usage": []
   }
