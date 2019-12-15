@@ -21,8 +21,17 @@ const command_dispatch = {
   ...player_interact.dispatch,
   ...tasks.dispatch,
   "map": {
-    "function": guild => game_tasks.post_updated_map(guild),
+    "function": cmd_args => game_tasks.post_updated_map(cmd_args),
     "args": ["guild"],
+    "command_args": [[]],
+    "usage": []
+  },
+  "reset": {
+    "function": cmd_args => game_tasks.reset_everything(cmd_args),
+    "args": [
+      "guild",
+      "player_roles"
+    ],
     "command_args": [[]],
     "usage": []
   }
@@ -272,6 +281,8 @@ client.on('message', msg => {
                       info.lastInsertRowid
                     );
                   });
+
+                  game_tasks.post_updated_map({"guild": msg.guild});
                 }
                 if('update' in command_return.sieges) {
                   const siege = command_return.sieges.update;
@@ -330,9 +341,9 @@ setInterval(() => {
     game_tasks.collect_loans(guild, now);
 
     // Resolve expired war votes
-    const expiration_time = now - utils.hours_to_ms(6);
+    const expiration_time = now - utils.hours_to_ms(8);
     game_tasks.resolve_war_votes(guild, expiration_time);
-    game_tasks.resolve_truce_votes(guild, expiration_time);
+    game_tasks.resolve_pact_votes(guild, expiration_time);
     game_tasks.resolve_sieges(guild, now);
   }
 }, 1000);

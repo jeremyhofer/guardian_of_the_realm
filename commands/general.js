@@ -68,6 +68,63 @@ const cooldown = ({player_data, command_dispatch}) => {
   return {reply};
 };
 
+const roles = ({player_roles}) => {
+  const money_roles = [
+    "apothecary",
+    "blacksmith",
+    "mill",
+    "mine",
+    "quarry",
+    "stable",
+    "tavern",
+    "workshop"
+  ];
+
+  const troop_roles = [
+    "duke",
+    "earl",
+    "baron",
+    "unsworn"
+  ];
+
+  let reply = "Income Roles:\n";
+
+  money_roles.forEach(role => {
+    const symbol = player_roles.includes(role)
+      ? ":white_check_mark:"
+      : ":x:";
+
+    reply += `${symbol} ${role}: ${assets.daily_payouts[role]} :moneybag: ` +
+      `per Day\n`;
+  });
+
+  let role_reply = "";
+  let no_role = true;
+
+  for(let inc = 0; inc < troop_roles.length; inc += 1) {
+    const role = troop_roles[inc];
+    const troop_limit = assets.role_troop_limits[role];
+    let role_mark = ":x:";
+    if(player_roles.includes(role) || role === "unsworn") {
+      if(no_role) {
+        role_mark = ":white_check_mark:";
+        no_role = false;
+      } else {
+        role_mark = ":arrow_down:";
+      }
+    } else if(!no_role) {
+      role_mark = ":arrow_down:";
+    }
+
+    role_reply = `${role_mark} ${role} ${troop_limit} ` +
+          `${assets.emojis.MenAtArms} per Siege\n${role_reply}`;
+  }
+
+  reply += `\nNobility Roles:\n${role_reply}`;
+
+  return {reply};
+};
+
 module.exports = {
   "dispatch": {
     "help": {
@@ -88,6 +145,12 @@ module.exports = {
         "player_data",
         "command_dispatch"
       ],
+      "command_args": [[]],
+      "usage": []
+    },
+    "roles": {
+      "function": roles,
+      "args": ["player_roles"],
       "command_args": [[]],
       "usage": []
     }

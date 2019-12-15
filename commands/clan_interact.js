@@ -1,4 +1,5 @@
 const args_js = require('../args.js');
+const assets = require('../assets.js');
 const db = require('../database.js');
 const utils = require('../utils.js');
 
@@ -7,7 +8,7 @@ const utils = require('../utils.js');
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = ({args, player_data}) => {
+const join = ({player_data}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data},
@@ -18,13 +19,36 @@ const join = ({args, player_data}) => {
     "reply": ""
   };
 
-  const [selected_house] = args;
-
   // See if the player is in a house. If they are they cannot join another one
   if(player_data.house) {
     command_return.reply = "You are already part of a house";
   } else {
-    // Add the player to the house
+    // Add the player to a house with an opening
+    const house_counts = {};
+
+    assets.houses.forEach(house => {
+      house_counts[house] = 0;
+    });
+
+    db.count_all_players_in_house.all().forEach(data => {
+      house_counts[data.house] = data.num_members;
+    });
+
+    const sorted_houses = [];
+
+    for(const key in house_counts) {
+      if(key in house_counts) {
+        sorted_houses.push({
+          "id": key,
+          "count": house_counts[key]
+        });
+      }
+    }
+
+    sorted_houses.sort((first, second) => first.count - second.count);
+
+    const selected_house = sorted_houses[0].id;
+
     command_return.update.player_data.house = selected_house;
     command_return.update.roles.add.push(selected_house);
     command_return.reply = `You successfully joined <@&${selected_house}>!`;
@@ -54,14 +78,14 @@ const pledge = ({args, player_data, player_roles}) => {
   const num_men = parseInt(args[1], 10);
   const action = args[2].toLowerCase();
 
-  let role_limit = 100;
+  let role_limit = assets.role_troop_limits.unsworn;
 
   if(player_roles.includes("duke")) {
-    role_limit = 1000;
+    role_limit = assets.role_troop_limits.duke;
   } else if (player_roles.includes("earl")) {
-    role_limit = 600;
+    role_limit = assets.role_troop_limits.earl;
   } else if (player_roles.includes("baron")) {
-    role_limit = 300;
+    role_limit = assets.role_troop_limits.baron;
   }
 
   const tile_owner = db.get_tile_owner.get(selected_tile);
@@ -188,7 +212,7 @@ const siege = ({args, player_data}) => {
           command_return.sieges.add = {
             "tile": selected_tile,
             "attacker": player_data.house,
-            "time": Date.now() + utils.hours_to_ms(6)
+            "time": Date.now() + utils.hours_to_ms(8)
           };
           delete command_return.reply;
         }
@@ -227,7 +251,7 @@ const siege = ({args, player_data}) => {
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const truce = ({args, player_data}) => {
+const old_truce = ({args, player_data}) => {
   const command_return = {
     "votes": {},
     "reply": ""
@@ -333,7 +357,7 @@ const truce = ({args, player_data}) => {
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const war = ({args, player_data}) => {
+const old_war = ({args, player_data}) => {
   const command_return = {
     "votes": {},
     "reply": ""
@@ -383,16 +407,217 @@ const war = ({args, player_data}) => {
   return command_return;
 };
 
+/*
+ * Open a vote between two waring houses to stop the war. majority of each
+ * house must agree <HOUSE> [YES|NO]
+ *
+ * When a player uses this command pull all current votes in the votes table
+ * of type "truce" for all people in the player's house and the other house
+ * in the truce vote. This is the set of all votes for the truce.
+ *
+ * Once the set is retrieved, see if the player already has a vote in place.
+ * If the player has voted there is nothing for them to do. If the player does
+ * not have a vote validate and record their vote in the pool.
+ *
+ * Before saving check to see if all players in both houses have voted on the
+ * truce. If so, check the votes in both houses. See if at least half of both
+ * houses agree on the truce. If so, remove the war. If not the war remains.
+ *
+ * After a vote finishes delete all the votes for the truce in the database.
+ * Announce the outcome in channels.
+ *
+ * If a vote is not finished add the player's vote to the database.
+ *
+ * Vote also ends in a majority after 6 hours time.
+ */
+const pact = ({args, player_data}) => {
+  const command_return = {
+    "votes": {},
+    "reply": ""
+  };
+
+  // Figure it out
+  var [
+    house_vote,
+    player_choice
+  ] = args;
+
+  player_choice = player_choice.toLowerCase();
+
+  // See if the player has already voted for this
+  const yes_votes = db.get_player_vote_by_type.all(
+    player_data.user,
+    "pact_yes"
+  );
+  const no_votes = db.get_player_vote_by_type.all(
+    player_data.user,
+    "pact_no"
+  );
+  const all_votes = yes_votes.concat(no_votes);
+
+  const existing_vote = all_votes.filter(vote => vote &&
+    'choice' in vote && vote.choice === house_vote);
+
+  if(existing_vote.length) {
+    // Already voted in this pact vote
+    const [vote] = existing_vote;
+    const choice = vote.type === "pact_yes"
+      ? "YES"
+      : "NO";
+
+    command_return.reply = `You have already voted ${choice} to a pact ` +
+      `with <@&${vote.choice}>`;
+  } else {
+    // Ensure a war exists between the houses
+    const existing_war = db.get_war_between_houses.get({
+      "house1": player_data.house,
+      "house2": house_vote
+    });
+
+    if(existing_war) {
+      // Check yes/no choice
+      let pact_type = "";
+
+      if(player_choice === "yes") {
+        pact_type = "pact_yes";
+      } else if(player_choice === "no") {
+        pact_type = "pact_no";
+      }
+
+      if(pact_type) {
+        // Truce vote is good. Add it
+        command_return.votes.add = {
+          "type": pact_type,
+          "user": player_data.user,
+          "choice": house_vote,
+          "time": Date.now()
+        };
+        command_return.reply = `Your choice of ${player_choice} was ` +
+          "recorded";
+      } else {
+        command_return.reply = "You must vote YES or NO";
+      }
+    } else {
+      command_return.reply = "Your house is not at war with " +
+        `<@&${house_vote}>`;
+    }
+  }
+
+  return command_return;
+};
+
+/*
+ * Start vote in house to begin a war. choose other houses, or no war.
+ * majority wins [HOUSE|PEACE]
+ *
+ * When a player uses this command pull all current votes in the votes table
+ * of type "war" for all people in the player's house. This is the set of
+ * current war votes for the house (each house has at most 1 active war vote
+ * at a time and last until all have voted).
+ *
+ * Once the set is retrieved, see if the player already has a vote in place.
+ * If the player has voted there is nothing for them to do. If the player
+ * does not have a vote see if their vote is for a house and, if so, whether
+ * a war already exists between the player's house and the house they vote
+ * on. If so, do nothing. If a war does not exist add the player's vote to
+ * the vote pool.
+ *
+ * Before saving to the database see if all players in the house have voted.
+ * If all players have voted determine the outcome of the vote, based on the
+ * majority. Ties always lead to peace. If a war is the outcome add a new war
+ * between the two houses.
+ *
+ * After a vote finishes delete all of the houses' votes in the database. If a
+ * war was the result also delete all existing votes for the other house that
+ * are against this house if they exist, allowing those players to choose a
+ * different house to vote against. Annouce in channels about the new war.
+ *
+ * If a vote is not finished add the player's vote to the database.
+ *
+ * Vote also ends in a majority after 6 hours time.
+ */
+const war = ({args, player_data}) => {
+  const command_return = {
+    "votes": {},
+    "reply": ""
+  };
+
+  // Figure it out
+  var [
+    house_vote,
+    player_choice
+  ] = args;
+
+  player_choice = player_choice.toLowerCase();
+
+  // See if the player has already voted for this
+  const yes_votes = db.get_player_vote_by_type.all(
+    player_data.user,
+    "war_yes"
+  );
+  const no_votes = db.get_player_vote_by_type.all(
+    player_data.user,
+    "war_no"
+  );
+  const all_votes = yes_votes.concat(no_votes);
+
+  const existing_vote = all_votes.filter(vote => vote &&
+    'choice' in vote && vote.choice === house_vote);
+
+  if(existing_vote.length) {
+    // Already voted in this war vote
+    const [vote] = existing_vote;
+    const choice = vote.type === "war_yes"
+      ? "YES"
+      : "NO";
+
+    command_return.reply = `You have already voted ${choice} to a war ` +
+      `with <@&${vote.choice}>`;
+  } else {
+    // Ensure a war exists between the houses
+    const existing_pact = db.get_pact_between_houses.get({
+      "house1": player_data.house,
+      "house2": house_vote
+    });
+
+    if(existing_pact) {
+      // Check yes/no choice
+      let war_type = "";
+
+      if(player_choice === "yes") {
+        war_type = "war_yes";
+      } else if(player_choice === "no") {
+        war_type = "war_no";
+      }
+
+      if(war_type) {
+        // Truce vote is good. Add it
+        command_return.votes.add = {
+          "type": war_type,
+          "user": player_data.user,
+          "choice": house_vote,
+          "time": Date.now()
+        };
+        command_return.reply = `Your choice of ${player_choice} was ` +
+          "recorded";
+      } else {
+        command_return.reply = "You must vote YES or NO";
+      }
+    } else {
+      command_return.reply = "Your house does not have a pact with " +
+        `<@&${house_vote}>`;
+    }
+  }
+
+  return command_return;
+};
 module.exports = {
   "dispatch": {
     "join": {
       "function": join,
-      "args": [
-        "args",
-        "player_data"
-      ],
-      "command_args": [[args_js.arg_types.house]],
-      "usage": ["HOUSE"]
+      "args": ["player_data"],
+      "command_args": [[]],
+      "usage": []
     },
     "pledge": {
       "function": pledge,
@@ -419,8 +644,8 @@ module.exports = {
       "command_args": [[args_js.arg_types.string]],
       "usage": ["TILE"]
     },
-    "truce": {
-      "function": truce,
+    "pact": {
+      "function": pact,
       "args": [
         "args",
         "player_data"
@@ -440,10 +665,12 @@ module.exports = {
         "player_data"
       ],
       "command_args": [
-        [args_js.arg_types.house],
-        [args_js.arg_types.string]
+        [
+          args_js.arg_types.house,
+          args_js.arg_types.string
+        ]
       ],
-      "usage": ["HOUSE|peace"]
+      "usage": ["HOUSE yes|no"]
     }
   }
 };

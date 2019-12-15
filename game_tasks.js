@@ -66,7 +66,7 @@ module.exports = {
         `of ${loan.amount_due} has been deducted from your account`);
     });
   },
-  "resolve_war_votes": (guild, expiration_time) => {
+  "old_resolve_war_votes": (guild, expiration_time) => {
     // Resolve expired war votes
     let expired_war_vote =
       db.get_expired_votes_by_type.get("war", expiration_time);
@@ -290,6 +290,256 @@ module.exports = {
 
       // Get next truce to try and resolve, if exists
       expired_truce_vote = db.get_expired_truce_vote.get(expiration_time);
+    }
+  },
+  "resolve_war_votes": (guild, expiration_time) => {
+    let expired_war_vote = db.get_expired_war_vote.get(expiration_time);
+
+    while(expired_war_vote) {
+      // Get the data for the player who made this vote
+      const player_data = db.get_player.get(expired_war_vote.user);
+      const other_house = expired_war_vote.choice;
+
+      // Get all votes for this specific war vote
+      const p_house_votes_yes = db.get_all_house_votes_by_type.all(
+        "war_yes",
+        player_data.house
+      );
+      const p_house_votes_no = db.get_all_house_votes_by_type.all(
+        "war_no",
+        player_data.house
+      );
+
+      // Filter all the votes by vote type and specific war vote
+      const p_house_yes = p_house_votes_yes.filter(vote => vote.choice ===
+        other_house);
+      const p_house_no = p_house_votes_no.filter(vote => vote.choice ===
+        other_house);
+
+      // Get the votes for/against
+      const p_yes_count = p_house_yes.length;
+      const p_no_count = p_house_no.length;
+
+      const p_house_vote_count = p_yes_count + p_no_count;
+
+      let vote_reply = `A war vote between <@&${player_data.house}> and ` +
+        `<@&${other_house}> has finished. `;
+
+      let regen_map = false;
+
+      // Determine the vote outcome
+      if(p_house_vote_count > 0) {
+        if(p_house_yes > p_house_no) {
+          // We have a war! Remove the pact
+          const pact = db.get_pact_between_houses.get({
+            "house1": player_data.house,
+            "house2": other_house
+          });
+
+          db.remove_pact.run(pact);
+
+          db.add_war.run({
+            "house_a": player_data.house,
+            "house_b": other_house
+          });
+
+          /*
+           * If there were any sieges between the houses, remove them
+           * and return the pledged troops
+           */
+
+          const sieges_between_houses =
+            db.get_all_siege_id_between_two_houses.all({
+              "house_a": player_data.house,
+              "house_b": other_house
+            });
+
+          // Iterate over each siege
+          sieges_between_houses.forEach(siege => {
+            const pledges = db.get_all_pledges_for_siege.all(siege);
+
+            // Iterate over each pledge. Return the men and remore the pledge
+            pledges.forEach(pledge => {
+              const pledger_data = db.get_player.get(pledge.user);
+              pledger_data.men += pledge.men;
+              db.set_player.run(pledger_data);
+              db.remove_pledge.run(pledge);
+            });
+
+            // Remove the siege
+            db.remove_siege.run(siege);
+          });
+
+          vote_reply += "A war has been declared - the war is over!";
+          regen_map = true;
+        } else {
+          // We continue to WAR
+          vote_reply += "A war was not reached - war continues!";
+        }
+      } else {
+        // This should indicate that the other house did not vote. War continues
+        vote_reply += "A war was not reached - war continues!";
+      }
+
+      vote_reply += `\n<@&${player_data.house}>: ${p_yes_count} yays ` +
+        `${p_no_count} nays`;
+
+      // Send the reply
+      guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
+
+      // Remove all associated votes
+      p_house_yes.forEach(vote => {
+        db.remove_vote.run(vote);
+      });
+
+      p_house_no.forEach(vote => {
+        db.remove_vote.run(vote);
+      });
+
+      if(regen_map) {
+        module.exports.post_updated_map({guild});
+      }
+
+      // Get next war to try and resolve, if exists
+      expired_war_vote = db.get_expired_war_vote.get(expiration_time);
+    }
+  },
+  "resolve_pact_votes": (guild, expiration_time) => {
+    let expired_pact_vote = db.get_expired_pact_vote.get(expiration_time);
+
+    while(expired_pact_vote) {
+      // Get the data for the player who made this vote
+      const player_data = db.get_player.get(expired_pact_vote.user);
+      const other_house = expired_pact_vote.choice;
+
+      // Get all votes for both houses
+      const p_house_votes_yes = db.get_all_house_votes_by_type.all(
+        "pact_yes",
+        player_data.house
+      );
+      const p_house_votes_no = db.get_all_house_votes_by_type.all(
+        "pact_no",
+        player_data.house
+      );
+      const o_house_votes_yes = db.get_all_house_votes_by_type.all(
+        "pact_yes",
+        other_house
+      );
+      const o_house_votes_no = db.get_all_house_votes_by_type.all(
+        "pact_no",
+        other_house
+      );
+
+      // Filter all the votes by vote type and specific pact vote
+      const p_house_yes = p_house_votes_yes.filter(vote => vote.choice ===
+        other_house);
+      const p_house_no = p_house_votes_no.filter(vote => vote.choice ===
+        other_house);
+      const o_house_yes = o_house_votes_yes.filter(vote => vote.choice ===
+        player_data.house);
+      const o_house_no = o_house_votes_no.filter(vote => vote.choice ===
+        player_data.house);
+
+      // Get the votes for/against
+      const p_yes_count = p_house_yes.length;
+      const p_no_count = p_house_no.length;
+      const o_yes_count = o_house_yes.length;
+      const o_no_count = o_house_no.length;
+
+      const p_house_vote_count = p_yes_count + p_no_count;
+      const o_house_vote_count = o_yes_count + o_no_count;
+
+      let vote_reply = `A pact vote between <@&${player_data.house}> and ` +
+        `<@&${other_house}> has finished. `;
+
+      let regen_map = false;
+
+      // Determine the vote outcome
+      if(p_house_vote_count > 0 && o_house_vote_count > 0) {
+        if(p_house_yes > p_house_no && o_house_yes > o_house_no) {
+          // We have a pact! Remove the war
+          const war = db.get_war_between_houses.get({
+            "house1": player_data.house,
+            "house2": other_house
+          });
+
+          db.remove_war.run(war);
+
+          db.add_pact.run({
+            "house_a": player_data.house,
+            "house_b": other_house
+          });
+
+          /*
+           * If there were any sieges between the houses, remove them
+           * and return the pledged troops
+           */
+
+          const sieges_between_houses =
+            db.get_all_siege_id_between_two_houses.all({
+              "house_a": player_data.house,
+              "house_b": other_house
+            });
+
+          // Iterate over each siege
+          sieges_between_houses.forEach(siege => {
+            const pledges = db.get_all_pledges_for_siege.all(siege);
+
+            // Iterate over each pledge. Return the men and remore the pledge
+            pledges.forEach(pledge => {
+              const pledger_data = db.get_player.get(pledge.user);
+              pledger_data.men += pledge.men;
+              db.set_player.run(pledger_data);
+              db.remove_pledge.run(pledge);
+            });
+
+            // Remove the siege
+            db.remove_siege.run(siege);
+          });
+
+          vote_reply += "A pact has been declared - the war is over!";
+          regen_map = true;
+        } else {
+          // We continue to WAR
+          vote_reply += "A pact was not reached - war continues!";
+        }
+      } else {
+        // This should indicate that the other house did not vote. War continues
+        vote_reply += "A pact was not reached - war continues!";
+      }
+
+      vote_reply += `\n<@&${player_data.house}>: ${p_yes_count} yays ` +
+        `${p_no_count} nays`;
+
+      vote_reply += `\n<@&${other_house}>: ${o_yes_count} yays ` +
+        `${o_no_count} nays`;
+
+      // Send the reply
+      guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
+
+      // Remove all associated votes
+      p_house_yes.forEach(vote => {
+        db.remove_vote.run(vote);
+      });
+
+      p_house_no.forEach(vote => {
+        db.remove_vote.run(vote);
+      });
+
+      o_house_yes.forEach(vote => {
+        db.remove_vote.run(vote);
+      });
+
+      o_house_no.forEach(vote => {
+        db.remove_vote.run(vote);
+      });
+
+      if(regen_map) {
+        module.exports.post_updated_map({guild});
+      }
+
+      // Get next pact to try and resolve, if exists
+      expired_pact_vote = db.get_expired_pact_vote.get(expiration_time);
     }
   },
   "resolve_sieges": (guild, current_time) => {
@@ -675,15 +925,29 @@ module.exports = {
       map_tiles += "\n";
     });
 
-    let active_wars = "";
-    const all_wars = db.get_all_wars.all();
-    all_wars.forEach(war => {
-      active_wars += `<@&${war.house_a}> :crossed_swords: <@&${war.house_b}>\n`;
+    let active_pacts = "";
+    const all_pacts = db.get_all_pacts.all();
+    all_pacts.forEach(pact => {
+      const [h1_troop] = assets.game_roles[pact.house_a];
+      const [h2_troop] = assets.game_roles[pact.house_b];
+
+      active_pacts += `${h1_troop} :handshake: ${h2_troop}\n`;
     });
 
-    active_wars = active_wars === ""
-      ? "No active wars"
-      : active_wars;
+    active_pacts = active_pacts === ""
+      ? "No active pacts"
+      : active_pacts;
+
+    let active_sieges = "";
+    const all_sieges = db.get_all_sieges.all();
+    all_sieges.forEach(siege => {
+      active_sieges += `${siege.tile}: :crossed_swords: ` +
+        `<@&${siege.attacker}>\n`;
+    });
+
+    active_sieges = active_sieges
+      ? active_sieges
+      : "No active sieges";
 
     const embed = {
       "fields": [
@@ -692,8 +956,12 @@ module.exports = {
           "value": map_owners
         },
         {
-          "name": "Active Wars",
-          "value": active_wars
+          "name": "Active Pacts",
+          "value": active_pacts
+        },
+        {
+          "name": "Active Sieges",
+          "value": active_sieges
         }
       ]
     };
@@ -727,5 +995,66 @@ module.exports = {
     });
 
     return {};
+  },
+  "reset_everything": ({guild, player_roles}) => {
+    let reply = "";
+
+    if(player_roles.includes("developer")) {
+      // Remove everyone from game roles
+      for(const role_id in assets.game_roles) {
+        if(role_id in assets.game_roles) {
+          guild.roles.get(role_id).members.forEach(member => {
+            member.removeRole(role_id).catch(console.error);
+          });
+        }
+      }
+
+      // Reset everyone's data
+      db.get_all_players.all().forEach(player => {
+        const new_data = {...db.default_player};
+        new_data.user = player.user;
+        db.set_player.run(new_data);
+      });
+
+      db.reset_everything();
+
+      module.exports.post_updated_map({guild});
+
+      const remake_channels = [
+        "house-bear",
+        "house-dragon",
+        "house-falcon",
+        "house-hydra",
+        "house-lion",
+        "house-scorpion",
+        "house-wolf"
+      ];
+
+      const house_cat = guild.channels.find(channel => channel.name ===
+        "The Great Houses");
+
+      if(house_cat) {
+        for(let inc = 0; inc < remake_channels.length; inc += 1) {
+          const channel_to_remake =
+            guild.channels.find(channel => channel.name ===
+              remake_channels[inc]);
+
+          if(channel_to_remake) {
+            channel_to_remake.clone().
+              then(clone => {
+                clone.setParent(house_cat).catch(console.error);
+                channel_to_remake.delete().catch(console.error);
+              }).
+              catch(console.error);
+          }
+        }
+      }
+
+      reply = "Done";
+    } else {
+      reply = "You are not allowed to use this command";
+    }
+
+    return {reply};
   }
 };
