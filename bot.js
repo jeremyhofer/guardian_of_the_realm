@@ -341,7 +341,7 @@ setInterval(() => {
     game_tasks.collect_loans(guild, now);
 
     // Resolve expired war votes
-    const expiration_time = now - utils.hours_to_ms(0.01);
+    const expiration_time = now - utils.hours_to_ms(8);
     game_tasks.resolve_war_votes(guild, expiration_time);
     game_tasks.resolve_pact_votes(guild, expiration_time);
     game_tasks.resolve_sieges(guild, now);

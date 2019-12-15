@@ -212,7 +212,7 @@ const siege = ({args, player_data}) => {
           command_return.sieges.add = {
             "tile": selected_tile,
             "attacker": player_data.house,
-            "time": Date.now() + utils.hours_to_ms(6)
+            "time": Date.now() + utils.hours_to_ms(8)
           };
           delete command_return.reply;
         }
