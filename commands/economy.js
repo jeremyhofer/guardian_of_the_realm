@@ -232,7 +232,8 @@ const market = () => {
   for(var key in assets.store_items) {
     if(key in assets.store_items && 'cost' in assets.store_items[key]) {
       const item_cost = assets.store_items[key].cost;
-      reply += `${key} ${item_cost}\n`;
+      const key_cap = key[0].toUpperCase() + key.slice(1);
+      reply += `${key_cap} ${item_cost}\n`;
     }
   }
 
