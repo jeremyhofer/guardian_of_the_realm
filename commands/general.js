@@ -45,6 +45,7 @@ const cooldown = ({player_data, command_dispatch}) => {
     'subvert_last_time': 'subvert',
     'thief_last_time': 'thief',
     'train_last_time': 'train',
+    'trade_last_time': 'trade',
     'work_last_time': 'work'
 
   };
@@ -56,7 +57,8 @@ const cooldown = ({player_data, command_dispatch}) => {
       const command_cooldown =
         command_dispatch[cooldown_map[key]].cooldown.time;
       let time_left = player_data[key] - now + command_cooldown;
-      let key_cap = cooldown_map[key][0].toUpperCase() + cooldown_map[key].slice(1);
+      const key_cap =
+        cooldown_map[key][0].toUpperCase() + cooldown_map[key].slice(1);
       time_left = time_left < 0
         ? 0
         : time_left;
@@ -94,7 +96,8 @@ const roles = ({player_roles}) => {
     const symbol = player_roles.includes(role)
       ? ":white_check_mark:"
       : ":x:";
-    reply += `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
+    reply +=
+      `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
       `per Day\n`;
   });
 

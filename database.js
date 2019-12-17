@@ -15,8 +15,6 @@ if (!player_table['count(*)']) {
       men INTEGER,
       ships INTEGER,
       money INTEGER,
-      gift_last_time INTEGER,
-      loan_last_time INTEGER,
       pirate_last_time INTEGER,
       pray_last_time INTEGER,
       raid_last_time INTEGER,
@@ -25,6 +23,7 @@ if (!player_table['count(*)']) {
       subvert_last_time INTEGER,
       thief_last_time INTEGER,
       train_last_time INTEGER,
+      trade_last_time INTEGER,
       work_last_time INTEGER
     );
   `).run();
@@ -268,17 +267,15 @@ module.exports = {
   "get_player": sql.prepare("SELECT * FROM player_data WHERE user = ?"),
   "set_player": sql.prepare(`
     INSERT OR REPLACE INTO player_data (
-      user, house, men, ships, money, pray_last_time,
-      gift_last_time, loan_last_time, pirate_last_time,
-      pray_last_time, raid_last_time, smuggle_last_time,
-      spy_last_time, subvert_last_time, thief_last_time,
-      train_last_time, work_last_time)
+      user, house, men, ships, money, pray_last_time, pirate_last_time,
+      pray_last_time, raid_last_time, smuggle_last_time, spy_last_time,
+      subvert_last_time, thief_last_time, train_last_time, trade_last_time,
+      work_last_time)
     VALUES (
-      @user, @house, @men, @ships, @money, @pray_last_time,
-      @gift_last_time, @loan_last_time, @pirate_last_time,
-      @pray_last_time, @raid_last_time, @smuggle_last_time,
-      @spy_last_time, @subvert_last_time, @thief_last_time,
-      @train_last_time, @work_last_time);
+      @user, @house, @men, @ships, @money, @pray_last_time, @pirate_last_time,
+      @pray_last_time, @raid_last_time, @smuggle_last_time, @spy_last_time,
+      @subvert_last_time, @thief_last_time, @train_last_time, @trade_last_time,
+      @work_last_time);
   `),
   "get_all_players": sql.prepare("SELECT * FROM player_data"),
   "count_all_players_in_house": sql.prepare(`
@@ -451,8 +448,6 @@ module.exports = {
     "men": 20,
     "ships": 2,
     "money": 2000,
-    "gift_last_time": 0,
-    "loan_last_time": 0,
     "pirate_last_time": 0,
     "pray_last_time": 0,
     "raid_last_time": 0,
@@ -461,6 +456,7 @@ module.exports = {
     "subvert_last_time": 0,
     "thief_last_time": 0,
     "train_last_time": 0,
+    "trade_last_time": 0,
     "work_last_time": 0
   },
   "reset_everything": () => {

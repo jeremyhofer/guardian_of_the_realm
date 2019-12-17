@@ -1,5 +1,6 @@
 const args_js = require("../args.js");
 const assets = require("../assets.js");
+const db = require("../database.js");
 const utils = require("../utils.js");
 const flavor = require('../data/flavor.json');
 
@@ -343,6 +344,66 @@ const thief = ({args, player_data}) => {
   return command_return;
 };
 
+/*
+ * Trade with a different player that is in a house in which you have a pact
+ * @player <SHIPS>
+ */
+const trade = ({args, player_data}) => {
+  const command_return = {
+    "update": {
+      "player_data": {...player_data}
+    },
+    "reply": ""
+  };
+
+  const [
+    player_mention,
+    num_ships
+  ] = args;
+
+  command_return.update.player_mention = {...player_mention};
+
+  // Make sure the players' houses are in a pact
+  const pact = db.get_pact_between_houses.get({
+    "house1": player_data.house,
+    "house2": player_mention.house
+  });
+
+  if(pact) {
+    // Make sure the player has ships
+    const p_ships = player_data.ships;
+    if(player_data.user === player_mention.user) {
+      command_return.reply = "You cannot trade yourself!";
+    } else if(p_ships > 0) {
+      // Ensure the args are valid
+      if(isNaN(num_ships) || num_ships < 1) {
+        command_return.reply = "Number of ships must be a positive number";
+      } else if(p_ships >= num_ships) {
+        // All good! Grant the cash
+        const trader_pay =
+          utils.get_random_value_in_range(150, 250) * num_ships;
+        const tradee_pay =
+          utils.get_random_value_in_range(50, 150) * num_ships;
+        command_return.update.player_data.money += trader_pay;
+        command_return.update.player_mention.money += tradee_pay;
+        command_return.reply = "You successfully traded with " +
+          `<@${player_mention.user}>! You made ${trader_pay} :moneybag:` +
+          ` and <@${player_mention.user}> made ${tradee_pay} :moneybag:!`;
+        command_return.success = true;
+      } else {
+        command_return.reply = `You only have ${p_ships} ` +
+          `${assets.emojis.Warship} available`;
+      }
+    } else {
+      command_return.reply = "You do not have any ships to trade with";
+    }
+  } else {
+    command_return.reply = `Your house is not in a pact with ` +
+      `<@&${player_mention.house}>!`;
+  }
+
+  return command_return;
+};
 module.exports = {
   "dispatch": {
     "gift": {
@@ -421,6 +482,27 @@ module.exports = {
       ],
       "command_args": [[args_js.arg_types.player_mention]],
       "usage": ["@PLAYER"],
+      "allowed_channels": assets.player_interact_channels
+    },
+    "trade": {
+      "function": trade,
+      "cooldown": {
+        "time": utils.hours_to_ms(24),
+        "field": "trade_last_time",
+        "reply": "Your merchants are buying goods from the guilds, and " +
+          "their sailors are drunk in the tavern. You can set sail again at"
+      },
+      "args": [
+        "args",
+        "player_data"
+      ],
+      "command_args": [
+        [
+          args_js.arg_types.player_mention,
+          args_js.arg_types.number
+        ]
+      ],
+      "usage": ["@PLAYER SHIPS"],
       "allowed_channels": assets.player_interact_channels
     }
   }

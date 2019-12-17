@@ -20,7 +20,7 @@ module.exports = {
     };
 
     tokens.forEach(token => {
-      const player_mention = token.match(/^<@(?<player_id>\d+)>$/u);
+      const player_mention = token.match(/^<@!?(?<player_id>\d+)>$/u);
       const role_mention = token.match(/^<@&(?<role_id>\d+)>$/u);
       const channel_mention = token.match(/^<#(?<channel_id>\d+)>$/u);
       const number_match = token.match(/^(?<number>\d+)$/u);
