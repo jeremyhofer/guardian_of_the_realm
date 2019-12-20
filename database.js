@@ -87,7 +87,14 @@ const reset_wars = () => {
       ("572288999843168266","572288492101435408"),
       ("572288151419355136","572289104742580254"),
       ("572288151419355136","572288492101435408"),
-      ("572289104742580254","572288492101435408")
+      ("572289104742580254","572288492101435408"),
+      ("572290551357898781","625905668263510017"),
+      ("572288816652484608","625905668263510017"),
+      ("572288816652484608","625905668263510017"),
+      ("572291484288548929","625905668263510017"),
+      ("572288999843168266","625905668263510017"),
+      ("572288151419355136","625905668263510017"),
+      ("572289104742580254","625905668263510017")
     `).run();
 };
 
@@ -157,20 +164,22 @@ const reset_owners = () => {
   // Add default tile owners for now
   sql.prepare(`
     INSERT INTO tile_owners VALUES
-    ("c2", "572288999843168266"),
-    ("b3", "572288816652484608"),
-    ("g3", "572288151419355136"),
-    ("d4", "572290551357898781"),
-    ("f5", "572289104742580254"),
-    ("g5", "572288999843168266"),
-    ("b6", "572288492101435408"),
-    ("d6", "572288492101435408"),
-    ("e6", "572290551357898781"),
-    ("d7", "572289104742580254"),
-    ("g9", "572288816652484608"),
-    ("b10", "572291484288548929"),
-    ("c10", "572288151419355136"),
-    ("d10", "572291484288548929");
+    ("c2", "572288999843168266", "castle"),
+    ("b3", "572288816652484608", "castle"),
+    ("g3", "572288151419355136", "castle"),
+    ("d4", "572290551357898781", "castle"),
+    ("f5", "572289104742580254", "castle"),
+    ("g5", "572288999843168266", "castle"),
+    ("b6", "572288492101435408", "castle"),
+    ("d6", "572288492101435408", "castle"),
+    ("e6", "572290551357898781", "castle"),
+    ("d7", "572289104742580254", "castle"),
+    ("g9", "572288816652484608", "castle"),
+    ("b10", "572291484288548929", "castle"),
+    ("c10", "572288151419355136", "castle"),
+    ("d10", "572291484288548929", "castle"),
+    ("h1", "625905668263510017", "port"),
+    ("h12", "625905668263510017", "port");
   `).run();
 };
 
@@ -179,7 +188,8 @@ if (!owners_table['count(*)']) {
   sql.prepare(`
     CREATE TABLE tile_owners (
       tile TEXT PRIMARY KEY,
-      house TEXT
+      house TEXT,
+      type TEXT
     );
   `).run();
 
@@ -222,7 +232,7 @@ if (!pledge_table['count(*)']) {
       pledge_id INTEGER PRIMARY KEY,
       siege INTEGER,
       user TEXT,
-      men INTEGER,
+      units INTEGER,
       choice TEXT,
       FOREIGN KEY(siege) REFERENCES sieges(siege_id),
       FOREIGN KEY(user) REFERENCES player_data(user)
@@ -364,6 +374,9 @@ module.exports = {
   "get_tile_owner": sql.prepare(`
     SELECT * from tile_owners where tile = ?
   `),
+  "get_ports": sql.prepare(`
+    SELECT * from tile_owners where type = "port"
+  `),
   "get_siege_by_id": sql.prepare(`
     SELECT * from sieges where siege_id = ?
   `),
@@ -397,7 +410,7 @@ module.exports = {
     SELECT * from sieges WHERE time <= ?
   `),
   "get_all_sieges": sql.prepare(`
-    SELECT * from sieges
+    SELECT * from sieges, tile_owners where sieges.tile = tile_owners.tile
   `),
   "remove_siege": sql.prepare(`
     DELETE FROM sieges WHERE siege_id = @siege_id
@@ -407,9 +420,9 @@ module.exports = {
   `),
   "add_pledge": sql.prepare(`
     INSERT INTO pledges (
-      siege, user, men, choice)
+      siege, user, units, choice)
     VALUES (
-      @siege, @user, @men, @choice);
+      @siege, @user, @units, @choice);
   `),
   "get_player_pledge_for_siege": sql.prepare(`
     SELECT * FROM pledges WHERE user = @user and siege = @siege
@@ -418,7 +431,8 @@ module.exports = {
     SELECT * FROM pledges WHERE siege = @siege_id
   `),
   "get_all_player_pledges": sql.prepare(`
-    SELECT * FROM pledges, sieges WHERE sieges.siege_id = pledges.siege
+    SELECT * FROM pledges, sieges, tile_owners
+    WHERE sieges.siege_id = pledges.siege and sieges.tile = tile_owners.tile
     and pledges.user = @user
   `),
   "remove_pledge": sql.prepare(`

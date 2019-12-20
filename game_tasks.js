@@ -48,6 +48,29 @@ module.exports = {
         player.money -= ship_cost;
         db.set_player.run(player);
       });
+
+      // Pay port ownership
+      const port_payout =
+        Math.round(3000 * payout_percent);
+      db.get_ports.all().forEach(port => {
+        guild.roles.get(port.house).members.forEach((value, key) => {
+          // Get player_data
+          let player_data = db.get_player.get(key);
+
+          if (!player_data) {
+            player_data = {...db.default_player};
+            player_data.user = key;
+          }
+
+          // Add payout
+          player_data.money += port_payout;
+
+          // Save
+          db.set_player.run(player_data);
+
+        });
+      });
+
       db.update_tracker_by_name.run(current_time, "payout_time");
     }
   },
@@ -244,7 +267,7 @@ module.exports = {
             // Iterate over each pledge. Return the men and remore the pledge
             pledges.forEach(pledge => {
               const pledger_data = db.get_player.get(pledge.user);
-              pledger_data.men += pledge.men;
+              pledger_data.men += pledge.units;
               db.set_player.run(pledger_data);
               db.remove_pledge.run(pledge);
             });
@@ -327,7 +350,7 @@ module.exports = {
 
       let regen_map = false;
 
-      // Determine the vote outcomey
+      // Determine the vote outcome
       if(p_house_vote_count > 0) {
         if(p_house_yes > p_house_no) {
           // We have a war! Remove the pact
@@ -343,38 +366,13 @@ module.exports = {
             "house_b": other_house
           });
 
-          /*
-           * If there were any sieges between the houses, remove them
-           * and return the pledged troops
-           */
-
-          const sieges_between_houses =
-            db.get_all_siege_id_between_two_houses.all({
-              "house_a": player_data.house,
-              "house_b": other_house
-            });
-
-          // Iterate over each siege
-          sieges_between_houses.forEach(siege => {
-            const pledges = db.get_all_pledges_for_siege.all(siege);
-
-            // Iterate over each pledge. Return the men and remore the pledge
-            pledges.forEach(pledge => {
-              const pledger_data = db.get_player.get(pledge.user);
-              pledger_data.men += pledge.men;
-              db.set_player.run(pledger_data);
-              db.remove_pledge.run(pledge);
-            });
-
-            // Remove the siege
-            db.remove_siege.run(siege);
-          });
           // War Happens!
           vote_reply += "Their Pact has been broken - this betrayal means War!";
           regen_map = true;
         } else {
           // We continue to WAR
-          vote_reply += "The warmongers were shouted down - the Pact holds for now.";
+          vote_reply +=
+            "The warmongers were shouted down - the Pact holds for now.";
         }
       } else {
         // This should indicate that the other house did not vote. War continues
@@ -483,12 +481,18 @@ module.exports = {
 
           // Iterate over each siege
           sieges_between_houses.forEach(siege => {
+            const tile_owner = db.get_tile_owner.get(siege.tile);
             const pledges = db.get_all_pledges_for_siege.all(siege);
+            const is_port = tile_owner.type === 'port';
 
             // Iterate over each pledge. Return the men and remore the pledge
             pledges.forEach(pledge => {
               const pledger_data = db.get_player.get(pledge.user);
-              pledger_data.men += pledge.men;
+              if(is_port) {
+                pledger_data.ships += pledge.units;
+              } else {
+                pledger_data.men += pledge.units;
+              }
               db.set_player.run(pledger_data);
               db.remove_pledge.run(pledge);
             });
@@ -554,6 +558,7 @@ module.exports = {
         "defend");
 
       const tile_owner = db.get_tile_owner.get(expired_siege.tile);
+      const is_port = tile_owner.type === 'port';
       const attacker_name = guild.roles.get(expired_siege.attacker).name;
       const defender_name = guild.roles.get(tile_owner.house).name;
       const embed = module.exports.generate_siege_embed(
@@ -561,7 +566,14 @@ module.exports = {
         expired_siege.siege_id
       );
 
-      embed.title = `FINISHED siege on ${expired_siege.tile.toUpperCase()}`;
+      const type = is_port
+        ? 'blockade'
+        : 'siege';
+      const tile_type = is_port
+        ? 'port'
+        : 'castle';
+
+      embed.title = `FINISHED ${type} on ${expired_siege.tile.toUpperCase()}`;
 
       let regen_map = false;
 
@@ -575,8 +587,8 @@ module.exports = {
         const all_pledgers = {};
 
         attack_pledges.forEach(pledge => {
-          attacker_count += pledge.men;
-          attackers[pledge.user] = pledge.men;
+          attacker_count += pledge.units;
+          attackers[pledge.user] = pledge.units;
 
           if(!(pledge.user in all_pledgers)) {
             all_pledgers[pledge.user] = db.get_player.get(pledge.user);
@@ -584,8 +596,8 @@ module.exports = {
         });
 
         defend_pledges.forEach(pledge => {
-          defender_count += pledge.men;
-          defenders[pledge.user] = pledge.men;
+          defender_count += pledge.units;
+          defenders[pledge.user] = pledge.units;
 
           if(!(pledge.user in all_pledgers)) {
             all_pledgers[pledge.user] = db.get_player.get(pledge.user);
@@ -603,8 +615,12 @@ module.exports = {
         }
 
         const num_pledgers = attack_pledges.length + defend_pledges.length;
-        const win_pot = 3000 * num_pledgers;
-        const lose_pot = 20 * num_pledgers;
+        const win_pot = is_port
+          ? 0
+          : 3000 * num_pledgers;
+        const lose_pot = is_port
+          ? 0
+          : 20 * num_pledgers;
         const attacker_losses = utils.get_percent_of_value_given_range(
           defender_count,
           1,
@@ -636,7 +652,12 @@ module.exports = {
                 ? 0
                 : troops_returned;
               all_pledgers[att].money += winnings;
-              all_pledgers[att].men += troops_returned;
+
+              if(is_port) {
+                all_pledgers[att].ships += troops_returned;
+              } else {
+                all_pledgers[att].men += troops_returned;
+              }
             }
           }
 
@@ -652,13 +673,20 @@ module.exports = {
               troops_returned = troops_returned < 0
                 ? 0
                 : troops_returned;
-              all_pledgers[att].men += winnings + troops_returned;
+
+              const unit_adjust = winnings + troops_returned;
+              if(is_port) {
+                all_pledgers[att].ships += unit_adjust;
+              } else {
+                all_pledgers[att].men += unit_adjust;
+              }
             }
           }
 
           // Reassign the tile
           db.update_tile_owner.run(expired_siege.attacker, expired_siege.tile);
-          win_message = `${attacker_name} successfully captured the tile!`;
+          win_message = `${attacker_name} successfully captured the ` +
+            `${tile_type}!`;
           regen_map = true;
         } else {
           // Defender wins!
@@ -676,7 +704,12 @@ module.exports = {
                 ? 0
                 : troops_returned;
               all_pledgers[att].money += winnings;
-              all_pledgers[att].men += troops_returned;
+
+              if(is_port) {
+                all_pledgers[att].ships += troops_returned;
+              } else {
+                all_pledgers[att].men += troops_returned;
+              }
             }
           }
 
@@ -692,19 +725,34 @@ module.exports = {
               troops_returned = troops_returned < 0
                 ? 0
                 : troops_returned;
-              all_pledgers[att].men += winnings + troops_returned;
+
+              const unit_adjust = winnings + troops_returned;
+              if(is_port) {
+                all_pledgers[att].ships += unit_adjust;
+              } else {
+                all_pledgers[att].men += unit_adjust;
+              }
             }
           }
 
-          win_message = `${defender_name} successfully defended the tile!`;
+          win_message = `${defender_name} successfully defended the ` +
+            `${tile_type}!`;
+        }
+
+        let message = `${num_pledgers} player(s) contributed to this ${type}. `;
+
+        if(is_port) {
+          message += `The members of the house controlling the port will ` +
+            `each earn 3000 :moneybag: per day.`;
+        } else {
+          message += `${win_pot} :moneybag: has been distributed to the ` +
+            `winners. ${lose_pot} ${assets.emojis.MenAtArms} has been ` +
+            `distributed to the losers.`;
         }
 
         embed.fields.push({
           "name": win_message,
-          "value": `${num_pledgers} player(s) contributed to this siege. ` +
-          `${win_pot} :moneybag: has been distributed to the winners. ` +
-          `${lose_pot} ${assets.emojis.MenAtArms} has been distributed to ` +
-          `the losers.`
+          "value": message
         });
 
         // Update all the player data
@@ -725,8 +773,8 @@ module.exports = {
       } else {
         // No one pledged
         embed.fields.push({
-          "name": `${defender_name} has kept their tile.`,
-          "value": "No one pledged to the siege."
+          "name": `${defender_name} has kept their ${tile_type}.`,
+          "value": `No one pledged to the ${type}.`
         });
       }
 
@@ -770,24 +818,26 @@ module.exports = {
     let attacker_total = 0;
     let defender_total = 0;
 
+    const is_port = tile_owner.type === 'port';
+
     pledges.forEach(pledge => {
       const player_info = db.get_player.get(pledge.user);
       if(pledge.choice === 'attack') {
         if(player_info.house in attacker_counts) {
-          attacker_counts[player_info.house] += pledge.men;
+          attacker_counts[player_info.house] += pledge.units;
         } else {
-          attacker_counts[player_info.house] = pledge.men;
+          attacker_counts[player_info.house] = pledge.units;
         }
 
-        attacker_total += pledge.men;
+        attacker_total += pledge.units;
       } else if(pledge.choice === 'defend') {
         if(player_info.house in defender_counts) {
-          defender_counts[player_info.house] += pledge.men;
+          defender_counts[player_info.house] += pledge.units;
         } else {
-          defender_counts[player_info.house] = pledge.men;
+          defender_counts[player_info.house] = pledge.units;
         }
 
-        defender_total += pledge.men;
+        defender_total += pledge.units;
       }
     });
 
@@ -808,18 +858,21 @@ module.exports = {
 
     let attackers = "";
     let defenders = "";
+    const emoji = is_port
+      ? assets.emojis.Warship
+      : assets.emojis.MenAtArms;
 
     for(const house in attacker_counts) {
       if(house in attacker_counts) {
         const num = attacker_counts[house];
-        attackers += `<@&${house}> ${num} ${assets.emojis.MenAtArms}\n`;
+        attackers += `<@&${house}> ${num} ${emoji}\n`;
       }
     }
 
     for(const house in defender_counts) {
       if(house in defender_counts) {
         const num = defender_counts[house];
-        defenders += `<@&${house}> ${num} ${assets.emojis.MenAtArms}\n`;
+        defenders += `<@&${house}> ${num} ${emoji}\n`;
       }
     }
 
@@ -832,11 +885,11 @@ module.exports = {
       : "no pledges";
 
     const attacker_field_name = `Attacker: ${attacker_name} ` +
-      `${attacker_total} ${assets.emojis.MenAtArms} ` +
+      `${attacker_total} ${emoji} ` +
       `${attacker_win_chance}%`;
 
     const defender_field_name = `Defender: ${defender_name} ` +
-      `${defender_total} ${assets.emojis.MenAtArms} ` +
+      `${defender_total} ${emoji} ` +
       `${defender_win_chance}%`;
 
     const winner_payout = pledges.length * 3000;
@@ -844,9 +897,12 @@ module.exports = {
 
     const rewards = `Winners: ${winner_payout} :moneybag:\n` +
       `Losers: ${loser_payout} ${assets.emojis.MenAtArms}`;
+    const type = is_port
+      ? 'Blockade'
+      : 'Siege';
 
-    return {
-      "title": `Siege on ${siege.tile.toUpperCase()}`,
+    const embed = {
+      "title": `${type} on ${siege.tile.toUpperCase()}`,
       "fields": [
         {
           "name": attacker_field_name,
@@ -855,13 +911,18 @@ module.exports = {
         {
           "name": defender_field_name,
           "value": defenders
-        },
-        {
-          "name": "Rewards",
-          "value": rewards
         }
       ]
     };
+
+    if(!is_port) {
+      embed.fields.push({
+        "name": "Rewards",
+        "value": rewards
+      });
+    }
+
+    return embed;
   },
   "post_updated_map": ({guild}) => {
 
@@ -904,6 +965,7 @@ module.exports = {
     ];
 
     let map_owners = "";
+    let port_owners = "";
 
     const tile_owners = db.get_all_tiles.all();
     tile_owners.forEach(tile => {
@@ -911,9 +973,17 @@ module.exports = {
       const column = parseInt(coords.slice(0, 1).charCodeAt(0), 10) - 96;
       const row = parseInt(coords.slice(1), 10);
       const owner_tile = assets.house_tiles[tile.house];
-      const tile_emoji = e[owner_tile];
+      const owner_tile_type = tile.type === "port"
+        ? "Port" + owner_tile
+        : "Tile" + owner_tile;
+      const tile_emoji = e[owner_tile_type];
       map_data[row][column] = tile_emoji;
-      map_owners += `${tile.tile.toUpperCase()}: <@&${tile.house}>\n`;
+
+      if(tile.type === "port") {
+        port_owners += `${tile.tile.toUpperCase()}: <@&${tile.house}>\n`;
+      } else {
+        map_owners += `${tile.tile.toUpperCase()}: <@&${tile.house}>\n`;
+      }
     });
 
     let map_tiles = "";
@@ -939,21 +1009,35 @@ module.exports = {
       : active_pacts;
 
     let active_sieges = "";
+    let active_blockades = "";
     const all_sieges = db.get_all_sieges.all();
     all_sieges.forEach(siege => {
-      active_sieges += `${siege.tile}: :crossed_swords: ` +
-        `<@&${siege.attacker}>\n`;
+      if(siege.type === "port") {
+        active_blockades += `${siege.tile}: :crossed_swords: ` +
+          `<@&${siege.attacker}>\n`;
+      } else {
+        active_sieges += `${siege.tile}: :crossed_swords: ` +
+          `<@&${siege.attacker}>\n`;
+      }
     });
 
     active_sieges = active_sieges
       ? active_sieges
       : "No active sieges";
 
+    active_blockades = active_blockades
+      ? active_blockades
+      : "No active blockades";
+
     const embed = {
       "fields": [
         {
-          "name": "Owners",
+          "name": "Castles",
           "value": map_owners
+        },
+        {
+          "name": "Ports",
+          "value": port_owners
         },
         {
           "name": "Active Pacts",
@@ -962,6 +1046,10 @@ module.exports = {
         {
           "name": "Active Sieges",
           "value": active_sieges
+        },
+        {
+          "name": "Active Blockades",
+          "value": active_blockades
         }
       ]
     };
@@ -1002,7 +1090,7 @@ module.exports = {
     if(player_roles.includes("developer")) {
       // Remove everyone from game roles
       for(const role_id in assets.game_roles) {
-        if(role_id in assets.game_roles) {
+        if(role_id in assets.game_roles && role_id !== "625905668263510017") {
           guild.roles.get(role_id).members.forEach(member => {
             member.removeRole(role_id).catch(console.error);
           });

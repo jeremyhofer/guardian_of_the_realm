@@ -17,18 +17,30 @@ const bal = ({player_data}) => {
   reply += "\n\nSiege Contributions:\n";
 
   let siege_contributions = "";
+  let blockade_contributions = "";
   const player_pledges = db.get_all_player_pledges.all(player_data);
 
   player_pledges.forEach(pledge => {
-    siege_contributions += `${pledge.tile} ${pledge.men} ` +
-      `${assets.emojis.MenAtArms} ${pledge.choice}`;
+    if(pledge.type === "port") {
+      blockade_contributions += `${pledge.tile} ${pledge.units} ` +
+        `${assets.emojis.Warship} ${pledge.choice}\n`;
+    } else {
+      siege_contributions += `${pledge.tile} ${pledge.units} ` +
+        `${assets.emojis.MenAtArms} ${pledge.choice}\n`;
+    }
   });
 
   siege_contributions = siege_contributions
     ? siege_contributions
     : "none";
 
+  blockade_contributions = blockade_contributions
+    ? blockade_contributions
+    : "none";
+
   reply += siege_contributions;
+  reply += "\nBlockade Contributions:\n";
+  reply += blockade_contributions;
 
   return {reply};
 };
