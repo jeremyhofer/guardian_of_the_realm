@@ -17,18 +17,30 @@ const bal = ({player_data}) => {
   reply += "\n\nSiege Contributions:\n";
 
   let siege_contributions = "";
+  let blockade_contributions = "";
   const player_pledges = db.get_all_player_pledges.all(player_data);
 
   player_pledges.forEach(pledge => {
-    siege_contributions += `${pledge.tile} ${pledge.men} ` +
-      `${assets.emojis.MenAtArms} ${pledge.choice}`;
+    if(pledge.type === "port") {
+      blockade_contributions += `${pledge.tile} ${pledge.units} ` +
+        `${assets.emojis.Warship} ${pledge.choice}\n`;
+    } else {
+      siege_contributions += `${pledge.tile} ${pledge.units} ` +
+        `${assets.emojis.MenAtArms} ${pledge.choice}\n`;
+    }
   });
 
   siege_contributions = siege_contributions
     ? siege_contributions
     : "none";
 
+  blockade_contributions = blockade_contributions
+    ? blockade_contributions
+    : "none";
+
   reply += siege_contributions;
+  reply += "\nBlockade Contributions:\n";
+  reply += blockade_contributions;
 
   return {reply};
 };
@@ -45,6 +57,7 @@ const cooldown = ({player_data, command_dispatch}) => {
     'subvert_last_time': 'subvert',
     'thief_last_time': 'thief',
     'train_last_time': 'train',
+    'trade_last_time': 'trade',
     'work_last_time': 'work'
 
   };
@@ -56,7 +69,8 @@ const cooldown = ({player_data, command_dispatch}) => {
       const command_cooldown =
         command_dispatch[cooldown_map[key]].cooldown.time;
       let time_left = player_data[key] - now + command_cooldown;
-      let key_cap = cooldown_map[key][0].toUpperCase() + cooldown_map[key].slice(1);
+      const key_cap =
+        cooldown_map[key][0].toUpperCase() + cooldown_map[key].slice(1);
       time_left = time_left < 0
         ? 0
         : time_left;
@@ -94,7 +108,8 @@ const roles = ({player_roles}) => {
     const symbol = player_roles.includes(role)
       ? ":white_check_mark:"
       : ":x:";
-    reply += `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
+    reply +=
+      `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
       `per Day\n`;
   });
 

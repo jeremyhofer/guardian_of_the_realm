@@ -42,6 +42,14 @@ module.exports = {
     "TileScorpion": "<:TileScorpion:643216480942686219>",
     "TileSea": "<:TileSea:626169322322133004>",
     "TileWolf": "<:TileWolf:643216538760904704>",
+    "PortBear": "<:PortBear:656627962241876028>",
+    "PortDragon": "<:PortDragon:656627994403799122>",
+    "PortFalcon": "<:PortFalcon:656628021595471909>",
+    "PortHydra": "<:PortHydra:656628045418856458>",
+    "PortLion": "<:PortLion:656628074955145235>",
+    "PortScorpion": "<:PortScorpion:656628116055392261>",
+    "PortUnsworn": "<:PortUnsworn:656628479160483922>",
+    "PortWolf": "<:PortWolf:656628138536599557>",
     "Unsworn": "<:Unsworn:575488619389779979>",
     "Warship": "<:Warship:627639570565038140>"
   },
@@ -102,6 +110,10 @@ module.exports = {
     }
   },
   "game_roles": {
+    "625905668263510017": [
+      "guardian",
+      "realm"
+    ],
     "572290551357898781": [
       "assassins",
       "scorpion"
@@ -143,6 +155,7 @@ module.exports = {
     "629752308011630605": ["apothecary"]
   },
   "houses": [
+    "625905668263510017",
     "572290551357898781",
     "572288816652484608",
     "572291484288548929",
@@ -152,13 +165,14 @@ module.exports = {
     "572288492101435408"
   ],
   "house_tiles": {
-    "572290551357898781": "TileScorpion",
-    "572288816652484608": "TileFalcon",
-    "572291484288548929": "TileWolf",
-    "572288999843168266": "TileLion",
-    "572288151419355136": "TileBear",
-    "572289104742580254": "TileHydra",
-    "572288492101435408": "TileDragon"
+    "625905668263510017": "Unsworn",
+    "572290551357898781": "Scorpion",
+    "572288816652484608": "Falcon",
+    "572291484288548929": "Wolf",
+    "572288999843168266": "Lion",
+    "572288151419355136": "Bear",
+    "572289104742580254": "Hydra",
+    "572288492101435408": "Dragon"
   },
   "daily_payouts": {
     "apothecary": 600,
@@ -175,6 +189,12 @@ module.exports = {
     "earl": 600,
     "duke": 1000,
     "unsworn": 100
+  },
+  "role_ship_limits": {
+    "baron": 30,
+    "earl": 60,
+    "duke": 100,
+    "unsworn": 10
   },
   "daily_costs": {
     "men": 2,

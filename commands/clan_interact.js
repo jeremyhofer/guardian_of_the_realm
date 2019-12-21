@@ -27,7 +27,9 @@ const join = ({player_data}) => {
     const house_counts = {};
 
     assets.houses.forEach(house => {
-      house_counts[house] = 0;
+      if(house !== "625905668263510017") {
+        house_counts[house] = 0;
+      }
     });
 
     db.count_all_players_in_house.all().forEach(data => {
@@ -58,10 +60,10 @@ const join = ({player_data}) => {
 };
 
 /*
- * Pledge men to a tile to attack/defend
+ * Pledge units to a tile to attack/defend
  * <TILE> <NUMBER> [ATTACK|DEFEND]
  *
- * deduct the men from the player's count when the pledge is made
+ * deduct the units from the player's count when the pledge is made
  */
 const pledge = ({args, player_data, player_roles}) => {
   const command_return = {
@@ -75,74 +77,97 @@ const pledge = ({args, player_data, player_roles}) => {
 
   // Validate args
   const selected_tile = args[0].toLowerCase();
-  const num_men = parseInt(args[1], 10);
+  const num_units = parseInt(args[1], 10);
   const action = args[2].toLowerCase();
 
-  let role_limit = assets.role_troop_limits.unsworn;
-
-  if(player_roles.includes("duke")) {
-    role_limit = assets.role_troop_limits.duke;
-  } else if (player_roles.includes("earl")) {
-    role_limit = assets.role_troop_limits.earl;
-  } else if (player_roles.includes("baron")) {
-    role_limit = assets.role_troop_limits.baron;
-  }
-
   const tile_owner = db.get_tile_owner.get(selected_tile);
-  const p_men = player_data.men;
 
-  if(!tile_owner) {
-    command_return.reply = `${selected_tile.toUpperCase()} is not a castle`;
-  } else if(isNaN(num_men) || num_men < 1) {
-    command_return.reply = "The number of men must be a positive number";
-  } else if (num_men > role_limit) {
-    command_return.reply = `You may only send at most ${role_limit} men`;
-  } else if(action !== "attack" && action !== "defend") {
-    command_return.reply = "The action must be ATTACK or DEFEND";
-  } else {
-    // Ensure a siege exists on the tile
-    const existing_siege = db.get_siege_on_tile.get(selected_tile);
+  if(tile_owner) {
+    const is_port = tile_owner.type === "port";
+    const p_units = is_port
+      ? player_data.ships
+      : player_data.men;
 
-    if(existing_siege) {
-      // See if the player already has a pledge on the siege.
-      const existing_pledge = db.get_player_pledge_for_siege.get({
-        "user": player_data.user,
-        "siege": existing_siege.siege_id
-      });
+    let role_limit = is_port
+      ? assets.role_ship_limits.unsworn
+      : assets.role_troop_limits.unsworn;
 
-      let valid = false;
-      let men_to_deduct = 0;
+    if(player_roles.includes("duke")) {
+      role_limit = is_port
+        ? assets.role_ship_limits.duke
+        : assets.role_troop_limits.duke;
+    } else if (player_roles.includes("earl")) {
+      role_limit = is_port
+        ? assets.role_ship_limits.earl
+        : assets.role_troop_limits.earl;
+    } else if (player_roles.includes("baron")) {
+      role_limit = is_port
+        ? assets.role_ship_limits.baron
+        : assets.role_troop_limits.baron;
+    }
 
-      if(existing_pledge) {
-        if(num_men > p_men + existing_pledge.men) {
-          command_return.reply = `You do not have ${num_men} men`;
+    if(isNaN(num_units) || num_units < 1) {
+      command_return.reply = "The number of units must be a positive number";
+    } else if (num_units > role_limit) {
+      command_return.reply = `You may only send at most ${role_limit} units`;
+    } else if(action !== "attack" && action !== "defend") {
+      command_return.reply = "The action must be ATTACK or DEFEND";
+    } else {
+      // Ensure a siege exists on the tile
+      const existing_siege = db.get_siege_on_tile.get(selected_tile);
+
+      if(existing_siege) {
+        // See if the player already has a pledge on the siege.
+        const existing_pledge = db.get_player_pledge_for_siege.get({
+          "user": player_data.user,
+          "siege": existing_siege.siege_id
+        });
+
+        let valid = false;
+        let units_to_deduct = 0;
+
+        if(existing_pledge) {
+          if(num_units > p_units + existing_pledge.units) {
+            command_return.reply = `You do not have ${num_units} units`;
+          } else {
+            units_to_deduct = existing_pledge.units;
+            command_return.pledges.remove = existing_pledge;
+            valid = true;
+          }
+        } else if(num_units > p_units) {
+          command_return.reply = `You do not have ${num_units} units`;
         } else {
-          men_to_deduct = existing_pledge.men;
-          command_return.pledges.remove = existing_pledge;
           valid = true;
         }
-      } else if(num_men > p_men) {
-        command_return.reply = `You do not have ${num_men} men`;
-      } else {
-        valid = true;
-      }
 
-      if(valid) {
-        // Add the pledge
-        command_return.pledges.add = {
-          "siege": existing_siege.siege_id,
-          "user": player_data.user,
-          "men": num_men,
-          "choice": action
-        };
-        command_return.update.player_data.men -= num_men - men_to_deduct;
-        command_return.reply = `You successfully pledged ${num_men} to ` +
-          `${action} ${selected_tile.toUpperCase()}`;
-        command_return.sieges.update = existing_siege;
+        if(valid) {
+          // Add the pledge
+          command_return.pledges.add = {
+            "siege": existing_siege.siege_id,
+            "user": player_data.user,
+            "units": num_units,
+            "choice": action
+          };
+
+          if(is_port) {
+            command_return.update.player_data.ships -=
+              num_units - units_to_deduct;
+          } else {
+            command_return.update.player_data.men -=
+              num_units - units_to_deduct;
+          }
+
+          command_return.reply = `You successfully pledged ${num_units} to ` +
+            `${action} ${selected_tile.toUpperCase()}`;
+          command_return.sieges.update = existing_siege;
+        }
+      } else {
+        command_return.reply = `There is no active attack on ${selected_tile}`;
       }
-    } else {
-      command_return.reply = `There is no active siege on ${selected_tile}`;
     }
+  } else {
+    command_return.reply =
+      `${selected_tile.toUpperCase()} is not a castle or port`;
   }
 
   return command_return;
@@ -178,7 +203,7 @@ const pledge = ({args, player_data, player_roles}) => {
  * the losers by pledge amount.
  *
  */
-const siege = ({args, player_data}) => {
+const handle_attack = ({args, player_data}, type) => {
   const command_return = {
     "sieges": {},
     "reply": ""
@@ -188,13 +213,17 @@ const siege = ({args, player_data}) => {
   const selected_tile = args[0].toLowerCase();
   const tile_owner = db.get_tile_owner.get(selected_tile);
   const house_sieges = db.count_house_sieges.get(player_data.house);
+  const valid_blockade = tile_owner.type === "port" && type === "blockade";
+  const valid_siege = tile_owner.type === "castle" && type === "siege";
 
-  if(tile_owner) {
+  if(tile_owner && (valid_blockade || valid_siege)) {
     // Tile is good. Make sure it is owned by a house at war with
     if(player_data.house === tile_owner.house) {
-      command_return.reply = "Your house owns this castle";
+      command_return.reply = type === "blockade"
+        ? "Your house owns this port"
+        : "Your house owns this castle";
     } else if(house_sieges.num_sieges >= 3) {
-      command_return.reply = "Your house already has 3 declared sieges";
+      command_return.reply = "Your house already has 3 declared attacks";
     } else {
       const war = db.get_war_between_houses.get({
         "house1": player_data.house,
@@ -206,7 +235,9 @@ const siege = ({args, player_data}) => {
         const existing_siege = db.get_siege_on_tile.get(selected_tile);
 
         if(existing_siege) {
-          command_return.reply = "A siege is in progress on that castle";
+          command_return.reply = type === "blockade"
+            ? "A blockade is in progress on that port"
+            : "A siege is in progress on that castle";
         } else {
           // Good to go! Add the siege
           command_return.sieges.add = {
@@ -222,11 +253,29 @@ const siege = ({args, player_data}) => {
       }
     }
   } else {
-    command_return.reply = `${selected_tile} is not a castle`;
+    command_return.reply = type === "blockade"
+      ? `${selected_tile} is not a port`
+      : `${selected_tile} is not a castle`;
   }
 
   return command_return;
 };
+
+const siege = ({args, player_data}) => handle_attack(
+  {
+    args,
+    player_data
+  },
+  "siege"
+);
+
+const blockade = ({args, player_data}) => handle_attack(
+  {
+    args,
+    player_data
+  },
+  "blockade"
+);
 
 /*
  * Open a vote between two waring houses to stop the war. majority of each
@@ -637,6 +686,15 @@ module.exports = {
     },
     "siege": {
       "function": siege,
+      "args": [
+        "args",
+        "player_data"
+      ],
+      "command_args": [[args_js.arg_types.string]],
+      "usage": ["TILE"]
+    },
+    "blockade": {
+      "function": blockade,
       "args": [
         "args",
         "player_data"
