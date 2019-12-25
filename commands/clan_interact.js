@@ -213,10 +213,12 @@ const handle_attack = ({args, player_data}, type) => {
   const selected_tile = args[0].toLowerCase();
   const tile_owner = db.get_tile_owner.get(selected_tile);
   const house_sieges = db.count_house_sieges.get(player_data.house);
-  const valid_blockade = tile_owner.type === "port" && type === "blockade";
-  const valid_siege = tile_owner.type === "castle" && type === "siege";
+  const valid_blockade =
+    tile_owner && tile_owner.type === "port" && type === "blockade";
+  const valid_siege =
+    tile_owner && tile_owner.type === "castle" && type === "siege";
 
-  if(tile_owner && (valid_blockade || valid_siege)) {
+  if(valid_blockade || valid_siege) {
     // Tile is good. Make sure it is owned by a house at war with
     if(player_data.house === tile_owner.house) {
       command_return.reply = type === "blockade"
