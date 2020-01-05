@@ -391,18 +391,18 @@ module.exports = {
         const num_pledgers = attack_pledges.length + defend_pledges.length;
         const win_pot = is_port
           ? 0
-          : 3000 * num_pledgers;
+          : 0 * num_pledgers;
         const lose_pot = is_port
           ? 0
-          : 20 * num_pledgers;
+          : 0 * num_pledgers;
         const attacker_losses = utils.get_percent_of_value_given_range(
           defender_count,
-          1,
+          20,
           30
         );
         const defender_losses = utils.get_percent_of_value_given_range(
           attacker_count,
-          1,
+          20,
           30
         );
 
@@ -666,11 +666,13 @@ module.exports = {
       `${defender_total} ${emoji} ` +
       `${defender_win_chance}%`;
 
+    /*
     const winner_payout = pledges.length * 3000;
     const loser_payout = pledges.length * 20;
 
     const rewards = `Winners: ${winner_payout} :moneybag:\n` +
       `Losers: ${loser_payout} ${assets.emojis.MenAtArms}`;
+    */
     const type = is_port
       ? 'Blockade'
       : 'Siege';
@@ -689,12 +691,14 @@ module.exports = {
       ]
     };
 
+    /*
     if(!is_port) {
       embed.fields.push({
         "name": "Rewards",
         "value": rewards
       });
     }
+    */
 
     return embed;
   },
