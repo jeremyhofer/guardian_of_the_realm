@@ -381,14 +381,21 @@ const trade = ({args, player_data}) => {
       } else if(p_ships >= num_ships) {
         // All good! Grant the cash
         const trader_pay =
-          utils.get_random_value_in_range(150, 250) * num_ships;
+          utils.get_random_value_in_range(200, 300) * num_ships;
         const tradee_pay =
-          utils.get_random_value_in_range(50, 150) * num_ships;
+          utils.get_random_value_in_range(100, 200) * num_ships;
         command_return.update.player_data.money += trader_pay;
         command_return.update.player_mention.money += tradee_pay;
-        command_return.reply = "You successfully traded with " +
-          `<@${player_mention.user}>! You made ${trader_pay} :moneybag:` +
-          ` and <@${player_mention.user}> made ${tradee_pay} :moneybag:!`;
+        const reply_template = utils.random_element(flavor.trade);
+        command_return.reply = utils.template_replace(
+          reply_template,
+          {
+            trader_pay,
+            tradee_pay,
+            "trader": `<@${player_data.user}>`,
+            "tradee": `<@${player_mention.user}>`
+          }
+        );
         command_return.success = true;
       } else {
         command_return.reply = `You only have ${p_ships} ` +

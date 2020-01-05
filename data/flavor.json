@@ -88,5 +88,8 @@
     "You wake up the next morning to find the thief you hired has stolen {amount} :moneybag:. He didn't even try to steal from {target_mention}. Your steward is livid, and demands you never hire another thief again. You seem to recall that you have heard this from him before.",
     "Two unsavory fellows approached you with information about the thief that you hired. It seems he was spotted in the fleshpots of The Capital living large. You will not be able to recover the {amount} :moneybag: that was stolen from {target_mention}, but at least he is poorer for it. Regardless, you hire a poisoner to murder the thief.",
     "One of your men tells you that he saw the thief charting a ship to the Southern Isles. It seems his heist was a success, but he has betrayed you and ran off with {amount} :moneybag: from {target_mention}."
+  ],
+  "trade": [
+    "The seas were calm, and no pirates threatened your fleet until they arrived. After a fruitful day of trade {trader}'s  merchants made {trader_pay} :moneybag:, while {tradee}  earned {tradee_pay} :moneybag: in tariffs."
   ]
 }
