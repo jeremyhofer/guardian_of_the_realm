@@ -305,9 +305,13 @@ client.on('message', msg => {
             // Incorrect arguments supplied. Print usage information
             const command_usage = command_dispatch[command].usage;
             const usage_info = ["Usage:"];
-            command_usage.forEach(use => {
-              usage_info.push(`${PREFIX}${command} ${use}`);
-            });
+            if(command_usage.length > 0) {
+              command_usage.forEach(use => {
+                usage_info.push(`${PREFIX}${command} ${use}`);
+              });
+            } else {
+              usage_info.push(`${PREFIX}${command}`);
+            }
             msg.reply(usage_info.join("\n"));
           }
         } else {
