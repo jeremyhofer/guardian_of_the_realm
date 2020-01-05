@@ -1,6 +1,7 @@
 const args_js = require("../args.js");
 const assets = require("../assets.js");
 const db = require("../database.js");
+const game_tasks = require('../game_tasks.js');
 const utils = require("../utils.js");
 const flavor = require('../data/flavor.json');
 
@@ -229,7 +230,7 @@ const raid = ({args, player_data}) => {
  * View money, ships, men of a player. costs 400
  * <PLAYER>
  */
-const spy = ({args, player_data}) => {
+const spy = ({args, player_data, guild}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -246,11 +247,16 @@ const spy = ({args, player_data}) => {
   if(player_data.user === player_mention.user) {
     command_return.reply = "You cannot spy yourself!";
   } else if(p_money >= 200) {
+    const player_roles = [];
+    guild.members.get(player_mention.user).roles.forEach(role => {
+      player_roles.push(role.name.toLowerCase());
+    });
+    const role_reply = game_tasks.generate_roles_reply({player_roles});
     command_return.update.player_data.money -= 200;
     command_return.reply = `<@${player_mention.user}> has ` +
       `${player_mention.money} :moneybag: ${player_mention.men} ` +
       `${assets.emojis.MenAtArms} ${player_mention.ships} ` +
-      `${assets.emojis.Warship}`;
+      `${assets.emojis.Warship}\n\n${role_reply}`;
     command_return.success = true;
   } else {
     command_return.reply = "You do not have enough money. spy costs 200.";
@@ -469,7 +475,8 @@ module.exports = {
       },
       "args": [
         "args",
-        "player_data"
+        "player_data",
+        "guild"
       ],
       "command_args": [[args_js.arg_types.player_mention]],
       "usage": ["@PLAYER"],
