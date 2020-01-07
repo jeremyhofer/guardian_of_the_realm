@@ -6,6 +6,118 @@ const utils = require("../utils.js");
 const flavor = require('../data/flavor.json');
 
 /*
+ * Attempt to destroy a person's income roles
+ * Chance is X / X + Y, based on number of roles each has.
+ * Cost is 1/2 the price of the building trying to be destroyed.
+ * penalty??
+ * Usage:
+ * @player <ROLE>
+ */
+const arson = ({args, player_data, player_roles, guild}) => {
+  const [
+    player_mention,
+    role_to_arson
+  ] = args;
+
+  const command_return = {
+    "update": {
+      "player_data": {...player_data},
+      "roles": {
+        "other_player": {
+          "id": player_mention.user,
+          "remove": []
+        }
+      }
+    },
+    "reply": "",
+    "success": false
+  };
+
+  const other_player_role_ids = [];
+  const income_role_ids = [];
+  const target_role_name = guild.roles.get(role_to_arson).name.toLowerCase();
+
+  for(const key in assets.store_items) {
+    if(key in assets.store_items) {
+      if(assets.store_items[key].type === "income") {
+        const role_id = utils.find_role_id_given_name(
+          key,
+          assets.game_roles
+        );
+        income_role_ids.push(role_id);
+      }
+    }
+  }
+
+  /*
+   * For this we are just checking the store items. The player may
+   * have additional roles but they would not be in the store.
+   */
+  guild.members.get(player_mention.user.user).roles.forEach(role => {
+    if(income_role_ids.indexOf(role.id) >= 0) {
+      other_player_role_ids.push(role.id);
+    }
+  });
+
+  /*
+   * Ensure that the role mentioned is an income producing role
+   * and that the other player has that role
+   */
+  if(income_role_ids.indexOf(role_to_arson) >= 0) {
+    if(other_player_role_ids.indexOf(role_to_arson) >= 0) {
+      // Ensure player has enough money to arson this role
+      const arson_price = Math.round(assets.store_items[target_role_name].cost);
+      const player_money = player_data.money;
+
+      if(player_money >= arson_price) {
+        // Good to arson!
+        let fail_risk = Math.round(player_roles.length /
+          (player_roles.length + other_player_role_ids.length) * 100);
+
+        if(fail_risk < 0) {
+          fail_risk = 0;
+        } else if(fail_risk > 100) {
+          fail_risk = 100;
+        }
+
+        const chance = utils.get_random_value_in_range(1, 100);
+
+        if(chance >= fail_risk) {
+          // Player wins! Remove the role from the other player
+          command_return.roles.other_player.remove.push(role_to_arson);
+          command_return.reply =
+            `You successfully burned <@${player_mention.user}>'s ` +
+            `<@&${role_to_arson}> to the ground!`;
+        } else {
+          // Player failed! Assess a fine
+          const penalty = utils.get_random_value_in_range(200, 1000);
+          command_return.update.player_data.money -= penalty;
+          command_return.reply =
+            `You failed to burn <@${player_mention.user}>'s ` +
+            `<@&${role_to_arson}> to the ground.`;
+        }
+
+        // Deduct price for the arson
+        command_return.player_data.money -= arson_price;
+        command_return.success = true;
+      } else {
+        command_return.reply =
+          `You do not have enough money to arson the <@&${role_to_arson}>. ` +
+          `The cost is ${arson_price}`;
+      }
+    } else {
+      command_return.reply =
+        `<@${player_mention.user}> does not have the <@&${role_to_arson}> role`;
+    }
+  } else {
+    command_return.reply =
+      `<@&${role_to_arson}> is not an income producing role`;
+  }
+
+  return command_return;
+};
+
+/*
  * Give another player money
  * @player <VALUE>
  */
@@ -419,6 +531,29 @@ const trade = ({args, player_data}) => {
 };
 module.exports = {
   "dispatch": {
+    "arson": {
+      "function": arson,
+      "cooldown": {
+        "time": utils.hours_to_ms(24),
+        "field": "arson_last_time",
+        "reply": "The fire watch is on high alert. " +
+          "They are due to leave in"
+      },
+      "args": [
+        "args",
+        "player_data",
+        "player_roles",
+        "guild"
+      ],
+      "command_args": [
+        [
+          args_js.arg_types.player_mention,
+          args_js.args_js.game_role
+        ]
+      ],
+      "usage": ["@PLAYER INCOME_ROLE"],
+      "allowed_channels": assets.player_interact_channels
+    },
     "gift": {
       "function": gift,
       "args": [

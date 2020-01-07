@@ -12,8 +12,10 @@ const buy = ({args, player_data, player_roles}) => {
     "update": {
       "player_data": {...player_data},
       "roles": {
-        "add": [],
-        "remove": []
+        "player": {
+          "add": [],
+          "remove": []
+        }
       }
     }
   };
@@ -54,6 +56,7 @@ const buy = ({args, player_data, player_roles}) => {
           // If this is a title type set the roles to adjust
           switch(item_type) {
             case "title":
+            case "income":
               if(player_roles.includes(item)) {
                 command_return.reply = `You already have the ${item} title`;
               } else if(item_requires &&
@@ -61,10 +64,10 @@ const buy = ({args, player_data, player_roles}) => {
                 command_return.reply = `The ${item} title requires the ` +
                   `${item_requires} title to buy`;
               } else {
-                command_return.update.roles.add.push(item);
+                command_return.update.roles.player.add.push(item);
 
                 if(item_requires) {
-                  command_return.update.roles.remove.push(item_requires);
+                  command_return.update.roles.player.remove.push(item_requires);
                 }
                 command_return.reply = `You successfully bought the ${item} ` +
                   `title for ${total_cost}`;

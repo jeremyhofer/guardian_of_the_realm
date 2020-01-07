@@ -55,7 +55,7 @@ module.exports = {
   },
   "store_items": {
     "apothecary": {
-      "type": "title",
+      "type": "income",
       "cost": 1500
     },
     "baron": {
@@ -63,7 +63,7 @@ module.exports = {
       "cost": 2500
     },
     "blacksmith": {
-      "type": "title",
+      "type": "income",
       "cost": 1000
     },
     "duke": {
@@ -81,15 +81,15 @@ module.exports = {
       "cost": 100
     },
     "mill": {
-      "type": "title",
+      "type": "income",
       "cost": 500
     },
     "mine": {
-      "type": "title",
+      "type": "income",
       "cost": 1500
     },
     "quarry": {
-      "type": "title",
+      "type": "income",
       "cost": 2000
     },
     "ships": {
@@ -97,15 +97,15 @@ module.exports = {
       "cost": 1000
     },
     "stable": {
-      "type": "title",
+      "type": "income",
       "cost": 800
     },
     "tavern": {
-      "type": "title",
+      "type": "income",
       "cost": 200
     },
     "workshop": {
-      "type": "title",
+      "type": "income",
       "cost": 2000
     }
   },

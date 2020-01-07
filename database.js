@@ -15,6 +15,7 @@ if (!player_table['count(*)']) {
       men INTEGER,
       ships INTEGER,
       money INTEGER,
+      arson_last_time INTEGER,
       pirate_last_time INTEGER,
       pray_last_time INTEGER,
       raid_last_time INTEGER,
@@ -278,15 +279,15 @@ module.exports = {
   "get_player": sql.prepare("SELECT * FROM player_data WHERE user = ?"),
   "set_player": sql.prepare(`
     INSERT OR REPLACE INTO player_data (
-      user, house, men, ships, money, pray_last_time, pirate_last_time,
-      pray_last_time, raid_last_time, smuggle_last_time, spy_last_time,
-      subvert_last_time, thief_last_time, train_last_time, trade_last_time,
-      work_last_time)
+      user, house, men, ships, money, pray_last_time, arson_last_time,
+      pirate_last_time, pray_last_time, raid_last_time, smuggle_last_time,
+      spy_last_time, subvert_last_time, thief_last_time, train_last_time,
+      trade_last_time, work_last_time)
     VALUES (
-      @user, @house, @men, @ships, @money, @pray_last_time, @pirate_last_time,
-      @pray_last_time, @raid_last_time, @smuggle_last_time, @spy_last_time,
-      @subvert_last_time, @thief_last_time, @train_last_time, @trade_last_time,
-      @work_last_time);
+      @user, @house, @men, @ships, @money, @pray_last_time, @arson_last_time,
+      @pirate_last_time, @pray_last_time, @raid_last_time, @smuggle_last_time,
+      @spy_last_time, @subvert_last_time, @thief_last_time, @train_last_time,
+      @trade_last_time, @work_last_time);
   `),
   "get_all_players": sql.prepare("SELECT * FROM player_data"),
   "count_all_players_in_house": sql.prepare(`
@@ -463,6 +464,7 @@ module.exports = {
     "men": 20,
     "ships": 2,
     "money": 2000,
+    "arson_last_time": 0,
     "pirate_last_time": 0,
     "pray_last_time": 0,
     "raid_last_time": 0,
