@@ -190,7 +190,7 @@ const pirate = ({args, player_data}) => {
     if(m_ships >= 5) {
       // Both have at least 5 ship. Figure out who wins!
       let fail_risk = Math.round(p_ships /
-        (m_ships + 2 * p_ships) * 100);
+        (m_ships + p_ships) * 100);
 
       if(fail_risk < 0) {
         fail_risk = 0;
@@ -206,6 +206,8 @@ const pirate = ({args, player_data}) => {
 
       if(chance >= fail_risk) {
         // Player wins! Adjust ships
+        const reward = utils.get_random_value_in_range(2000, 3000);
+        command_return.update.player_data.money += reward;
         player_lose = utils.get_random_value_in_range(0, 5);
         mention_lose = utils.get_random_value_in_range(5, 10);
       } else {
@@ -278,7 +280,7 @@ const raid = ({args, player_data}) => {
     if(m_men >= 50) {
       // Both have at least 50 men. Figure out who wins!
       let fail_risk = Math.round(p_men /
-        (m_men + 2 * p_men) * 100);
+        (m_men + p_men) * 100);
 
       if(fail_risk < 0) {
         fail_risk = 0;
@@ -294,6 +296,8 @@ const raid = ({args, player_data}) => {
 
       if(chance >= fail_risk) {
         // Player wins! Adjust men
+        const reward = utils.get_random_value_in_range(2000, 3000);
+        command_return.update.player_data.money += reward;
         player_lose = utils.get_random_value_in_range(0, 50);
         mention_lose = utils.get_random_value_in_range(50, 100);
       } else {
