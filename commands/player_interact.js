@@ -66,7 +66,8 @@ const arson = ({args, player_data, player_roles, guild}) => {
   if(income_role_ids.indexOf(role_to_arson) >= 0) {
     if(other_player_role_ids.indexOf(role_to_arson) >= 0) {
       // Ensure player has enough money to arson this role
-      const arson_price = Math.round(assets.store_items[target_role_name].cost);
+      const arson_price =
+        Math.round(assets.store_items[target_role_name].cost / 2);
       const player_money = player_data.money;
 
       if(player_money >= arson_price) {
@@ -339,6 +340,118 @@ const raid = ({args, player_data}) => {
 };
 
 /*
+ * Attempt to remove a person's title.
+ * Each usage will drop a person by one title rank, if possible.
+ * Chance is X / X + Y, based on number of ?????.
+ * Cost is ????.
+ * penalty??
+ * Usage:
+ * @player
+ */
+const scandal = ({args, player_data, guild}) => {
+  const [player_mention] = args;
+
+  const command_return = {
+    "update": {
+      "player_data": {...player_data},
+      "roles": {
+        "other_player": {
+          "id": player_mention.user,
+          "add": [],
+          "remove": []
+        }
+      }
+    },
+    "reply": "",
+    "success": false
+  };
+
+  const noble_role_ids = [];
+
+  for(const key in assets.store_items) {
+    if(key in assets.store_items) {
+      if(assets.store_items[key].type === "title") {
+        const role_id = utils.find_role_id_given_name(
+          key,
+          assets.game_roles
+        );
+        noble_role_ids.push(role_id);
+      }
+    }
+  }
+
+  const other_player_role_ids = [];
+
+  /*
+   * For this we are just checking the store items. The player may
+   * have additional roles but they would not be in the store.
+   */
+  guild.members.get(player_mention.user.user).roles.forEach(role => {
+    if(noble_role_ids.indexOf(role.id) >= 0) {
+      other_player_role_ids.push(role.id);
+    }
+  });
+
+  const noble_roles = [
+    "duke",
+    "earl",
+    "baron"
+  ];
+
+  let highest_role_id = "";
+  let highest_role = "";
+
+  for(let iter = 0; iter < noble_roles.length; iter += 1) {
+    const check_role_id =
+      utils.find_role_id_given_name(noble_roles[iter], assets.game_roles);
+    if(other_player_role_ids.indexOf(check_role_id) >= 0) {
+      highest_role = noble_roles[iter];
+      highest_role_id = check_role_id;
+      break;
+    }
+  }
+
+  if(highest_role_id) {
+    // We have a highest role to try and scandal. Make sure we have the moola
+    const scandal_cost = Math.round(assets.store_items[highest_role].cost / 2);
+
+    if(player_data.money >= scandal_cost) {
+      // Determine if the scandal is a success
+      const chance = utils.get_random_value_in_range(1, 100);
+
+      if(chance >= 50) {
+        // The scandal succeeded! Determine what role the other player drops to
+        const current_role_index = noble_roles.indexOf(highest_role);
+        const new_role = current_role_index < noble_roles.length - 1
+          ? noble_roles[current_role_index - 1]
+          : "unsworn";
+
+        if(new_role !== "unsworn") {
+          command_return.roles.other_player.add.push(new_role);
+        }
+        command_return.roles.other_player.remove.push(highest_role);
+        command_return.reply = `Your scandal was successful!`;
+      } else {
+        const penalty = utils.get_random_value_in_range(200, 1000);
+        command_return.update.player_data.money -= penalty;
+        command_return.reply = `Your scandal failed!`;
+      }
+
+      command_return.player_data.money -= scandal_cost;
+      command_return.success = true;
+    } else {
+      command_return.reply = `Instigating a scandal against ${highest_role} ` +
+        `<@${player_mention.user}> costs ${scandal_cost} :moneybag:. You do ` +
+        ` not have enough to afford the scandal.`;
+    }
+  } else {
+    command_return.reply = `<@${player_mention.user}> is unsworn!`;
+  }
+
+  return command_return;
+};
+
+/*
  * View money, ships, men of a player. costs 400
  * <PLAYER>
  */
@@ -596,6 +709,23 @@ module.exports = {
       "args": [
         "args",
         "player_data"
+      ],
+      "command_args": [[args_js.arg_types.player_mention]],
+      "usage": ["@PLAYER"],
+      "allowed_channels": assets.player_interact_channels
+    },
+    "scandal": {
+      "function": scandal,
+      "cooldown": {
+        "time": utils.hours_to_ms(72),
+        "field": "scandal_last_time",
+        "reply": "The fire watch is on high alert. " +
+          "They are due to leave in"
+      },
+      "args": [
+        "args",
+        "player_data",
+        "guild"
       ],
       "command_args": [[args_js.arg_types.player_mention]],
       "usage": ["@PLAYER"],
