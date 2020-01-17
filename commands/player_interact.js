@@ -583,7 +583,7 @@ const thief = ({args, player_data}) => {
  * Trade with a different player that is in a house in which you have a pact
  * @player <SHIPS>
  */
-const trade = ({args, player_data}) => {
+const trade = ({args, player_data, player_roles}) => {
   const command_return = {
     "update": {
       "player_data": {...player_data}
@@ -607,12 +607,24 @@ const trade = ({args, player_data}) => {
   if(pact) {
     // Make sure the player has ships
     const p_ships = player_data.ships;
+    let role_limit = assets.role_ship_limits.unsworn;
+
+    if(player_roles.includes("duke")) {
+      role_limit = assets.role_ship_limits.duke;
+    } else if (player_roles.includes("earl")) {
+      role_limit = assets.role_ship_limits.earl;
+    } else if (player_roles.includes("baron")) {
+      role_limit = assets.role_ship_limits.baron;
+    }
+
     if(player_data.user === player_mention.user) {
       command_return.reply = "You cannot trade yourself!";
     } else if(p_ships > 0) {
       // Ensure the args are valid
       if(isNaN(num_ships) || num_ships < 1) {
         command_return.reply = "Number of ships must be a positive number";
+      } else if(num_ships > role_limit) {
+        command_return.reply = `You may only use at most ${role_limit} ships`;
       } else if(p_ships >= num_ships) {
         // All good! Grant the cash
         const trader_pay =
@@ -777,7 +789,8 @@ module.exports = {
       },
       "args": [
         "args",
-        "player_data"
+        "player_data",
+        "player_roles"
       ],
       "command_args": [
         [
