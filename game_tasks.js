@@ -51,7 +51,7 @@ module.exports = {
 
       // Pay port ownership
       const port_payout =
-        Math.round(3000 * payout_percent);
+        Math.round(5000 * payout_percent);
       db.get_ports.all().forEach(port => {
         guild.roles.get(port.house).members.forEach((value, key) => {
           // Get player_data
