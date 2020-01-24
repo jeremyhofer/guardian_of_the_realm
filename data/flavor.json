@@ -62,15 +62,16 @@
     "You and your Men-at-Arms went on a raid. The raid failed. We attacked an enemy patrol, but we were beaten back mercilessly. We killed {enemyLost} {e_MenAtArms} of {target_mention}, but we lost {myLost} {e_MenAtArms}. Your Men-at-Arms were dejected all the way home."
   ],
   "raid_success": [
-    "You raided a village. You're pretty sure it was an enemy village. Things are a bit murky from all the ale. Your men didn't find any loot, but one of your men kept a lame chicken. Oh, you also killed {enemyLost} {e_MenAtArms} of {target_mention}, and lost {myLost} {e_MenAtArms} in a skirmish on your way back.",
-    "You and your Men-at-Arms suddenly attacked an enemy patrol, and killed {enemyLost} {e_MenAtArms} of {target_mention} after a short, bloody fight. We lost {myLost} {e_MenAtArms}. Your men were in high spirits all the way home.",
-    "You and your men raided an enemy hold-fast. It went splendidly. We only had to kill a dog, {enemyLost} {e_MenAtArms} of {target_mention}, and an old man. We lost {myLost} {e_MenAtArms}."
+    "You raided a village. You're pretty sure it was an enemy village. Things are a bit murky from all the ale. Your men didn't find any soldiers, but one of your men kept a lame chicken. Oh, you also killed {enemyLost} {e_MenAtArms} of {target_mention}, lost {myLost} {e_MenAtArms}, and looted {amount} :moneybag: from a skirmish on your way back.",
+    "You and your Men-at-Arms suddenly attacked an enemy patrol, and killed {enemyLost} {e_MenAtArms} of {target_mention} after a short, bloody fight. We lost {myLost} {e_MenAtArms} and took {amount} :moneybag: in loot. Your men were in high spirits all the way home.",
+    "You and your men raided an enemy hold-fast. It went splendidly. We only had to kill a dog, {enemyLost} {e_MenAtArms} of {target_mention}, and an old man. We lost {myLost} {e_MenAtArms}, and took {amount} :moneybag: in loot."
   ],
   "pirate_fail": [
     "You slip out to sea to engage in a bit of free booting. Your fleet is ambushed. You manage to sink {enemyLost} {e_Warship} of {target_mention}, but your fleet took heavy damage, and lost {myLost} {e_Warship}. Your men are morose on the journey home."
   ],
   "pirate_success": [
-    "You slip out to sea to engage in a bit of free booting. Your able to sink {enemyLost} {e_Warship} of {target_mention}, and you only lost {myLost} {e_Warship}. This incursion was a success, and your sailors are well pleased with the result!"
+    "You slip out to sea to engage in a bit of free booting. Your fleet sunk {enemyLost} {e_Warship} of {target_mention}, and you only lost {myLost} {e_Warship} and take {amount} :moneybag: in loot. This incursion was a success, and your sailors are well pleased with the result!",
+    "In the dead of night your sailors safely navigate the dangerous shaols and slip into a hostile port. After lighting several enemy ships on fire your men flee into the dark embrace of the high seas. Your fleet sunk {enemyLost} {e_Warship} of {target_mention}, lost {myLost} {e_Warship}, took {amount} :moneybag: in loot."
   ],
   "smuggle_fail": [
     "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Unfortunately, those same criminal elements also don't mind informing the Inquisition about the less then holy intents of your ships. {amount} {e_Warship} were seized in the harbor, and your ship barely escaped their grasp.",
@@ -91,5 +92,17 @@
   ],
   "trade": [
     "The seas were calm, and no pirates threatened your fleet until they arrived. After a fruitful day of trade {trader}'s  merchants made {trader_pay} :moneybag:, while {tradee}  earned {tradee_pay} :moneybag: in tariffs."
+  ],
+  "arson_success": [
+    "You've recently seen {target_mention}'s holdings, and decided to do a bit of arson for a good cause. After hiring a moderatly sozzled fellow and giving him some fire sticks, you've found he successfully burned down the {role_to_arson}!"
+  ],
+  "arson_fail": [
+    "It seems your scheme to burn down the {role_to_arson} has backfired. {target_mention} caught your arsonist who promptly confessed in a drunken stupor that it was all your idea. You have been fined {amount} :moneybag:, and possibly made a new enemy."
+  ],
+  "scandal_success": [
+    "You've heard a rather salacious rumor concerning {target_mention} about some actions involving a sultry abbess, malcontent abbot, and funds that should have been sent to The Faith. It also seems that you might have quitely spoken with an Inquisitor of The Faith and provided a heafty offering to the Inquisition for their good work. The Inquisition launched an investigation into this matter which revealed that wrong doing had taken place as a result they revoked the offender's {role_to_scandal} title for now."
+  ],
+  "scandal_fail": [
+    "You've heard a rather salactious rumor concerning {target_mention} and some actions involving tithes for The Faith that went missing. After giving the Inqusition a heafty bribe, and pointing them in the right direction you were stunned to find out that you we're implicated in the plot. You've been fined {amount}, and should apprear in court later this evening."
   ]
 }
