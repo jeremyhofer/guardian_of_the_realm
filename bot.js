@@ -195,7 +195,8 @@ client.on('message', msg => {
                   }
 
                   if('other_player' in command_return.update.roles) {
-                    const other_id = command_return.update.roles.id;
+                    const other_id =
+                      command_return.update.roles.other_player.id;
                     if('add' in command_return.update.roles.other_player) {
                       // Adjust other_player roles as necessary
                       command_return.

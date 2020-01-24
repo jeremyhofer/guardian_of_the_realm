@@ -53,7 +53,7 @@ const arson = ({args, player_data, player_roles, guild}) => {
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  guild.members.get(player_mention.user.user).roles.forEach(role => {
+  guild.members.get(player_mention.user).roles.forEach(role => {
     if(income_role_ids.indexOf(role.id) >= 0) {
       other_player_role_ids.push(role.id);
     }
@@ -85,7 +85,7 @@ const arson = ({args, player_data, player_roles, guild}) => {
 
         if(chance >= fail_risk) {
           // Player wins! Remove the role from the other player
-          command_return.roles.other_player.remove.push(role_to_arson);
+          command_return.update.roles.other_player.remove.push(role_to_arson);
           command_return.reply =
             `You successfully burned <@${player_mention.user}>'s ` +
             `<@&${role_to_arson}> to the ground!`;
@@ -102,7 +102,7 @@ const arson = ({args, player_data, player_roles, guild}) => {
         }
 
         // Deduct price for the arson
-        command_return.player_data.money -= arson_price;
+        command_return.update.player_data.money -= arson_price;
         command_return.success = true;
       } else {
         command_return.reply =
@@ -423,7 +423,7 @@ const scandal = ({args, player_data, guild}) => {
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  guild.members.get(player_mention.user.user).roles.forEach(role => {
+  guild.members.get(player_mention.user).roles.forEach(role => {
     if(noble_role_ids.indexOf(role.id) >= 0) {
       other_player_role_ids.push(role.id);
     }
@@ -466,7 +466,7 @@ const scandal = ({args, player_data, guild}) => {
         if(new_role !== "unsworn") {
           command_return.roles.other_player.add.push(new_role);
         }
-        command_return.roles.other_player.remove.push(highest_role);
+        command_return.update.roles.other_player.remove.push(highest_role);
         command_return.reply = `Your scandal was successful!`;
       } else {
         const penalty = utils.get_random_value_in_range(
@@ -477,7 +477,7 @@ const scandal = ({args, player_data, guild}) => {
         command_return.reply = `Your scandal failed!`;
       }
 
-      command_return.player_data.money -= scandal_cost;
+      command_return.update.player_data.money -= scandal_cost;
       command_return.success = true;
     } else {
       command_return.reply = `Instigating a scandal against ${highest_role} ` +
