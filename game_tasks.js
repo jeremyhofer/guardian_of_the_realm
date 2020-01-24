@@ -4,7 +4,7 @@ const utils = require('./utils.js');
 
 module.exports = {
   "role_payouts": (guild, current_time) => {
-    const hours_between_payout = 12;
+    const hours_between_payout = assets.timeout_lengths.payout_interval;
     const payout_percent = hours_between_payout / 24;
     const last_payout = db.get_tracker_by_name.get("payout_time");
 
@@ -51,7 +51,7 @@ module.exports = {
 
       // Pay port ownership
       const port_payout =
-        Math.round(3000 * payout_percent);
+        Math.round(assets.reward_payouts_penalties.port_daily * payout_percent);
       db.get_ports.all().forEach(port => {
         guild.roles.get(port.house).members.forEach((value, key) => {
           // Get player_data
@@ -88,232 +88,6 @@ module.exports = {
         `${player_data.user}> your loan has expired. The remaining balance ` +
         `of ${loan.amount_due} has been deducted from your account`);
     });
-  },
-  "old_resolve_war_votes": (guild, expiration_time) => {
-    // Resolve expired war votes
-    let expired_war_vote =
-      db.get_expired_votes_by_type.get("war", expiration_time);
-
-    while(expired_war_vote) {
-      // Get the data for the player who made this vote
-      const player_data = db.get_player.get(expired_war_vote.user);
-      // Get all votes for the house
-      const house_votes =
-        db.get_all_house_votes_by_type.all("war", player_data.house);
-      const vote_counts = {};
-
-      // Count the votes
-      house_votes.forEach(vote => {
-        if(vote.choice in vote_counts) {
-          vote_counts[vote.choice] += 1;
-        } else {
-          vote_counts[vote.choice] = 1;
-        }
-      });
-
-      // Add the counts as objects in the array so we may sort by count
-      const top_choices = [];
-
-      for(const choice in vote_counts) {
-        if(choice in vote_counts) {
-          top_choices.push({
-            choice,
-            "votes": vote_counts.choice
-          });
-        }
-      }
-
-      top_choices.sort((first, second) => second.votes - first.votes);
-
-      // Get the top choice and see if we have any ties
-      let top_choice = top_choices[0].choice;
-
-      if(top_choices.length > 1) {
-        // See if the 2nd highest has the same number. If so there is a tie
-        top_choice = top_choices[0].votes === top_choices[1].votes
-          ? "peace"
-          : top_choice;
-      }
-
-      let vote_reply = "";
-      let regen_map = false;
-
-      // WAR OR PEACE
-      if(top_choice === "peace") {
-        // Send message that vote ended in peace
-        vote_reply = `<@&${player_data.house}> your war vote has resulted in ` +
-          "peace";
-      } else {
-        // WE HAVE WAR
-        db.add_war.run({
-          "house_a": player_data.house,
-          "house_b": top_choice
-        });
-
-        /*
-         * Get all votes from the other house. If any are for the house that
-         * declared war, delete them
-         */
-        const other_house_votes = db.get_all_house_votes_by_type.all(
-          "war",
-          top_choice
-        );
-
-        other_house_votes.forEach(vote => {
-          if(vote.choice === player_data.house) {
-            db.remove_vote.run(vote);
-          }
-        });
-
-        vote_reply = `<@&${player_data.house}> has declared war on ` +
-          `<@&${top_choice}>`;
-
-        regen_map = true;
-      }
-
-      // Send the reply
-      guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
-
-      // Remove the votes
-      house_votes.forEach(vote => {
-        db.remove_vote.run(vote);
-      });
-
-      if(regen_map) {
-        module.exports.post_updated_map({guild});
-      }
-
-      // Get next vote to resolve, if exists
-      expired_war_vote =
-        db.get_expired_votes_by_type.get("war", expiration_time);
-    }
-  },
-  "resolve_truce_votes": (guild, expiration_time) => {
-    let expired_truce_vote = db.get_expired_truce_vote.get(expiration_time);
-
-    while(expired_truce_vote) {
-      // Get the data for the player who made this vote
-      const player_data = db.get_player.get(expired_truce_vote.user);
-      const other_house = expired_truce_vote.choice;
-
-      // Get all votes for both houses
-      const p_house_votes_yes = db.get_all_house_votes_by_type.all(
-        "truce_yes",
-        player_data.house
-      );
-      const p_house_votes_no = db.get_all_house_votes_by_type.all(
-        "truce_no",
-        player_data.house
-      );
-      const o_house_votes_yes = db.get_all_house_votes_by_type.all(
-        "truce_yes",
-        other_house
-      );
-      const o_house_votes_no = db.get_all_house_votes_by_type.all(
-        "truce_no",
-        other_house
-      );
-
-      // Filter all the votes by vote type and specific truce vote
-      const p_house_yes = p_house_votes_yes.filter(vote => vote.choice ===
-        other_house);
-      const p_house_no = p_house_votes_no.filter(vote => vote.choice ===
-        other_house);
-      const o_house_yes = o_house_votes_yes.filter(vote => vote.choice ===
-        player_data.house);
-      const o_house_no = o_house_votes_no.filter(vote => vote.choice ===
-        player_data.house);
-
-      // Get the votes for/against
-      const p_yes_count = p_house_yes.length;
-      const p_no_count = p_house_no.length;
-      const o_yes_count = o_house_yes.length;
-      const o_no_count = o_house_no.length;
-
-      const p_house_vote_count = p_yes_count + p_no_count;
-      const o_house_vote_count = o_yes_count + o_no_count;
-
-      let vote_reply = `A truce vote between <@&${player_data.house}> and ` +
-        `<@&${other_house}> has finished. `;
-
-      let regen_map = false;
-
-      // Determine the vote outcome
-      if(p_house_vote_count > 0 && o_house_vote_count > 0) {
-        if(p_house_yes > p_house_no && o_house_yes > o_house_no) {
-          // We have a truce! Remove the war
-          const war = db.get_war_between_houses.get({
-            "house1": player_data.house,
-            "house2": other_house
-          });
-
-          db.remove_war.run(war);
-
-          /*
-           * If there were any sieges between the houses, remove them
-           * and return the pledged troops
-           */
-
-          const sieges_between_houses =
-            db.get_all_siege_id_between_two_houses.all({
-              "house_a": player_data.house,
-              "house_b": other_house
-            });
-
-          // Iterate over each siege
-          sieges_between_houses.forEach(siege => {
-            const pledges = db.get_all_pledges_for_siege.all(siege);
-
-            // Iterate over each pledge. Return the men and remore the pledge
-            pledges.forEach(pledge => {
-              const pledger_data = db.get_player.get(pledge.user);
-              pledger_data.men += pledge.units;
-              db.set_player.run(pledger_data);
-              db.remove_pledge.run(pledge);
-            });
-
-            // Remove the siege
-            db.remove_siege.run(siege);
-          });
-          // Successful Truce Vote
-          vote_reply += "A truce has been brokered - pray the peace lasts!";
-          regen_map = true;
-        } else {
-          // We continue to WAR
-          vote_reply += "A truce was not reached - War continues!";
-        }
-      } else {
-        // This should indicate that the other house did not vote. War continues
-        vote_reply += "The attempt failed horribly - War continues!";
-      }
-
-      // Send the reply
-      guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
-
-      // Remove all associated votes
-      p_house_yes.forEach(vote => {
-        db.remove_vote.run(vote);
-      });
-
-      p_house_no.forEach(vote => {
-        db.remove_vote.run(vote);
-      });
-
-      o_house_yes.forEach(vote => {
-        db.remove_vote.run(vote);
-      });
-
-      o_house_no.forEach(vote => {
-        db.remove_vote.run(vote);
-      });
-
-      if(regen_map) {
-        module.exports.post_updated_map({guild});
-      }
-
-      // Get next truce to try and resolve, if exists
-      expired_truce_vote = db.get_expired_truce_vote.get(expiration_time);
-    }
   },
   "resolve_war_votes": (guild, expiration_time) => {
     let expired_war_vote = db.get_expired_war_vote.get(expiration_time);
@@ -617,18 +391,18 @@ module.exports = {
         const num_pledgers = attack_pledges.length + defend_pledges.length;
         const win_pot = is_port
           ? 0
-          : 3000 * num_pledgers;
+          : 0 * num_pledgers;
         const lose_pot = is_port
           ? 0
-          : 20 * num_pledgers;
+          : 0 * num_pledgers;
         const attacker_losses = utils.get_percent_of_value_given_range(
           defender_count,
-          1,
+          20,
           30
         );
         const defender_losses = utils.get_percent_of_value_given_range(
           attacker_count,
-          1,
+          20,
           30
         );
 
@@ -743,7 +517,7 @@ module.exports = {
 
         if(is_port) {
           message += `The members of the house controlling the port will ` +
-            `each earn 3000 :moneybag: per day.`;
+            `each earn ${assets.reward_payouts_penalties.port_daily} :moneybag: per day.`;
         } else {
           message += `${win_pot} :moneybag: has been distributed to the ` +
             `winners. ${lose_pot} ${assets.emojis.MenAtArms} has been ` +
@@ -892,11 +666,13 @@ module.exports = {
       `${defender_total} ${emoji} ` +
       `${defender_win_chance}%`;
 
+    /*
     const winner_payout = pledges.length * 3000;
     const loser_payout = pledges.length * 20;
 
     const rewards = `Winners: ${winner_payout} :moneybag:\n` +
       `Losers: ${loser_payout} ${assets.emojis.MenAtArms}`;
+    */
     const type = is_port
       ? 'Blockade'
       : 'Siege';
@@ -915,12 +691,14 @@ module.exports = {
       ]
     };
 
+    /*
     if(!is_port) {
       embed.fields.push({
         "name": "Rewards",
         "value": rewards
       });
     }
+    */
 
     return embed;
   },
@@ -1140,9 +918,68 @@ module.exports = {
 
       reply = "Done";
     } else {
-      reply = "You, player_mention, dare command this of me? Be gone, before you destroy these lands.";
+      reply =
+        "You dare command this of me? Be gone, before you destroy these lands.";
     }
 
     return {reply};
+  },
+  "generate_roles_reply": ({player_roles}) => {
+    const money_roles = [
+      "apothecary",
+      "blacksmith",
+      "mill",
+      "mine",
+      "quarry",
+      "stable",
+      "tavern",
+      "workshop"
+    ];
+
+    const troop_roles = [
+      "duke",
+      "earl",
+      "baron",
+      "unsworn"
+    ];
+
+    let reply = "Income Roles:\n";
+
+    money_roles.forEach(role => {
+      const role_cap = role[0].toUpperCase() + role.slice(1);
+      const symbol = player_roles.includes(role)
+        ? ":white_check_mark:"
+        : ":x:";
+      reply +=
+        `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
+        `per Day\n`;
+    });
+
+    let role_reply = "";
+    let no_role = true;
+
+    for(let inc = 0; inc < troop_roles.length; inc += 1) {
+      const role = troop_roles[inc];
+      const troop_limit = assets.role_troop_limits[role];
+      const role_cap = role[0].toUpperCase() + role.slice(1);
+      let role_mark = ":x:";
+      if(player_roles.includes(role) || role === "unsworn") {
+        if(no_role) {
+          role_mark = ":white_check_mark:";
+          no_role = false;
+        } else {
+          role_mark = ":arrow_down:";
+        }
+      } else if(!no_role) {
+        role_mark = ":arrow_down:";
+      }
+
+      role_reply = `${role_mark} ${role_cap} ${troop_limit} ` +
+            `${assets.emojis.MenAtArms} per Siege\n${role_reply}`;
+    }
+
+    reply += `\nNobility Roles:\n${role_reply}`;
+
+    return reply;
   }
 };

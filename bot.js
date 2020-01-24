@@ -153,39 +153,91 @@ client.on('message', msg => {
                 }
 
                 if('roles' in command_return.update) {
-                  if('add' in command_return.update.roles) {
-                    // Adjust player roles as necessary
-                    command_return.update.roles.add.forEach(add_role => {
-                      // See if this is an ID. If so, use it, otherwise get ID
-                      const server_role = add_role in assets.game_roles
-                        ? add_role
-                        : utils.find_role_id_given_name(
-                            add_role,
-                            assets.game_roles
-                          );
-                      if(server_role) {
-                        // Add role to player
-                        msg.member.addRole(server_role).catch(console.error);
-                      } else {
-                        msg.reply(`${add_role} is not defined. Contact a dev`);
-                      }
-                    });
+                  if('player' in command_return.update.roles) {
+                    if('add' in command_return.update.roles.player) {
+                      // Adjust player roles as necessary
+                      command_return.
+                        update.roles.player.add.forEach(add_role => {
+                        // See if this is an ID. If so, use it, otherwise get ID
+                        const server_role = add_role in assets.game_roles
+                          ? add_role
+                          : utils.find_role_id_given_name(
+                              add_role,
+                              assets.game_roles
+                            );
+                        if(server_role) {
+                          // Add role to player
+                          msg.member.addRole(server_role).catch(console.error);
+                        } else {
+                          msg.
+                            reply(`${add_role} is not defined. Contact a dev`);
+                        }
+                      });
+                    }
+
+                    if('remove' in command_return.update.roles.player) {
+                      // Adjust the player's roles
+                      command_return.
+                        update.roles.player.remove.forEach(remove_role => {
+                        const server_role = remove_role in assets.game_roles
+                          ? remove_role
+                          : utils.find_role_id_given_name(
+                              remove_role,
+                              assets.game_roles
+                            );
+                        if(server_role) {
+                          // Add role to player
+                          msg.member.removeRole(server_role).
+                            catch(console.error);
+                        }
+                      });
+                    }
                   }
 
-                  if('remove' in command_return.update.roles) {
-                    // Adjust the player's roles
-                    command_return.update.roles.remove.forEach(remove_role => {
-                      const server_role = remove_role in assets.game_roles
-                        ? remove_role
-                        : utils.find_role_id_given_name(
-                            remove_role,
-                            assets.game_roles
-                          );
-                      if(server_role) {
-                        // Add role to player
-                        msg.member.removeRole(server_role).catch(console.error);
-                      }
-                    });
+                  if('other_player' in command_return.update.roles) {
+                    const other_id =
+                      command_return.update.roles.other_player.id;
+                    if('add' in command_return.update.roles.other_player) {
+                      // Adjust other_player roles as necessary
+                      command_return.
+                        update.roles.other_player.add.forEach(add_role => {
+                        // See if this is an ID. If so, use it, otherwise get ID
+                        const server_role = add_role in assets.game_roles
+                          ? add_role
+                          : utils.find_role_id_given_name(
+                              add_role,
+                              assets.game_roles
+                            );
+                        if(server_role) {
+                          // Add role to other_player
+                          msg.guild.members.get(other_id).addRole(server_role).
+                            catch(console.error);
+                        } else {
+                          msg.
+                            reply(`${add_role} is not defined. Contact a dev`);
+                        }
+                      });
+                    }
+
+                    if('remove' in command_return.update.roles.other_player) {
+                      // Adjust the other_player's roles
+                      command_return.
+                        update.
+                          roles.other_player.remove.forEach(remove_role => {
+                        const server_role = remove_role in assets.game_roles
+                          ? remove_role
+                          : utils.find_role_id_given_name(
+                              remove_role,
+                              assets.game_roles
+                            );
+                        if(server_role) {
+                          // Add role to other_player
+                          msg.guild.members.get(other_id).
+                            removeRole(server_role).
+                              catch(console.error);
+                        }
+                      });
+                    }
                   }
                 }
               } else if(cooldown && 'success' in
@@ -305,9 +357,13 @@ client.on('message', msg => {
             // Incorrect arguments supplied. Print usage information
             const command_usage = command_dispatch[command].usage;
             const usage_info = ["Usage:"];
-            command_usage.forEach(use => {
-              usage_info.push(`${PREFIX}${command} ${use}`);
-            });
+            if(command_usage.length > 0) {
+              command_usage.forEach(use => {
+                usage_info.push(`${PREFIX}${command} ${use}`);
+              });
+            } else {
+              usage_info.push(`${PREFIX}${command}`);
+            }
             msg.reply(usage_info.join("\n"));
           }
         } else {
@@ -341,7 +397,8 @@ setInterval(() => {
     game_tasks.collect_loans(guild, now);
 
     // Resolve expired war votes
-    const expiration_time = now - utils.hours_to_ms(8);
+    const expiration_time =
+      now - utils.hours_to_ms(assets.timeout_lengths.vote_expiration);
     game_tasks.resolve_war_votes(guild, expiration_time);
     game_tasks.resolve_pact_votes(guild, expiration_time);
     game_tasks.resolve_sieges(guild, now);

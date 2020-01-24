@@ -1,5 +1,6 @@
 const assets = require('../assets.js');
 const db = require('../database.js');
+const game_tasks = require('../game_tasks.js');
 const utils = require('../utils.js');
 
 // Show help text. optional specific command
@@ -83,60 +84,7 @@ const cooldown = ({player_data, command_dispatch}) => {
 };
 
 const roles = ({player_roles}) => {
-  const money_roles = [
-    "apothecary",
-    "blacksmith",
-    "mill",
-    "mine",
-    "quarry",
-    "stable",
-    "tavern",
-    "workshop"
-  ];
-
-  const troop_roles = [
-    "duke",
-    "earl",
-    "baron",
-    "unsworn"
-  ];
-
-  let reply = "Income Roles:\n";
-
-  money_roles.forEach(role => {
-    const role_cap = role[0].toUpperCase() + role.slice(1);
-    const symbol = player_roles.includes(role)
-      ? ":white_check_mark:"
-      : ":x:";
-    reply +=
-      `${symbol} ${role_cap}: ${assets.daily_payouts[role]} :moneybag: ` +
-      `per Day\n`;
-  });
-
-  let role_reply = "";
-  let no_role = true;
-
-  for(let inc = 0; inc < troop_roles.length; inc += 1) {
-    const role = troop_roles[inc];
-    const troop_limit = assets.role_troop_limits[role];
-    const role_cap = role[0].toUpperCase() + role.slice(1);
-    let role_mark = ":x:";
-    if(player_roles.includes(role) || role === "unsworn") {
-      if(no_role) {
-        role_mark = ":white_check_mark:";
-        no_role = false;
-      } else {
-        role_mark = ":arrow_down:";
-      }
-    } else if(!no_role) {
-      role_mark = ":arrow_down:";
-    }
-
-    role_reply = `${role_mark} ${role_cap} ${troop_limit} ` +
-          `${assets.emojis.MenAtArms} per Siege\n${role_reply}`;
-  }
-
-  reply += `\nNobility Roles:\n${role_reply}`;
+  const reply = game_tasks.generate_roles_reply({player_roles});
 
   return {reply};
 };

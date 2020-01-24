@@ -55,7 +55,7 @@ module.exports = {
   },
   "store_items": {
     "apothecary": {
-      "type": "title",
+      "type": "income",
       "cost": 1500
     },
     "baron": {
@@ -63,7 +63,7 @@ module.exports = {
       "cost": 2500
     },
     "blacksmith": {
-      "type": "title",
+      "type": "income",
       "cost": 1000
     },
     "duke": {
@@ -81,15 +81,15 @@ module.exports = {
       "cost": 100
     },
     "mill": {
-      "type": "title",
+      "type": "income",
       "cost": 500
     },
     "mine": {
-      "type": "title",
+      "type": "income",
       "cost": 1500
     },
     "quarry": {
-      "type": "title",
+      "type": "income",
       "cost": 2000
     },
     "ships": {
@@ -97,15 +97,15 @@ module.exports = {
       "cost": 1000
     },
     "stable": {
-      "type": "title",
+      "type": "income",
       "cost": 800
     },
     "tavern": {
-      "type": "title",
+      "type": "income",
       "cost": 200
     },
     "workshop": {
-      "type": "title",
+      "type": "income",
       "cost": 2000
     }
   },
@@ -211,5 +211,68 @@ module.exports = {
     "628759338579918856"
   ],
   "player_interact_channels": ["572265598193500160"],
-  "developer_role": "572264297883762688"
+  "developer_role": "572264297883762688",
+  "timeout_lengths": {
+    "vote_expiration": 8,
+    "payout_interval": 12,
+    "arson": 24,
+    "pirate": 24,
+    "raid": 24,
+    "scandal": 72,
+    "spy": 1,
+    "thief": 24,
+    "trade": 24,
+    "pray": 1,
+    "subvert": 12,
+    "train": 12,
+    "work": 6
+  },
+  "reward_payouts_penalties": {
+    "port_daily": 5000,
+    "arson_penalty_min": 200,
+    "arson_penalty_max": 1000,
+    "pirate_reward_min": 2000,
+    "pirate_reward_max": 3000,
+    "pirate_success_attacker_loss_min": 0,
+    "pirate_success_attacker_loss_max": 5,
+    "pirate_success_defender_loss_min": 5,
+    "pirate_success_defender_loss_max": 10,
+    "pirate_fail_attacker_loss_min": 5,
+    "pirate_fail_attacker_loss_max": 8,
+    "pirate_fail_defender_loss_min": 3,
+    "pirate_fail_defender_loss_max": 6,
+    "raid_reward_min": 2000,
+    "raid_reward_max": 3000,
+    "raid_success_attacker_loss_min": 0,
+    "raid_success_attacker_loss_max": 50,
+    "raid_success_defender_loss_min": 50,
+    "raid_success_defender_loss_max": 100,
+    "raid_fail_attacker_loss_min": 50,
+    "raid_fail_attacker_loss_max": 80,
+    "raid_fail_defender_loss_min": 30,
+    "raid_fail_defender_loss_max": 60,
+    "scandal_penalty_min": 200,
+    "scandal_penalty_max": 1000,
+    "spy_cost": 200,
+    "thief_success_percent_min": 2,
+    "thief_success_percent_max": 10,
+    "thief_penalty_min": 100,
+    "thief_penalty_max": 1000,
+    "trade_trader_reward_min": 200,
+    "trade_trader_reward_max": 300,
+    "trade_tradee_reward_min": 100,
+    "trade_tradee_reward_max": 200,
+    "pray_reward_min": 0,
+    "pray_reward_max": 200,
+    "subvert_reward_min": 1000,
+    "subvert_reward_max": 4000,
+    "subvert_penalty_min": 200,
+    "subvert_penalty_max": 1000,
+    "train_reward_min": 1,
+    "train_reward_max": 20,
+    "train_penalty_min": 10,
+    "train_penalty_max": 100,
+    "work_reward_min": 500,
+    "work_reward_max": 2000
+  }
 };
