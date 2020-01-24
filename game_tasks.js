@@ -4,7 +4,7 @@ const utils = require('./utils.js');
 
 module.exports = {
   "role_payouts": (guild, current_time) => {
-    const hours_between_payout = 12;
+    const hours_between_payout = assets.timeout_lengths.payout_interval;
     const payout_percent = hours_between_payout / 24;
     const last_payout = db.get_tracker_by_name.get("payout_time");
 
@@ -51,7 +51,7 @@ module.exports = {
 
       // Pay port ownership
       const port_payout =
-        Math.round(5000 * payout_percent);
+        Math.round(assets.reward_payouts_penalties.port_daily * payout_percent);
       db.get_ports.all().forEach(port => {
         guild.roles.get(port.house).members.forEach((value, key) => {
           // Get player_data
@@ -517,7 +517,7 @@ module.exports = {
 
         if(is_port) {
           message += `The members of the house controlling the port will ` +
-            `each earn 3000 :moneybag: per day.`;
+            `each earn ${assets.reward_payouts_penalties.port_daily} :moneybag: per day.`;
         } else {
           message += `${win_pot} :moneybag: has been distributed to the ` +
             `winners. ${lose_pot} ${assets.emojis.MenAtArms} has been ` +

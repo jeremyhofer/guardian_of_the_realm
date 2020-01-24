@@ -1,4 +1,3 @@
-const args_js = require('../args.js');
 const assets = require('../assets.js');
 const utils = require('../utils.js');
 const flavor = require('../data/flavor.json');
@@ -20,7 +19,10 @@ const pray = ({player_data}) => {
    * Determine payout. Set last time and new money amount.
    * Let player know and save to database.
    */
-  const payout = utils.get_random_value_in_range(0, 200);
+  const payout = utils.get_random_value_in_range(
+    assets.reward_payouts_penalties.pray_reward_min,
+    assets.reward_payouts_penalties.pray_reward_max
+  );
   command_return.update.player_data.money += payout;
   const reply_template = utils.random_element(flavor.pray);
   command_return.reply = utils.template_replace(
@@ -48,7 +50,10 @@ const subvert = ({player_data}) => {
   const chance = utils.get_random_value_in_range(1, 100);
   if(chance >= 50) {
     // Success! Pay reward
-    const payout = utils.get_random_value_in_range(1000, 4000);
+    const payout = utils.get_random_value_in_range(
+      assets.reward_payouts_penalties.subvert_reward_min,
+      assets.reward_payouts_penalties.subvert_reward_max
+    );
     command_return.update.player_data.money += payout;
     const reply_template = utils.random_element(flavor.subvert_success);
     command_return.reply = utils.template_replace(
@@ -57,7 +62,10 @@ const subvert = ({player_data}) => {
     );
   } else {
     // Failure. Take penalty.
-    const penalty = utils.get_random_value_in_range(200, 1000);
+    const penalty = utils.get_random_value_in_range(
+      assets.reward_payouts_penalties.subvert_penalty_min,
+      assets.reward_payouts_penalties.subvert_penalty_max
+    );
     command_return.update.player_data.money -= penalty;
     const reply_template = utils.random_element(flavor.subvert_fail);
     command_return.reply = utils.template_replace(
@@ -86,7 +94,10 @@ const train = ({player_data}) => {
   const chance = utils.get_random_value_in_range(1, 100);
   if(chance >= 20) {
     // Success! Pay reward
-    const payout = utils.get_random_value_in_range(1, 20);
+    const payout = utils.get_random_value_in_range(
+      assets.reward_payouts_penalties.train_reward_min,
+      assets.reward_payouts_penalties.train_reward_max
+    );
     command_return.update.player_data.men += payout;
     const reply_template = utils.random_element(flavor.train_success);
     command_return.reply = utils.template_replace(
@@ -98,7 +109,10 @@ const train = ({player_data}) => {
     );
   } else {
     // Failure. Take penalty.
-    const penalty = utils.get_random_value_in_range(10, 100);
+    const penalty = utils.get_random_value_in_range(
+      assets.reward_payouts_penalties.train_penalty_min,
+      assets.reward_payouts_penalties.train_penalty_max
+    );
     command_return.update.player_data.money -= penalty;
     const reply_template = utils.random_element(flavor.train_fail);
     command_return.reply = utils.template_replace(
@@ -127,7 +141,10 @@ const work = ({player_data}) => {
    * Determine payout. Set last time and new money amount.
    * Let player know and save to database.
    */
-  const payout = utils.get_random_value_in_range(500, 2000);
+  const payout = utils.get_random_value_in_range(
+    assets.reward_payouts_penalties.work_reward_min,
+    assets.reward_payouts_penalties.work_reward_max
+  );
   command_return.update.player_data.money += payout;
   const reply_template = utils.random_element(flavor.work);
   command_return.reply = utils.template_replace(
@@ -143,7 +160,7 @@ module.exports = {
     "pray": {
       "function": pray,
       "cooldown": {
-        "time": utils.hours_to_ms(1),
+        "time": utils.hours_to_ms(assets.timeout_lengths.pray),
         "field": "pray_last_time",
         "reply": "No one is around to hear your prayers for another"
       },
@@ -154,7 +171,7 @@ module.exports = {
     "subvert": {
       "function": subvert,
       "cooldown": {
-        "time": utils.hours_to_ms(12),
+        "time": utils.hours_to_ms(assets.timeout_lengths.subvert),
         "field": "subvert_last_time",
         "reply": "The watch is in high presence right now. You should try " +
           "again in another"
@@ -166,7 +183,7 @@ module.exports = {
     "train": {
       "function": train,
       "cooldown": {
-        "time": utils.hours_to_ms(12),
+        "time": utils.hours_to_ms(assets.timeout_lengths.train),
         "field": "train_last_time",
         "reply": "You have been training tirelessly. You should rest for "
       },
@@ -177,7 +194,7 @@ module.exports = {
     "work": {
       "function": work,
       "cooldown": {
-        "time": utils.hours_to_ms(6),
+        "time": utils.hours_to_ms(assets.timeout_lengths.work),
         "field": "work_last_time",
         "reply": "You continue to slave away, but you will not be paid for " +
           "another"

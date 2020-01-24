@@ -91,7 +91,10 @@ const arson = ({args, player_data, player_roles, guild}) => {
             `<@&${role_to_arson}> to the ground!`;
         } else {
           // Player failed! Assess a fine
-          const penalty = utils.get_random_value_in_range(200, 1000);
+          const penalty = utils.get_random_value_in_range(
+            assets.reward_payouts_penalties.arson_penalty_min,
+            assets.reward_payouts_penalties.arson_penalty_max
+          );
           command_return.update.player_data.money -= penalty;
           command_return.reply =
             `You failed to burn <@${player_mention.user}>'s ` +
@@ -206,14 +209,29 @@ const pirate = ({args, player_data}) => {
 
       if(chance >= fail_risk) {
         // Player wins! Adjust ships
-        const reward = utils.get_random_value_in_range(2000, 3000);
+        const reward = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.pirate_reward_min,
+          assets.reward_payouts_penalties.pirate_reward_max
+        );
         command_return.update.player_data.money += reward;
-        player_lose = utils.get_random_value_in_range(0, 5);
-        mention_lose = utils.get_random_value_in_range(5, 10);
+        player_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.pirate_success_attacker_loss_min,
+          assets.reward_payouts_penalties.pirate_success_attacker_loss_max
+        );
+        mention_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.pirate_success_defender_loss_min,
+          assets.reward_payouts_penalties.pirate_success_defender_loss_max
+        );
       } else {
         // Mention wins! Adjust ships
-        player_lose = utils.get_random_value_in_range(5, 8);
-        mention_lose = utils.get_random_value_in_range(3, 6);
+        player_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.pirate_fail_attacker_loss_min,
+          assets.reward_payouts_penalties.pirate_fail_attacker_loss_max
+        );
+        mention_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.pirate_fail_defender_loss_min,
+          assets.reward_payouts_penalties.pirate_fail_defender_loss_max
+        );
         winner = 'mention';
       }
 
@@ -296,14 +314,29 @@ const raid = ({args, player_data}) => {
 
       if(chance >= fail_risk) {
         // Player wins! Adjust men
-        const reward = utils.get_random_value_in_range(2000, 3000);
+        const reward = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.raid_reward_min,
+          assets.reward_payouts_penalties.raid_reward_max
+        );
         command_return.update.player_data.money += reward;
-        player_lose = utils.get_random_value_in_range(0, 50);
-        mention_lose = utils.get_random_value_in_range(50, 100);
+        player_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.raid_success_attacker_loss_min,
+          assets.reward_payouts_penalties.raid_success_attacker_loss_max
+        );
+        mention_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.raid_success_defender_loss_min,
+          assets.reward_payouts_penalties.raid_success_defender_loss_max
+        );
       } else {
         // Mention wins! Adjust men
-        player_lose = utils.get_random_value_in_range(50, 80);
-        mention_lose = utils.get_random_value_in_range(30, 60);
+        player_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.raid_fail_attacker_loss_min,
+          assets.reward_payouts_penalties.raid_fail_attacker_loss_max
+        );
+        mention_lose = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.raid_fail_defender_loss_min,
+          assets.reward_payouts_penalties.raid_fail_defender_loss_max
+        );
         winner = 'mention';
       }
 
@@ -436,7 +469,10 @@ const scandal = ({args, player_data, guild}) => {
         command_return.roles.other_player.remove.push(highest_role);
         command_return.reply = `Your scandal was successful!`;
       } else {
-        const penalty = utils.get_random_value_in_range(200, 1000);
+        const penalty = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.scandal_penalty_min,
+          assets.reward_payouts_penalties.scandal_penalty_max
+        );
         command_return.update.player_data.money -= penalty;
         command_return.reply = `Your scandal failed!`;
       }
@@ -475,20 +511,22 @@ const spy = ({args, player_data, guild}) => {
   const p_money = player_data.money;
   if(player_data.user === player_mention.user) {
     command_return.reply = "You cannot spy yourself!";
-  } else if(p_money >= 200) {
+  } else if(p_money >= assets.reward_payouts_penalties.spy_cost) {
     const player_roles = [];
     guild.members.get(player_mention.user).roles.forEach(role => {
       player_roles.push(role.name.toLowerCase());
     });
     const role_reply = game_tasks.generate_roles_reply({player_roles});
-    command_return.update.player_data.money -= 200;
+    command_return.update.player_data.money -=
+      assets.reward_payouts_penalties.spy_cost;
     command_return.reply = `<@${player_mention.user}> has ` +
       `${player_mention.money} :moneybag: ${player_mention.men} ` +
       `${assets.emojis.MenAtArms} ${player_mention.ships} ` +
       `${assets.emojis.Warship}\n\n${role_reply}`;
     command_return.success = true;
   } else {
-    command_return.reply = "You do not have enough money. spy costs 200.";
+    command_return.reply = `You do not have enough money. ` +
+      `Spy costs ${assets.reward_payouts_penalties.spy_cost}.`;
   }
 
   return command_return;
@@ -535,10 +573,17 @@ const thief = ({args, player_data}) => {
 
       if(chance >= fail_risk) {
         // Player wins! Adjust money
-        money_change = utils.get_percent_of_value_given_range(m_money, 2, 10);
+        money_change = utils.get_percent_of_value_given_range(
+          m_money,
+          assets.reward_payouts_penalties.thief_success_percent_min,
+          assets.reward_payouts_penalties.thief_success_percent_max
+        );
       } else {
         // Mention wins! Adjust money
-        money_change = utils.get_random_value_in_range(100, 1000);
+        money_change = utils.get_random_value_in_range(
+          assets.reward_payouts_penalties.thief_penalty_min,
+          assets.reward_payouts_penalties.thief_penalty_max
+        );
         winner = 'mention';
       }
 
@@ -628,9 +673,15 @@ const trade = ({args, player_data, player_roles}) => {
       } else if(p_ships >= num_ships) {
         // All good! Grant the cash
         const trader_pay =
-          utils.get_random_value_in_range(200, 300) * num_ships;
+          utils.get_random_value_in_range(
+            assets.reward_payouts_penalties.trade_trader_reward_min,
+            assets.reward_payouts_penalties.trade_trader_reward_max
+          ) * num_ships;
         const tradee_pay =
-          utils.get_random_value_in_range(100, 200) * num_ships;
+          utils.get_random_value_in_range(
+            assets.reward_payouts_penalties.trade_tradee_reward_min,
+            assets.reward_payouts_penalties.trade_tradee_reward_max
+          ) * num_ships;
         command_return.update.player_data.money += trader_pay;
         command_return.update.player_mention.money += tradee_pay;
         const reply_template = utils.random_element(flavor.trade);
@@ -663,7 +714,7 @@ module.exports = {
     "arson": {
       "function": arson,
       "cooldown": {
-        "time": utils.hours_to_ms(24),
+        "time": utils.hours_to_ms(assets.timeout_lengths.arson),
         "field": "arson_last_time",
         "reply": "The fire watch is on high alert. " +
           "They are due to leave in"
@@ -677,7 +728,7 @@ module.exports = {
       "command_args": [
         [
           args_js.arg_types.player_mention,
-          args_js.args_js.game_role
+          args_js.arg_types.game_role
         ]
       ],
       "usage": ["@PLAYER INCOME_ROLE"],
@@ -701,7 +752,7 @@ module.exports = {
     "pirate": {
       "function": pirate,
       "cooldown": {
-        "time": utils.hours_to_ms(24),
+        "time": utils.hours_to_ms(assets.timeout_lengths.pirate),
         "field": "pirate_last_time",
         "reply": "Pirating now would not be wise as the navy is patroling. " +
           "They are due to leave in"
@@ -717,7 +768,7 @@ module.exports = {
     "raid": {
       "function": raid,
       "cooldown": {
-        "time": utils.hours_to_ms(24),
+        "time": utils.hours_to_ms(assets.timeout_lengths.raid),
         "field": "raid_last_time",
         "reply": "Your troops are still resting from the last raid. " +
           "Your party may leave again in"
@@ -733,7 +784,7 @@ module.exports = {
     "scandal": {
       "function": scandal,
       "cooldown": {
-        "time": utils.hours_to_ms(72),
+        "time": utils.hours_to_ms(assets.timeout_lengths.scandal),
         "field": "scandal_last_time",
         "reply": "The fire watch is on high alert. " +
           "They are due to leave in"
@@ -750,7 +801,7 @@ module.exports = {
     "spy": {
       "function": spy,
       "cooldown": {
-        "time": utils.hours_to_ms(1),
+        "time": utils.hours_to_ms(assets.timeout_lengths.spy),
         "field": "spy_last_time",
         "reply": "The spy is out to lunch and will be back in"
       },
@@ -766,7 +817,7 @@ module.exports = {
     "thief": {
       "function": thief,
       "cooldown": {
-        "time": utils.hours_to_ms(24),
+        "time": utils.hours_to_ms(assets.timeout_lengths.thief),
         "field": "thief_last_time",
         "reply": "The guards are on the alert for thieves. " +
           "Maybe you can try again in"
@@ -782,7 +833,7 @@ module.exports = {
     "trade": {
       "function": trade,
       "cooldown": {
-        "time": utils.hours_to_ms(24),
+        "time": utils.hours_to_ms(assets.timeout_lengths.trade),
         "field": "trade_last_time",
         "reply": "Your merchants are buying goods from the guilds, and " +
           "their sailors are drunk in the tavern. You can set sail again at"
