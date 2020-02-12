@@ -38,10 +38,12 @@ const command_dispatch = {
 };
 
 let client_ready = false;
+let game_active = false;
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client_ready = true;
+  game_active = game_tasks.is_game_active();
 });
 
 client.login(auth.token);
@@ -53,6 +55,12 @@ client.on('message', msg => {
     var command = tokens[0].substring(1);
 
     if(command in command_dispatch) {
+      if(!game_active) {
+        msg.reply("The game is over! A new round will begin soon!");
+
+        return;
+      }
+
       if(assets.blocked_channels.includes(msg.channel.id) &&
         !msg.member.roles.has(assets.developer_role)) {
         msg.reply("commands are not allowed in this channel");
@@ -390,7 +398,7 @@ setInterval(() => {
    * Check to see if a siege should be resolved
    * ST guild ID: 572263893729017893
    */
-  if(client_ready) {
+  if(client_ready && game_active) {
     const guild = client.guilds.get("572263893729017893");
     const now = Date.now();
     game_tasks.role_payouts(guild, now);
@@ -402,5 +410,6 @@ setInterval(() => {
     game_tasks.resolve_war_votes(guild, expiration_time);
     game_tasks.resolve_pact_votes(guild, expiration_time);
     game_tasks.resolve_sieges(guild, now);
+    game_active = game_tasks.is_game_active();
   }
 }, 1000);
