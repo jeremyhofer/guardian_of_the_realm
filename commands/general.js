@@ -50,10 +50,11 @@ const cooldown = ({player_data, command_dispatch}) => {
   const now = Date.now();
 
   const cooldown_map = {
+    'arson_last_time': 'arson',
     'pirate_last_time': 'pirate',
     'pray_last_time': 'pray',
     'raid_last_time': 'raid',
-    'smuggle_last_time': 'smuggle',
+    'scandal_last_time': 'scandal',
     'spy_last_time': 'spy',
     'subvert_last_time': 'subvert',
     'thief_last_time': 'thief',
