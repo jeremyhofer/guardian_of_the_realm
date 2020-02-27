@@ -981,5 +981,30 @@ module.exports = {
     reply += `\nNobility Roles:\n${role_reply}`;
 
     return reply;
+  },
+  "is_game_active": () => {
+    // Check to see if any house has 7 castles. If so, game over!
+    let game_active = true;
+    const owner_counts = {};
+
+    db.get_all_tiles.all().forEach(tile => {
+      if(tile.type === "castle") {
+        if(tile.house in owner_counts) {
+          owner_counts[tile.house] += 1;
+        } else {
+          owner_counts[tile.house] = 0;
+        }
+      }
+    });
+
+    for(const house in owner_counts) {
+      if(house in owner_counts) {
+        if(owner_counts[house] >= 7) {
+          game_active = false;
+        }
+      }
+    }
+
+    return game_active;
   }
 };

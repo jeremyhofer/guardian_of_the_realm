@@ -82,24 +82,30 @@ const arson = ({args, player_data, player_roles, guild}) => {
         }
 
         const chance = utils.get_random_value_in_range(1, 100);
+        let penalty = 0;
+        let reply_template = "";
 
         if(chance >= fail_risk) {
           // Player wins! Remove the role from the other player
           command_return.update.roles.other_player.remove.push(role_to_arson);
-          command_return.reply =
-            `You successfully burned <@${player_mention.user}>'s ` +
-            `<@&${role_to_arson}> to the ground!`;
+          reply_template = utils.random_element(flavor.arson_success);
         } else {
           // Player failed! Assess a fine
-          const penalty = utils.get_random_value_in_range(
+          penalty = utils.get_random_value_in_range(
             assets.reward_payouts_penalties.arson_penalty_min,
             assets.reward_payouts_penalties.arson_penalty_max
           );
           command_return.update.player_data.money -= penalty;
-          command_return.reply =
-            `You failed to burn <@${player_mention.user}>'s ` +
-            `<@&${role_to_arson}> to the ground.`;
+          reply_template = utils.random_element(flavor.arson_fail);
         }
+        command_return.reply = utils.template_replace(
+          reply_template,
+          {
+            "amount": penalty,
+            "target_mention": `<@${player_mention.user}>`,
+            "role_to_arson": target_role_name
+          }
+        );
 
         // Deduct price for the arson
         command_return.update.player_data.money -= arson_price;
@@ -455,6 +461,8 @@ const scandal = ({args, player_data, guild}) => {
     if(player_data.money >= scandal_cost) {
       // Determine if the scandal is a success
       const chance = utils.get_random_value_in_range(1, 100);
+      let reply_template = "";
+      let penalty = 0;
 
       if(chance >= 50) {
         // The scandal succeeded! Determine what role the other player drops to
@@ -467,16 +475,24 @@ const scandal = ({args, player_data, guild}) => {
           command_return.roles.other_player.add.push(new_role);
         }
         command_return.update.roles.other_player.remove.push(highest_role);
-        command_return.reply = `Your scandal was successful!`;
+        reply_template = utils.random_element(flavor.scandal_fail);
       } else {
-        const penalty = utils.get_random_value_in_range(
+        penalty = utils.get_random_value_in_range(
           assets.reward_payouts_penalties.scandal_penalty_min,
           assets.reward_payouts_penalties.scandal_penalty_max
         );
         command_return.update.player_data.money -= penalty;
-        command_return.reply = `Your scandal failed!`;
+        reply_template = utils.random_element(flavor.scandal_fail);
       }
 
+      command_return.reply = utils.template_replace(
+        reply_template,
+        {
+          "amount": penalty,
+          "target_mention": `<@${player_mention.user}>`,
+          "role_to_scandal": highest_role
+        }
+      );
       command_return.update.player_data.money -= scandal_cost;
       command_return.success = true;
     } else {
