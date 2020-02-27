@@ -13,7 +13,9 @@ const join = ({player_data}) => {
     "update": {
       "player_data": {...player_data},
       "roles": {
-        "add": []
+        "player": {
+          "add": []
+        }
       }
     },
     "reply": ""
@@ -52,7 +54,7 @@ const join = ({player_data}) => {
     const selected_house = sorted_houses[0].id;
 
     command_return.update.player_data.house = selected_house;
-    command_return.update.roles.add.push(selected_house);
+    command_return.update.roles.player.add.push(selected_house);
     command_return.reply = `You successfully joined <@&${selected_house}>!`;
   }
 
