@@ -472,7 +472,7 @@ const scandal = ({args, player_data, guild}) => {
           : "unsworn";
 
         if(new_role !== "unsworn") {
-          command_return.roles.other_player.add.push(new_role);
+          command_return.update.roles.other_player.add.push(new_role);
         }
         command_return.update.roles.other_player.remove.push(highest_role);
         reply_template = utils.random_element(flavor.scandal_fail);
