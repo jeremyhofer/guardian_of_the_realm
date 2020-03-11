@@ -230,15 +230,31 @@ const loan = ({args, player_data, loans}) => {
 
 // Lists everything in the market they may buy
 const market = () => {
-  let reply = "The items available in the market are:\n";
+  let titles_reply = "TITLES WILL EARN YOU MONEY EVERY DAY - BUY THEM ALL - " +
+    "LIMIT ONE PER HOUSEHOLD:\n";
+  let nobility_reply = "NOBILITY:\n";
+  let warrior_reply = "WARRIOR:\n";
 
   for(var key in assets.store_items) {
-    if(key in assets.store_items && 'cost' in assets.store_items[key]) {
+    if(key in assets.store_items && 'cost' in assets.store_items[
+      key] && 'flavor' in assets.store_items[
+        key] && 'type' in assets.store_items[key]) {
       const item_cost = assets.store_items[key].cost;
+      const item_flavor = assets.store_items[key].flavor;
+      const item_type = assets.store_items[key].type;
       const key_cap = key[0].toUpperCase() + key.slice(1);
-      reply += `${key_cap} ${item_cost}\n`;
+      const item_reply_text = `${key_cap}, ${item_cost} - ${item_flavor}\n`;
+      if(item_type === "income") {
+        titles_reply += item_reply_text;
+      } else if(item_type === "title") {
+        nobility_reply += item_reply_text;
+      } else {
+        warrior_reply += item_reply_text;
+      }
     }
   }
+
+  const reply = `${titles_reply}\n${nobility_reply}\n${warrior_reply}`;
 
   return {
     reply
