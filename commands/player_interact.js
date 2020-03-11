@@ -212,10 +212,11 @@ const pirate = ({args, player_data}) => {
       let player_lose = 0;
       let mention_lose = 0;
       let winner = 'player';
+      let reward = 0;
 
       if(chance >= fail_risk) {
         // Player wins! Adjust ships
-        const reward = utils.get_random_value_in_range(
+        reward = utils.get_random_value_in_range(
           assets.reward_payouts_penalties.pirate_reward_min,
           assets.reward_payouts_penalties.pirate_reward_max
         );
@@ -260,6 +261,7 @@ const pirate = ({args, player_data}) => {
       command_return.reply = utils.template_replace(
         used_template,
         {
+          reward,
           "myLost": player_lose,
           "enemyLost": mention_lose,
           "target_mention": `<@${player_mention.user}>`,
@@ -317,10 +319,11 @@ const raid = ({args, player_data}) => {
       let player_lose = 0;
       let mention_lose = 0;
       let winner = 'player';
+      let reward = 0;
 
       if(chance >= fail_risk) {
         // Player wins! Adjust men
-        const reward = utils.get_random_value_in_range(
+        reward = utils.get_random_value_in_range(
           assets.reward_payouts_penalties.raid_reward_min,
           assets.reward_payouts_penalties.raid_reward_max
         );
@@ -365,6 +368,7 @@ const raid = ({args, player_data}) => {
       command_return.reply = utils.template_replace(
         used_template,
         {
+          reward,
           "myLost": player_lose,
           "enemyLost": mention_lose,
           "target_mention": `<@${player_mention.user}>`,
