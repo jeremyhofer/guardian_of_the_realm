@@ -56,56 +56,69 @@ module.exports = {
   "store_items": {
     "apothecary": {
       "type": "income",
+      "flavor": "Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.",
       "cost": 1500
     },
     "baron": {
       "type": "title",
+      "flavor": "You've scraped together a sizeable pile of coins. Now it's time to pitch tents for up to 300 men, and docks for 30 ships.",
       "cost": 2500
     },
     "blacksmith": {
       "type": "income",
+      "flavor": "Nobles continually make war, but wars require arms and armor, something a blacksmith provides.",
       "cost": 1000
     },
     "duke": {
       "type": "title",
+      "flavor": "You are without peer in the land, best watch your back. Good thing you've got barracks for 1000 men, and captains for 100 ships.",
       "cost": 10000,
       "requires": "earl"
     },
     "earl": {
       "type": "title",
+      "flavor": "People around these lands grow envious. You expand your castle with rooms for up to 600 men, and supplies for 60 ships.",
       "cost": 5000,
       "requires": "baron"
     },
     "men": {
       "type": "men",
+      "flavor": "Ugly, smelly and likely to rip off your head - exactly what you need to win battles.",
       "cost": 100
     },
     "mill": {
       "type": "income",
+      "flavor": "Every noble should have a mill to grind their grains into something mildly edible for the peasants.",
       "cost": 500
     },
     "mine": {
       "type": "income",
+      "flavor": "A mine of copper, iron or tin is fairly profitable not that a noble would be forced to work in one.",
       "cost": 1500
     },
     "quarry": {
       "type": "income",
+      "flavor": "Stone's a valuable during wars. People seem rather fond of knocking down and rebuilding castles.",
       "cost": 2000
     },
     "ships": {
       "type": "ships",
+      "flavor": "These fine vessels are build by the fairly reliable craftsmen of the shipwrights guild.",
       "cost": 1000
     },
     "stable": {
       "type": "income",
+      "flavor": "A noble should always have a goodly stable to raise and train war horses, and plow horses.",
       "cost": 800
     },
     "tavern": {
       "type": "income",
+      "flavor": "A warm hearth, and good food go a long way in easing coin from travelers pockets.",
       "cost": 200
     },
     "workshop": {
       "type": "income",
+      "flavor": "The guilds are always eager to work their crafts under the protection of a strong lord.",
       "cost": 2000
     }
   },

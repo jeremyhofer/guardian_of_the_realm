@@ -10,7 +10,7 @@ const help = () => null;
  * Lists the players money, men, and ships with
  * the unique faction name for each.
  */
-const bal = ({player_data}) => {
+const bal = ({player_data, player_roles}) => {
   let reply = `Your account: ${player_data.money} :moneybag: ` +
     `${player_data.men} ${assets.emojis.MenAtArms} ${player_data.ships} ` +
     `${assets.emojis.Warship}`;
@@ -42,6 +42,8 @@ const bal = ({player_data}) => {
   reply += siege_contributions;
   reply += "\nBlockade Contributions:\n";
   reply += blockade_contributions;
+  reply += "\n\n";
+  reply += game_tasks.generate_roles_reply({player_roles});
 
   return {reply};
 };
@@ -84,12 +86,6 @@ const cooldown = ({player_data, command_dispatch}) => {
   return {reply};
 };
 
-const roles = ({player_roles}) => {
-  const reply = game_tasks.generate_roles_reply({player_roles});
-
-  return {reply};
-};
-
 module.exports = {
   "dispatch": {
     "help": {
@@ -100,7 +96,10 @@ module.exports = {
     },
     "bal": {
       "function": bal,
-      "args": ["player_data"],
+      "args": [
+        "player_data",
+        "player_roles"
+      ],
       "command_args": [[]],
       "usage": []
     },
@@ -110,12 +109,6 @@ module.exports = {
         "player_data",
         "command_dispatch"
       ],
-      "command_args": [[]],
-      "usage": []
-    },
-    "roles": {
-      "function": roles,
-      "args": ["player_roles"],
       "command_args": [[]],
       "usage": []
     }
