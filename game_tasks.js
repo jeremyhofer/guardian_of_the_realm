@@ -517,7 +517,8 @@ module.exports = {
 
         if(is_port) {
           message += `The members of the house controlling the port will ` +
-            `each earn ${assets.reward_payouts_penalties.port_daily} :moneybag: per day.`;
+            `each earn ${assets.reward_payouts_penalties.port_daily} ` +
+            `:moneybag: per day.`;
         } else {
           message += `${win_pot} :moneybag: has been distributed to the ` +
             `winners. ${lose_pot} ${assets.emojis.MenAtArms} has been ` +
@@ -992,7 +993,7 @@ module.exports = {
         if(tile.house in owner_counts) {
           owner_counts[tile.house] += 1;
         } else {
-          owner_counts[tile.house] = 0;
+          owner_counts[tile.house] = 1;
         }
       }
     });

@@ -212,10 +212,11 @@ const pirate = ({args, player_data}) => {
       let player_lose = 0;
       let mention_lose = 0;
       let winner = 'player';
+      let reward = 0;
 
       if(chance >= fail_risk) {
         // Player wins! Adjust ships
-        const reward = utils.get_random_value_in_range(
+        reward = utils.get_random_value_in_range(
           assets.reward_payouts_penalties.pirate_reward_min,
           assets.reward_payouts_penalties.pirate_reward_max
         );
@@ -260,6 +261,7 @@ const pirate = ({args, player_data}) => {
       command_return.reply = utils.template_replace(
         used_template,
         {
+          reward,
           "myLost": player_lose,
           "enemyLost": mention_lose,
           "target_mention": `<@${player_mention.user}>`,
@@ -317,10 +319,11 @@ const raid = ({args, player_data}) => {
       let player_lose = 0;
       let mention_lose = 0;
       let winner = 'player';
+      let reward = 0;
 
       if(chance >= fail_risk) {
         // Player wins! Adjust men
-        const reward = utils.get_random_value_in_range(
+        reward = utils.get_random_value_in_range(
           assets.reward_payouts_penalties.raid_reward_min,
           assets.reward_payouts_penalties.raid_reward_max
         );
@@ -365,6 +368,7 @@ const raid = ({args, player_data}) => {
       command_return.reply = utils.template_replace(
         used_template,
         {
+          reward,
           "myLost": player_lose,
           "enemyLost": mention_lose,
           "target_mention": `<@${player_mention.user}>`,
@@ -468,14 +472,14 @@ const scandal = ({args, player_data, guild}) => {
         // The scandal succeeded! Determine what role the other player drops to
         const current_role_index = noble_roles.indexOf(highest_role);
         const new_role = current_role_index < noble_roles.length - 1
-          ? noble_roles[current_role_index - 1]
+          ? noble_roles[current_role_index + 1]
           : "unsworn";
 
         if(new_role !== "unsworn") {
           command_return.update.roles.other_player.add.push(new_role);
         }
         command_return.update.roles.other_player.remove.push(highest_role);
-        reply_template = utils.random_element(flavor.scandal_fail);
+        reply_template = utils.random_element(flavor.scandal_success);
       } else {
         penalty = utils.get_random_value_in_range(
           assets.reward_payouts_penalties.scandal_penalty_min,
