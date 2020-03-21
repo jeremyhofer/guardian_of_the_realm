@@ -864,7 +864,10 @@ module.exports = {
     return {};
   },
   "reset_everything": ({guild, player_roles}) => {
-    let reply = "";
+    let command_return = {
+      "reply": "",
+      "enable_game": false
+    };
 
     if(player_roles.includes("developer")) {
       // Remove everyone from game roles
@@ -917,13 +920,14 @@ module.exports = {
         }
       }
 
-      reply = "Done";
+      command_return.reply = "Done";
+      command_return.enable_game = true;
     } else {
-      reply =
+      command_return.reply =
         "You dare command this of me? Be gone, before you destroy these lands.";
     }
 
-    return {reply};
+    return command_return;
   },
   "generate_roles_reply": ({player_roles}) => {
     const money_roles = [

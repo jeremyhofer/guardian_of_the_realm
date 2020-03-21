@@ -55,7 +55,7 @@ client.on('message', msg => {
     var command = tokens[0].substring(1);
 
     if(command in command_dispatch) {
-      if(!game_active) {
+      if(!game_active && command !== "reset") {
         msg.reply("The game is over! A new round will begin soon!");
 
         return;
@@ -357,6 +357,11 @@ client.on('message', msg => {
                     message.edit({"embed": siege_embed});
                   });
                 }
+              }
+
+              if('enable_game' in command_return &&
+                 command_return.enable_game) {
+                game_active = true;
               }
             } else {
               msg.reply(command + ' is not yet implemented');
