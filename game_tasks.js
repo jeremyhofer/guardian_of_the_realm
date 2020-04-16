@@ -17,7 +17,7 @@ module.exports = {
             Math.round(assets.daily_payouts[title] * payout_percent);
           const role_id =
             utils.find_role_id_given_name(title, assets.game_roles);
-          guild.roles.get(role_id).members.forEach((value, key) => {
+          guild.roles.cache.get(role_id).members.forEach((value, key) => {
             // Get player_data
             let player_data = db.get_player.get(key);
 
@@ -53,7 +53,7 @@ module.exports = {
       const port_payout =
         Math.round(assets.reward_payouts_penalties.port_daily * payout_percent);
       db.get_ports.all().forEach(port => {
-        guild.roles.get(port.house).members.forEach((value, key) => {
+        guild.roles.cache.get(port.house).members.forEach((value, key) => {
           // Get player_data
           let player_data = db.get_player.get(key);
 
@@ -84,7 +84,7 @@ module.exports = {
       db.set_player.run(player_data);
       db.remove_loan.run(loan);
 
-      guild.channels.get(assets.reply_channels.command_tent).send("<@" +
+      guild.channels.cache.get(assets.reply_channels.command_tent).send("<@" +
         `${player_data.user}> your loan has expired. The remaining balance ` +
         `of ${loan.amount_due} has been deducted from your account`);
     });
@@ -157,7 +157,8 @@ module.exports = {
         `${p_no_count} nays`;
 
       // Send the reply
-      guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
+      guild.channels.cache.get(assets.reply_channels.battle_reports).
+        send(vote_reply);
 
       // Remove all associated votes
       p_house_yes.forEach(vote => {
@@ -293,7 +294,8 @@ module.exports = {
         `${o_no_count} nays`;
 
       // Send the reply
-      guild.channels.get(assets.reply_channels.battle_reports).send(vote_reply);
+      guild.channels.cache.get(assets.reply_channels.battle_reports).
+        send(vote_reply);
 
       // Remove all associated votes
       p_house_yes.forEach(vote => {
@@ -333,8 +335,8 @@ module.exports = {
 
       const tile_owner = db.get_tile_owner.get(expired_siege.tile);
       const is_port = tile_owner.type === 'port';
-      const attacker_name = guild.roles.get(expired_siege.attacker).name;
-      const defender_name = guild.roles.get(tile_owner.house).name;
+      const attacker_name = guild.roles.cache.get(expired_siege.attacker).name;
+      const defender_name = guild.roles.cache.get(tile_owner.house).name;
       const embed = module.exports.generate_siege_embed(
         guild.roles,
         expired_siege.siege_id
@@ -553,8 +555,9 @@ module.exports = {
         });
       }
 
-      const channel = guild.channels.get(assets.reply_channels.battle_reports);
-      channel.fetchMessage(expired_siege.message).then(message => {
+      const channel = guild.channels.cache.get(assets.reply_channels.
+        battle_reports);
+      channel.messages.fetch(expired_siege.message).then(message => {
         message.edit({embed});
       });
 
@@ -616,8 +619,8 @@ module.exports = {
       }
     });
 
-    const attacker_name = guild_roles.get(siege.attacker).name;
-    const defender_name = guild_roles.get(tile_owner.house).name;
+    const attacker_name = guild_roles.cache.get(siege.attacker).name;
+    const defender_name = guild_roles.cache.get(tile_owner.house).name;
 
     let attacker_win_chance = 0;
     let defender_win_chance = 0;
@@ -833,11 +836,11 @@ module.exports = {
       ]
     };
 
-    const channel = guild.channels.get(assets.reply_channels.overworld);
+    const channel = guild.channels.cache.get(assets.reply_channels.overworld);
     const existing_map_messages = db.get_tracker_by_name.all("map");
 
     existing_map_messages.forEach(to_delete => {
-      channel.fetchMessage(to_delete.text).then(message => {
+      channel.messages.fetch(to_delete.text).then(message => {
         message.delete();
       });
       db.remove_tracker.run(to_delete);
@@ -873,8 +876,8 @@ module.exports = {
       // Remove everyone from game roles
       for(const role_id in assets.game_roles) {
         if(role_id in assets.game_roles && role_id !== "625905668263510017") {
-          guild.roles.get(role_id).members.forEach(member => {
-            member.removeRole(role_id).catch(console.error);
+          guild.roles.cache.get(role_id).members.forEach(member => {
+            member.roles.remove(role_id).catch(console.error);
           });
         }
       }
@@ -900,13 +903,13 @@ module.exports = {
         "house-wolf"
       ];
 
-      const house_cat = guild.channels.find(channel => channel.name ===
+      const house_cat = guild.channels.cache.find(channel => channel.name ===
         "The Great Houses");
 
       if(house_cat) {
         for(let inc = 0; inc < remake_channels.length; inc += 1) {
           const channel_to_remake =
-            guild.channels.find(channel => channel.name ===
+            guild.channels.cache.find(channel => channel.name ===
               remake_channels[inc]);
 
           if(channel_to_remake) {

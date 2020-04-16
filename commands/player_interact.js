@@ -35,7 +35,8 @@ const arson = ({args, player_data, player_roles, guild}) => {
 
   const other_player_role_ids = [];
   const income_role_ids = [];
-  const target_role_name = guild.roles.get(role_to_arson).name.toLowerCase();
+  const target_role_name = guild.roles.cache.get(role_to_arson).
+    name.toLowerCase();
 
   for(const key in assets.store_items) {
     if(key in assets.store_items) {
@@ -53,7 +54,7 @@ const arson = ({args, player_data, player_roles, guild}) => {
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  guild.members.get(player_mention.user).roles.forEach(role => {
+  guild.members.cache.get(player_mention.user).roles.cache.forEach(role => {
     if(income_role_ids.indexOf(role.id) >= 0) {
       other_player_role_ids.push(role.id);
     }
@@ -433,7 +434,7 @@ const scandal = ({args, player_data, guild}) => {
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  guild.members.get(player_mention.user).roles.forEach(role => {
+  guild.members.cache.get(player_mention.user).roles.cache.forEach(role => {
     if(noble_role_ids.indexOf(role.id) >= 0) {
       other_player_role_ids.push(role.id);
     }
@@ -533,7 +534,7 @@ const spy = ({args, player_data, guild}) => {
     command_return.reply = "You cannot spy yourself!";
   } else if(p_money >= assets.reward_payouts_penalties.spy_cost) {
     const player_roles = [];
-    guild.members.get(player_mention.user).roles.forEach(role => {
+    guild.members.cache.get(player_mention.user).roles.cache.forEach(role => {
       player_roles.push(role.name.toLowerCase());
     });
     const role_reply = game_tasks.generate_roles_reply({player_roles});

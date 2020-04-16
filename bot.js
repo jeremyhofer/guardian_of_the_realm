@@ -62,11 +62,11 @@ client.on('message', msg => {
       }
 
       if(assets.blocked_channels.includes(msg.channel.id) &&
-        !msg.member.roles.has(assets.developer_role)) {
+        !msg.member.roles.cache.has(assets.developer_role)) {
         msg.reply("commands are not allowed in this channel");
       } else if(!('allowed_channels' in command_dispatch[command]) ||
         command_dispatch[command].allowed_channels.includes(msg.channel.id) ||
-        msg.member.roles.has(assets.developer_role)) {
+        msg.member.roles.cache.has(assets.developer_role)) {
         const call_function = command_dispatch[command].function;
         const call_args = {};
         const other_tokens = tokens.slice(1);
@@ -109,7 +109,7 @@ client.on('message', msg => {
           if(args.valid(parsed_args.types, expected_args)) {
             const player_roles = [];
 
-            msg.member.roles.forEach(value => {
+            msg.member.roles.cache.forEach(value => {
               player_roles.push(value.name.toLowerCase());
             });
 
@@ -175,7 +175,8 @@ client.on('message', msg => {
                             );
                         if(server_role) {
                           // Add role to player
-                          msg.member.addRole(server_role).catch(console.error);
+                          msg.member.roles.add(server_role).
+                            catch(console.error);
                         } else {
                           msg.
                             reply(`${add_role} is not defined. Contact a dev`);
@@ -195,7 +196,7 @@ client.on('message', msg => {
                             );
                         if(server_role) {
                           // Add role to player
-                          msg.member.removeRole(server_role).
+                          msg.member.roles.remove(server_role).
                             catch(console.error);
                         }
                       });
@@ -218,7 +219,8 @@ client.on('message', msg => {
                             );
                         if(server_role) {
                           // Add role to other_player
-                          msg.guild.members.get(other_id).addRole(server_role).
+                          msg.guild.members.cache.get(other_id).
+                            roles.add(server_role).
                             catch(console.error);
                         } else {
                           msg.
@@ -240,8 +242,8 @@ client.on('message', msg => {
                             );
                         if(server_role) {
                           // Add role to other_player
-                          msg.guild.members.get(other_id).
-                            removeRole(server_role).
+                          msg.guild.members.cache.get(other_id).
+                            roles.remove(server_role).
                               catch(console.error);
                         }
                       });
@@ -271,10 +273,11 @@ client.on('message', msg => {
               if('send' in command_return) {
                 if('message' in command_return.send) {
                   if('channel' in command_return.send) {
-                    msg.guild.channels.get(command_return.send.channel).send(
-                      command_return.send.message,
-                      {"split": true}
-                    );
+                    msg.guild.channels.cache.get(command_return.send.channel).
+                      send(
+                        command_return.send.message,
+                        {"split": true}
+                      );
                   } else {
                     msg.channel.send(
                       command_return.send.message,
@@ -334,7 +337,7 @@ client.on('message', msg => {
                   );
                   const br_channel = assets.reply_channels.battle_reports;
                   const channel =
-                    msg.guild.channels.get(br_channel);
+                    msg.guild.channels.cache.get(br_channel);
                   channel.send({"embed": siege_embed}).then(message => {
                     db.update_siege_message.run(
                       message.id,
@@ -352,8 +355,8 @@ client.on('message', msg => {
                   );
                   const br_channel = assets.reply_channels.battle_reports;
                   const channel =
-                    msg.guild.channels.get(br_channel);
-                  channel.fetchMessage(siege.message).then(message => {
+                    msg.guild.channels.cache.get(br_channel);
+                  channel.messages.fetch(siege.message).then(message => {
                     message.edit({"embed": siege_embed});
                   });
                 }
@@ -404,7 +407,7 @@ setInterval(() => {
    * ST guild ID: 572263893729017893
    */
   if(client_ready && game_active) {
-    const guild = client.guilds.get("572263893729017893");
+    const guild = client.guilds.cache.get("572263893729017893");
     const now = Date.now();
     game_tasks.role_payouts(guild, now);
     game_tasks.collect_loans(guild, now);
