@@ -57,17 +57,17 @@ module.exports = {
     "apothecary": {
       "type": "income",
       "flavor": "Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.",
-      "cost": 1500
+      "cost": 1000
     },
     "baron": {
       "type": "title",
       "flavor": "You've scraped together a sizeable pile of coins. Now it's time to pitch tents for up to 300 men, and docks for 30 ships.",
-      "cost": 2500
+      "cost": 3000
     },
     "blacksmith": {
       "type": "income",
       "flavor": "Nobles continually make war, but wars require arms and armor, something a blacksmith provides.",
-      "cost": 1000
+      "cost": 1500
     },
     "duke": {
       "type": "title",
@@ -78,7 +78,7 @@ module.exports = {
     "earl": {
       "type": "title",
       "flavor": "People around these lands grow envious. You expand your castle with rooms for up to 600 men, and supplies for 60 ships.",
-      "cost": 5000,
+      "cost": 6000,
       "requires": "baron"
     },
     "men": {
@@ -94,12 +94,12 @@ module.exports = {
     "mine": {
       "type": "income",
       "flavor": "A mine of copper, iron or tin is fairly profitable not that a noble would be forced to work in one.",
-      "cost": 1500
+      "cost": 1000
     },
     "quarry": {
       "type": "income",
       "flavor": "Stone's a valuable during wars. People seem rather fond of knocking down and rebuilding castles.",
-      "cost": 2000
+      "cost": 1000
     },
     "ships": {
       "type": "ships",
@@ -109,17 +109,17 @@ module.exports = {
     "stable": {
       "type": "income",
       "flavor": "A noble should always have a goodly stable to raise and train war horses, and plow horses.",
-      "cost": 800
+      "cost": 500
     },
     "tavern": {
       "type": "income",
       "flavor": "A warm hearth, and good food go a long way in easing coin from travelers pockets.",
-      "cost": 200
+      "cost": 500
     },
     "workshop": {
       "type": "income",
       "flavor": "The guilds are always eager to work their crafts under the protection of a strong lord.",
-      "cost": 2000
+      "cost": 1500
     }
   },
   "game_roles": {
@@ -148,7 +148,7 @@ module.exports = {
       "bear"
     ],
     "572289104742580254": [
-      "reavers",
+      "shinobi",
       "hydra"
     ],
     "572288492101435408": [
@@ -188,14 +188,14 @@ module.exports = {
     "572288492101435408": "Dragon"
   },
   "daily_payouts": {
-    "apothecary": 600,
-    "blacksmith": 500,
-    "mill": 200,
-    "mine": 750,
+    "apothecary": 1000,
+    "blacksmith": 1500,
+    "mill": 500,
+    "mine": 1000,
     "quarry": 1000,
-    "stable": 300,
-    "tavern": 100,
-    "workshop": 1000
+    "stable": 500,
+    "tavern": 500,
+    "workshop": 1500
   },
   "role_troop_limits": {
     "baron": 300,
@@ -228,10 +228,10 @@ module.exports = {
   "timeout_lengths": {
     "vote_expiration": 8,
     "payout_interval": 12,
-    "arson": 24,
+    "arson": 12,
     "pirate": 24,
     "raid": 24,
-    "scandal": 72,
+    "scandal": 48,
     "spy": 1,
     "thief": 24,
     "trade": 24,
@@ -241,7 +241,7 @@ module.exports = {
     "work": 6
   },
   "reward_payouts_penalties": {
-    "port_daily": 5000,
+    "port_daily": 3000,
     "arson_penalty_min": 200,
     "arson_penalty_max": 1000,
     "pirate_reward_min": 2000,
@@ -267,20 +267,20 @@ module.exports = {
     "scandal_penalty_min": 200,
     "scandal_penalty_max": 1000,
     "spy_cost": 200,
-    "thief_success_percent_min": 2,
-    "thief_success_percent_max": 10,
+    "thief_success_percent_min": 5,
+    "thief_success_percent_max": 15,
     "thief_penalty_min": 100,
-    "thief_penalty_max": 1000,
+    "thief_penalty_max": 500,
     "trade_trader_reward_min": 200,
-    "trade_trader_reward_max": 300,
-    "trade_tradee_reward_min": 100,
+    "trade_trader_reward_max": 250,
+    "trade_tradee_reward_min": 150,
     "trade_tradee_reward_max": 200,
     "pray_reward_min": 0,
     "pray_reward_max": 200,
     "subvert_reward_min": 1000,
     "subvert_reward_max": 4000,
     "subvert_penalty_min": 200,
-    "subvert_penalty_max": 1000,
+    "subvert_penalty_max": 500,
     "train_reward_min": 1,
     "train_reward_max": 20,
     "train_penalty_min": 10,
