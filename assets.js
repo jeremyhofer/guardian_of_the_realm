@@ -57,17 +57,32 @@ module.exports = {
     "apothecary": {
       "type": "income",
       "flavor": "Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.",
-      "cost": 1000
+      "cost": 500
+    },
+    "armory": {
+      "type": "income",
+      "flavor": "Craftsmen must be brought in to make armor for your Men-at-Arms, plus you can sell the extras.",
+      "cost": 500
     },
     "baron": {
       "type": "title",
       "flavor": "You've scraped together a sizeable pile of coins. Now it's time to pitch tents for up to 300 men, and docks for 30 ships.",
       "cost": 3000
     },
+    "barrack": {
+      "type": "income",
+      "flavor": "A warm hearth, and stout walls reassure your people that they are protected by a strong lord, which increases tax revenues.",
+      "cost": 1500
+    },
     "blacksmith": {
       "type": "income",
-      "flavor": "Nobles continually make war, but wars require arms and armor, something a blacksmith provides.",
+      "flavor": "Nobles continually make war, but wars require weapons, something a blacksmith provides.",
       "cost": 1500
+    },
+    "bordello": {
+      "type": "income",
+      "flavor": "The Matriarchy seek the finer things of life, and most especially during war, their caring touch is need.",
+      "cost": 1000
     },
     "duke": {
       "type": "title",
@@ -83,22 +98,17 @@ module.exports = {
     },
     "men": {
       "type": "men",
-      "flavor": "Ugly, smelly and likely to rip off your head - exactly what you need to win battles.",
+      "flavor": "Ugly, smelly and likely to rip off your head, they're exactly what you need to win battles.",
       "cost": 100
     },
-    "mill": {
+    "monastery": {
       "type": "income",
-      "flavor": "Every noble should have a mill to grind their grains into something mildly edible for the peasants.",
-      "cost": 500
-    },
-    "mine": {
-      "type": "income",
-      "flavor": "A mine of copper, iron or tin is fairly profitable not that a noble would be forced to work in one.",
+      "flavor": "The Patriarchy reject common indulgences and vices. Their Inquisitions into Tainted matters are swift and violent.",
       "cost": 1000
     },
-    "quarry": {
+    "haunt": {
       "type": "income",
-      "flavor": "Stone's a valuable during wars. People seem rather fond of knocking down and rebuilding castles.",
+      "flavor": "A haunt for the Tainted elements of your court, in an old mine away from prying eyes, is a cunning investment.",
       "cost": 1000
     },
     "ships": {
@@ -106,21 +116,12 @@ module.exports = {
       "flavor": "These fine vessels are build by the fairly reliable craftsmen of the shipwrights guild.",
       "cost": 1000
     },
-    "stable": {
+    "weavery": {
       "type": "income",
-      "flavor": "A noble should always have a goodly stable to raise and train war horses, and plow horses.",
+      "flavor": "Every noble should have a weavery to spin linens for sale and cloath for the peasants.",
       "cost": 500
-    },
-    "tavern": {
-      "type": "income",
-      "flavor": "A warm hearth, and good food go a long way in easing coin from travelers pockets.",
-      "cost": 500
-    },
-    "workshop": {
-      "type": "income",
-      "flavor": "The guilds are always eager to work their crafts under the protection of a strong lord.",
-      "cost": 1500
     }
+
   },
   "game_roles": {
     "625905668263510017": [
@@ -155,12 +156,12 @@ module.exports = {
       "ronin",
       "dragon"
     ],
-    "575048350915756050": ["workshop"],
-    "575048286059102209": ["tavern"],
-    "629752243440058388": ["stable"],
-    "596111896633933860": ["quarry"],
-    "596192462582710272": ["mine"],
-    "593580957324279808": ["mill"],
+    "575048350915756050": ["barrack"],
+    "575048286059102209": ["armory"],
+    "629752243440058388": ["monastery"],
+    "596111896633933860": ["bordello"],
+    "596192462582710272": ["haunt"],
+    "593580957324279808": ["weavery"],
     "587764855067377674": ["earl"],
     "584864539259043912": ["duke"],
     "575048205234995225": ["blacksmith"],
@@ -188,14 +189,14 @@ module.exports = {
     "572288492101435408": "Dragon"
   },
   "daily_payouts": {
-    "apothecary": 1000,
+    "apothecary": 500,
+    "armory": 500,
+    "barrack": 1500
     "blacksmith": 1500,
-    "mill": 500,
-    "mine": 1000,
-    "quarry": 1000,
-    "stable": 500,
-    "tavern": 500,
-    "workshop": 1500
+    "bordello": 1000,
+    "haunt": 1000,
+    "monastery": 1000,
+    "weavery": 500,
   },
   "role_troop_limits": {
     "baron": 300,
