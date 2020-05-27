@@ -25,7 +25,7 @@
     "You were once told that many hands make light work, and today you eaned {amount} :moneybag:"
   ],
   "train_fail" : [
-  	"Several merchants have been found dead on the roads near your castle, mangled and torn. The abbess takes one look at the body, and declares that Tainted haunt the roads. You gather a few Men-at-Arms and wait for nightfall. A single ghastly beast slays several of your brave men, before slipping into the looming darkness. You paid {amount} :moneybag: to have them buried properly.",
+    "Several merchants have been found dead on the roads near your castle, mangled and torn. The abbess takes one look at the body, and declares that Tainted haunt the roads. You gather a few Men-at-Arms and wait for nightfall. A single ghastly beast slays several of your brave men, before slipping into the looming darkness. You paid {amount} :moneybag: to have them buried properly.",
     "A nervous looking villein comes to your castle late one evening, and tells you that a young woman was taken by bandits. He says he can lead you to them. You swiftly rally a few Men-at-Arms, and tell them to only bring a drab cloak, weapons, and chain-mail. Your vengeful band silently slip out of your castle. Later that evening, you find the bandits around their campfire. Your men are ambushed just before you order the attack. You managed to kill the treacherous spy, but you are badly wounded. Your men manage to drag your half conscious carcass back to your castle. You lose {amount} :moneybag: in medical expenses, and bonuses for your men.",
     "You spent a few hours training in the barracks with your Men-at-Arms. It was not your finest showing. You left bruised, and your armor was rather dented. You had to pay the blacksmith {amount} :moneybag: to repaint your helmet, and beat the dents out of your armor."
   ],
@@ -62,7 +62,7 @@
     "You spent a pleasurable evening with an influential bishop of The Patriarchy. In the morning you are left with a hangover, and a lack of memories about last nights escapades, but the bishop donated {amount} :moneybag: to you."
   ],
   "raid_fail": [
-  	"You and your Men-at-Arms went on a raid. The night was dark, and full of terrors. We killed {enemyLost} {e_MenAtArms} of {target_mention}, but we lost {myLost} {e_MenAtArms}. Some of your Men-at-Arms have sworn never to speak of the night again.",
+    "You and your Men-at-Arms went on a raid. The night was dark, and full of terrors. We killed {enemyLost} {e_MenAtArms} of {target_mention}, but we lost {myLost} {e_MenAtArms}. Some of your Men-at-Arms have sworn never to speak of the night again.",
     "You and your Men-at-Arms went on a raid. The raid failed. We attacked an enemy patrol, but we were beaten back mercilessly. We killed {enemyLost} {e_MenAtArms} of {target_mention}, but we lost {myLost} {e_MenAtArms}. Your Men-at-Arms were dejected all the way home."
   ],
   "raid_success": [
@@ -71,7 +71,7 @@
     "You and your men raided an enemy hold-fast. It went splendidly. We only had to kill a dog, {enemyLost} {e_MenAtArms} of {target_mention}, and an old man. We lost {myLost} {e_MenAtArms}, and took {reward} :moneybag: in loot."
   ],
   "pirate_fail": [
-  	"A few of your ships sail into hostile waters. Just as you find an enemy fleet you are attacked by a leviathon. In the chaos, it destorys {enemyLost} {e_Warship} of {target_mention}, but you lose {myLost} {e_Warship}. Terror fills your sailors all the way home.",
+    "A few of your ships sail into hostile waters. Just as you find an enemy fleet you are attacked by a leviathon. In the chaos, it destorys {enemyLost} {e_Warship} of {target_mention}, but you lose {myLost} {e_Warship}. Terror fills your sailors all the way home.",
     "You slip out to sea to engage in a bit of free booting. Your fleet is ambushed. You manage to sink {enemyLost} {e_Warship} of {target_mention}, but your fleet took heavy damage, and lost {myLost} {e_Warship}. Your men are morose on the journey home."
   ],
   "pirate_success": [
