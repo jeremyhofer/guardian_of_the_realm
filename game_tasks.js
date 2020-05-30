@@ -937,13 +937,13 @@ module.exports = {
   "generate_roles_reply": ({player_roles}) => {
     const money_roles = [
       "apothecary",
+      "armory",
+      "barrack",
       "blacksmith",
-      "mill",
-      "mine",
-      "quarry",
-      "stable",
-      "tavern",
-      "workshop"
+      "bordello",
+      "haunt",
+      "monastery",
+      "weavery"
     ];
 
     const troop_roles = [
