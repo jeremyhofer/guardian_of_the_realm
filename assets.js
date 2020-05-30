@@ -191,12 +191,12 @@ module.exports = {
   "daily_payouts": {
     "apothecary": 500,
     "armory": 500,
-    "barrack": 1500
+    "barrack": 1500,
     "blacksmith": 1500,
     "bordello": 1000,
     "haunt": 1000,
     "monastery": 1000,
-    "weavery": 500,
+    "weavery": 500
   },
   "role_troop_limits": {
     "baron": 300,
