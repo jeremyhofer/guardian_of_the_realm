@@ -227,6 +227,7 @@ module.exports = {
   "player_interact_channels": ["572265598193500160"],
   "developer_role": "572264297883762688",
   "timeout_lengths": {
+    "siege_blockade": 24,
     "vote_expiration": 8,
     "payout_interval": 12,
     "arson": 12,

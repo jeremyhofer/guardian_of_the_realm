@@ -30,7 +30,8 @@ const command_dispatch = {
     "function": cmd_args => game_tasks.reset_everything(cmd_args),
     "args": [
       "guild",
-      "player_roles"
+      "player_roles",
+      "current_time"
     ],
     "command_args": [[]],
     "usage": []
@@ -101,6 +102,21 @@ client.on('message', msg => {
             : base_reply + " " + time_until;
         }
 
+        if('cooldown_from_start' in command_dispatch[command]) {
+          // Check to see if the cooldown for the command has passed
+          cooldown = true;
+          const game_start = db.get_tracker_by_name.get("game_start").value;
+          const cooldown_time = command_dispatch[command].cooldown_from_start;
+          const base_reply = `You cannot perform a ${command} for`;
+          const time_until = utils.get_time_until_string(game_start +
+            cooldown_time - current_time);
+
+          cooldown_passed = current_time - game_start >= cooldown_time;
+          cooldown_fail_message = cooldown_passed
+            ? ""
+            : base_reply + " " + time_until;
+        }
+
         // If we do not have a cooldown or the cooldown is passed, continue
         if(!cooldown || cooldown_passed) {
           // Parse and validate the arguments for the command
@@ -134,6 +150,9 @@ client.on('message', msg => {
                   break;
                 case 'command_dispatch':
                   call_args.command_dispatch = command_dispatch;
+                  break;
+                case 'current_time':
+                  call_args.current_time = current_time;
                   break;
                 default:
                   break;

@@ -866,8 +866,8 @@ module.exports = {
 
     return {};
   },
-  "reset_everything": ({guild, player_roles}) => {
-    let command_return = {
+  "reset_everything": ({guild, player_roles, current_time}) => {
+    const command_return = {
       "reply": "",
       "enable_game": false
     };
@@ -922,6 +922,8 @@ module.exports = {
           }
         }
       }
+
+      db.update_tracker_by_name.run(current_time, "game_start");
 
       command_return.reply = "Done";
       command_return.enable_game = true;

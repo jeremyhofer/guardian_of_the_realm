@@ -269,7 +269,8 @@ if (!tracker_table['count(*)']) {
       (name, value)
     VALUES
       ("payout_time", 0),
-      ("game_active", 1);
+      ("game_active", 1),
+      ("game_start", 0);
   `).run();
 }
 
@@ -501,6 +502,9 @@ module.exports = {
     `).run();
     sql.prepare(`
       UPDATE tracker SET value = 1 WHERE name = "game_active"
+    `).run();
+    sql.prepare(`
+      UPDATE tracker SET value = 0 WHERE name = "game_start"
     `).run();
   }
 };
