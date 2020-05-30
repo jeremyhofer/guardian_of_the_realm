@@ -516,7 +516,9 @@ module.exports = {
         "player_data"
       ],
       "command_args": [[args_js.arg_types.string]],
-      "usage": ["TILE"]
+      "usage": ["TILE"],
+      "cooldown_from_start":
+        utils.hours_to_ms(assets.timeout_lengths.siege_blockade)
     },
     "blockade": {
       "function": blockade,
@@ -525,7 +527,9 @@ module.exports = {
         "player_data"
       ],
       "command_args": [[args_js.arg_types.string]],
-      "usage": ["TILE"]
+      "usage": ["TILE"],
+      "cooldown_from_start":
+        utils.hours_to_ms(assets.timeout_lengths.siege_blockade)
     },
     "pact": {
       "function": pact,
