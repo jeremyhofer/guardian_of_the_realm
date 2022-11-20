@@ -7,6 +7,9 @@
   "contributors": [
     "Jeremy Hofer"
   ],
+  "scripts": {
+    "start": "npx ts-node src/Bot.ts"
+  },
   "dependencies": {
     "better-sqlite3": "^7.6.2",
     "discord.js": "^14.6.0"
