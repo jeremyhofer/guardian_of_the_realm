@@ -1,3 +1,5 @@
+import { ArgTypes } from './enums';
+
 export type Rank = 'baron' | 'earl' | 'duke' | 'unsworn';
 
 export type Buildings = 'apothecary' | 'armory' | 'barrack' | 'blacksmith' | 'bordello' | 'monastery' | 'haunt' | 'weavery';
@@ -20,3 +22,10 @@ export interface StoreItems {
 export interface GameRoles {
   [key: string]: string[]
 }
+
+export type CommandArgs = ArgTypes[][];
+
+export interface ParsedArgs {
+  values: any[]
+  types: ArgTypes[]
+};

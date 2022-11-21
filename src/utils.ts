@@ -1,3 +1,5 @@
+import { GameRoles } from "./types";
+
 /**
 * Convert milliseconds to a countdown-like string.
 * @param {number} ms milliseconds .
@@ -45,7 +47,7 @@ export function hoursToMs(hours: number): number {
 * ID containing a valid identifier matching the name argument.
 * All items in the role_obj are in the form role_id: [identifier list]
 */
-export function findRoleIdGivenName(name: string, roleObj: { [key: string]: string[] }): string {
+export function findRoleIdGivenName(name: string, roleObj: GameRoles): string {
   let roleId = '';
 
   if(name !== '') {
