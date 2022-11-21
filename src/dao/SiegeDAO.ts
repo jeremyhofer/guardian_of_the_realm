@@ -1,4 +1,6 @@
+import { PlayerData } from 'src/entity/PlayerData';
 import { DeleteResult, LessThanOrEqual, Repository, UpdateResult } from 'typeorm';
+import { Pledge } from '../entity/Pledge';
 import { Siege } from '../entity/Siege';
 import { TileOwner } from '../entity/TileOwner';
 
@@ -54,6 +56,20 @@ export class SiegeDAO {
   async getExpiredSiege(expireTime: number): Promise<Siege[]> {
     return await this._repository.findBy({
       time: LessThanOrEqual(expireTime)
+    });
+  }
+
+  async getAllSiegesWithPlayerPledges(user: PlayerData): Promise<Siege[]> {
+    return await this._repository.find({
+      relations: {
+        pledges: true,
+        tile: true
+      },
+      where: {
+        pledges: {
+          user
+        }
+      }
     });
   }
 
