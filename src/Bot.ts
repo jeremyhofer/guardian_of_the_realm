@@ -1,4 +1,3 @@
-import 'reflect-metadata'; // for typeorm
 import { Client } from 'discord.js';
 import auth from './auth.json';
 
