@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { TileOwner } from '../entity/TileOwner';
 
 export class TileOwnerDAO {
@@ -18,5 +18,9 @@ export class TileOwnerDAO {
     return await this._repository.findBy({
       type: 'port'
     });
+  }
+
+  async updateTileOwner(house: string, tile: string): Promise<UpdateResult> {
+    return await this._repository.update(tile, { house });
   }
 }
