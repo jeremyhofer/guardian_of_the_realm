@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index, OneToMany } from 'typeorm';
+import { Loan } from './Loan';
 
 @Entity()
 export class PlayerData {
@@ -53,4 +54,7 @@ export class PlayerData {
 
   @Column()
   work_last_time!: number; // INTEGER
+
+  @OneToMany(() => Loan, (loan) => loan.user)
+  loans!: Loan[];
 }
