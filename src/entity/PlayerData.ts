@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn, Index, OneToMany } from 'typeorm';
 import { Loan } from './Loan';
+import { Vote } from './Vote';
 
 @Entity()
 export class PlayerData {
@@ -57,4 +58,7 @@ export class PlayerData {
 
   @OneToMany(() => Loan, (loan) => loan.user)
   loans!: Loan[];
+
+  @OneToMany(() => Vote, (vote) => vote.user)
+  votes!: Vote[];
 }
