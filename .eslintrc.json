@@ -15,6 +15,8 @@
     "@typescript-eslint/semi": ["error", "always"],
     "indent": "off",
     "@typescript-eslint/indent": "off",
-    "@typescript-eslint/quotes": ["warn", "single"]
+    "@typescript-eslint/quotes": ["warn", "single"],
+    "space-before-function-paren": "off",
+    "@typescript-eslint/space-before-function-paren": ["error", "never"]
   }
 }
