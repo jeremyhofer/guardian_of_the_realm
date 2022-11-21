@@ -8,7 +8,6 @@ export class Vote {
   vote_id!: number; // INTEGER PRIMARY KEY,
 
   @ManyToOne(() => PlayerData, (playerData) => playerData.votes)
-  @Index('idx_loan_user_id')
   user!: PlayerData; // FOREIGN KEY(user) REFERENCES player_data(user)
 
   @Column()

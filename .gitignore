@@ -111,3 +111,4 @@ build/
 tmp/
 temp/
 dist/
+*.sqlite

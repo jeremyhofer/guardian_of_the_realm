@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, Index, OneToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne, OneToMany } from 'typeorm';
 import { Pledge } from './Pledge';
 import { TileOwner } from './TileOwner';
 
@@ -7,8 +7,8 @@ export class Siege {
   @PrimaryColumn()
   siege_id!: number; // INTEGER PRIMARY KEY,
 
+  // @Index('idx_siege_tile')
   @OneToOne(() => TileOwner, (tileOwner) => tileOwner.siege)
-  @Index('idx_siege_tile')
   tile!: TileOwner; // FOREIGN KEY(tile) REFERENCES tile_owners(tile)
 
   @Column()

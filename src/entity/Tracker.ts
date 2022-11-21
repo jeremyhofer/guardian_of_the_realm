@@ -11,6 +11,6 @@ export class Tracker {
   @Column()
   value!: number; // INTEGER,
 
-  @Column()
+  @Column({ nullable: true })
   text!: string; // TEXT
 }
