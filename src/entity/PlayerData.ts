@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn, Index, OneToMany } from 'typeorm';
 import { Loan } from './Loan';
+import { Pledge } from './Pledge';
 import { Vote } from './Vote';
 
 @Entity()
@@ -61,4 +62,7 @@ export class PlayerData {
 
   @OneToMany(() => Vote, (vote) => vote.user)
   votes!: Vote[];
+
+  @OneToMany(() => Pledge, (pledge) => pledge.siege)
+  pledges!: Pledge[];
 }

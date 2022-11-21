@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn, Index, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index, OneToOne, OneToMany } from 'typeorm';
+import { Pledge } from './Pledge';
 import { TileOwner } from './TileOwner';
 
 @Entity()
@@ -18,4 +19,7 @@ export class Siege {
 
   @Column()
   message!: string; // TEXT,
+
+  @OneToMany(() => Pledge, (pledge) => pledge.siege)
+  pledges!: Pledge[];
 }
