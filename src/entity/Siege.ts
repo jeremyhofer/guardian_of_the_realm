@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, OneToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Pledge } from './Pledge';
 import { TileOwner } from './TileOwner';
 
@@ -9,6 +9,7 @@ export class Siege {
 
   // @Index('idx_siege_tile')
   @OneToOne(() => TileOwner, (tileOwner) => tileOwner.siege)
+  @JoinColumn()
   tile!: TileOwner; // FOREIGN KEY(tile) REFERENCES tile_owners(tile)
 
   @Column()
