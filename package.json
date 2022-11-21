@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "Seven Thrones Discord bot",
   "main": "bot.js",
-  "author": "Zorbaz Englander",
+  "author": "Jeremy Hofer",
+  "type": "commonjs",
   "contributors": [
-    "Jeremy Hofer"
+    "Zorbaz Englander"
   ],
   "scripts": {
-    "start": "npx ts-node src/Bot.ts"
+    "start": "npx ts-node src/index.ts",
+    "typeorm": "typeorm-ts-node-commonjs"
   },
   "dependencies": {
     "better-sqlite3": "^7.6.2",
