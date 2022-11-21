@@ -9,11 +9,12 @@
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module",
-    "project": ["./tsconfig.json"]
+    "project": ["**/*tsconfig.json"]
   },
   "rules": {
     "@typescript-eslint/semi": ["error", "always"],
     "indent": "off",
-    "@typescript-eslint/indent": "off"
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/quotes": ["warn", "single"]
   }
 }
