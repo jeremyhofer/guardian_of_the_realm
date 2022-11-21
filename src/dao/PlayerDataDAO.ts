@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { PlayerData } from 'src/entity/PlayerData';
+import { PlayerData } from '../entity/PlayerData';
 
 export class PlayerDataDAO {
   constructor(private readonly _repository: Repository<PlayerData>) {}
