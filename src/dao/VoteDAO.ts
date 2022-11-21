@@ -61,4 +61,8 @@ export class VoteDAO {
   async removeVote(voteId: number): Promise<DeleteResult> {
     return await this._repository.delete({ vote_id: voteId });
   }
+
+  async deleteAll(): Promise<void> {
+    return await this._repository.clear();
+  }
 }

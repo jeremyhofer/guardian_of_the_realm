@@ -26,4 +26,8 @@ export class PledgeDAO {
   async removePledge(pledgeId: number): Promise<DeleteResult> {
     return await this._repository.delete({ pledge_id: pledgeId });
   }
+
+  async deleteAll(): Promise<void> {
+    return await this._repository.clear();
+  }
 }

@@ -28,4 +28,8 @@ export class PactDAO {
   async removePact(pactId: number): Promise<DeleteResult> {
     return await this._repository.delete({ pact_id: pactId });
   }
+
+  async deleteAll(): Promise<void> {
+    return await this._repository.clear();
+  }
 }

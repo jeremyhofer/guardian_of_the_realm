@@ -23,4 +23,8 @@ export class TileOwnerDAO {
   async updateTileOwner(house: string, tile: string): Promise<UpdateResult> {
     return await this._repository.update(tile, { house });
   }
+
+  async deleteAll(): Promise<void> {
+    return await this._repository.clear();
+  }
 }

@@ -28,4 +28,8 @@ export class WarDAO {
   async removeWar(warId: number): Promise<DeleteResult> {
     return await this._repository.delete({ war_id: warId });
   }
+
+  async deleteAll(): Promise<void> {
+    return await this._repository.clear();
+  }
 }

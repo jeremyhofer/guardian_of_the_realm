@@ -1,6 +1,5 @@
-import { PlayerData } from 'src/entity/PlayerData';
 import { DeleteResult, LessThanOrEqual, Repository, UpdateResult } from 'typeorm';
-import { Pledge } from '../entity/Pledge';
+import { PlayerData } from '../entity/PlayerData';
 import { Siege } from '../entity/Siege';
 import { TileOwner } from '../entity/TileOwner';
 
@@ -83,5 +82,9 @@ export class SiegeDAO {
 
   async removeSiege(siegeId: number): Promise<DeleteResult> {
     return await this._repository.delete({ siege_id: siegeId });
+  }
+
+  async deleteAll(): Promise<void> {
+    return await this._repository.clear();
   }
 }
