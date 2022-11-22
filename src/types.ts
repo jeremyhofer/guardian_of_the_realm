@@ -30,11 +30,24 @@ export interface ParsedArgs {
   types: ArgTypes[]
 };
 
+export interface CooldownConfig {
+  time: number
+  field: string
+  reply: string
+}
+
 export interface CommandConfig {
-  function: (...all: any) => any
+  function: (...all: any) => CommandReturn
   args: string[]
   command_args: CommandArgs
   usage: string[]
+  cooldown?: CooldownConfig
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;
+
+export interface CommandReturn {
+  reply: string
+  update: { [key: string]: any }
+  success: boolean
+}
