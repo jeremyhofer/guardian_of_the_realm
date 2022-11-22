@@ -37,7 +37,7 @@ export interface CooldownConfig {
 }
 
 export interface CommandConfig {
-  function: (...all: any) => CommandReturn
+  function: (...all: any) => CommandReturn | null | Promise<CommandReturn | null>
   args: string[]
   command_args: CommandArgs
   usage: string[]
@@ -48,6 +48,6 @@ export type CommandDispatch = Record<string, CommandConfig>;
 
 export interface CommandReturn {
   reply: string
-  update: { [key: string]: any }
+  update?: { [key: string]: any }
   success: boolean
 }
