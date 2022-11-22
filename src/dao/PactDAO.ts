@@ -8,8 +8,8 @@ export class PactDAO {
     return await this._repository.find();
   }
 
-  async getPactBetweenHouses(house1: string, house2: string): Promise<Pact[]> {
-    return await this._repository.findBy([
+  async getPactBetweenHouses(house1: string, house2: string): Promise<Pact | null> {
+    return await this._repository.findOneBy([
       {
         house_a: house1,
         house_b: house2

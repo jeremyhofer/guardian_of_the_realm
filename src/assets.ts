@@ -225,7 +225,7 @@ export const dailyCosts: Record<ArmyUnits, number> = {
   ships: 20
 };
 
-export const replyCchannels: { [key: string]: string } = {
+export const replyChannels: { [key: string]: string } = {
   command_tent: '572265598193500160',
   battle_reports: '597614956732612613',
   overworld: '629077475745595402'

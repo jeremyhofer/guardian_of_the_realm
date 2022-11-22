@@ -18,5 +18,5 @@ export class Pledge {
   units!: number; // INTEGER,
 
   @Column()
-  choice!: number; // TEXT,
+  choice!: string; // TEXT,
 }

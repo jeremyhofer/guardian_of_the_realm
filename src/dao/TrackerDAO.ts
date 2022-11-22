@@ -4,7 +4,13 @@ import { Tracker } from '../entity/Tracker';
 export class TrackerDAO {
   constructor(private readonly _repository: Repository<Tracker>) {}
 
-  async getTrackerByName(name: string): Promise<Tracker[]> {
+  async getTrackerByName(name: string): Promise<Tracker | null> {
+    return await this._repository.findOneBy({
+      name
+    });
+  }
+
+  async getAllTrackerByName(name: string): Promise<Tracker[]> {
     return await this._repository.findBy({
       name
     });

@@ -12,8 +12,8 @@ export class WarDAO {
     return await this._repository.save(loan);
   }
 
-  async getWarBetweenHouses(house1: string, house2: string): Promise<War[]> {
-    return await this._repository.findBy([
+  async getWarBetweenHouses(house1: string, house2: string): Promise<War | null> {
+    return await this._repository.findOneBy([
       {
         house_a: house1,
         house_b: house2

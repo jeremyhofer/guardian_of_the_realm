@@ -33,7 +33,10 @@ export class SiegeDAO {
   async getAllSiegeIdBetweenTwoHouses(houseA: string, houseB: string): Promise<Siege[]> {
     return await this._repository.find({
       relations: {
-        tile: true
+        tile: true,
+        pledges: {
+          user: true
+        }
       },
       where: [
         {
@@ -52,9 +55,15 @@ export class SiegeDAO {
     });
   }
 
-  async getExpiredSiege(expireTime: number): Promise<Siege[]> {
-    return await this._repository.findBy({
-      time: LessThanOrEqual(expireTime)
+  async getExpiredSiege(expireTime: number): Promise<Siege | null> {
+    return await this._repository.findOne({
+      relations: {
+        pledges: true,
+        tile: true
+      },
+      where: {
+        time: LessThanOrEqual(expireTime)
+      }
     });
   }
 

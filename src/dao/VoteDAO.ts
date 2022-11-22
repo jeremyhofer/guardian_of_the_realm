@@ -19,24 +19,39 @@ export class VoteDAO {
     });
   }
 
-  async getExpiredTruceVote(expireTime: number): Promise<Vote[]> {
-    return await this._repository.findBy({
-      time: LessThanOrEqual(expireTime),
-      type: Like('truce%')
+  async getExpiredTruceVote(expireTime: number): Promise<Vote | null> {
+    return await this._repository.findOne({
+      relations: {
+        user: true
+      },
+      where: {
+        time: LessThanOrEqual(expireTime),
+        type: Like('truce%')
+      }
     });
   }
 
-  async getExpiredPactVote(expireTime: number): Promise<Vote[]> {
-    return await this._repository.findBy({
-      time: LessThanOrEqual(expireTime),
-      type: Like('pact%')
+  async getExpiredPactVote(expireTime: number): Promise<Vote | null> {
+    return await this._repository.findOne({
+      relations: {
+        user: true
+      },
+      where: {
+        time: LessThanOrEqual(expireTime),
+        type: Like('pact%')
+      }
     });
   }
 
-  async getExpiredWarVote(expireTime: number): Promise<Vote[]> {
-    return await this._repository.findBy({
-      time: LessThanOrEqual(expireTime),
-      type: Like('war%')
+  async getExpiredWarVote(expireTime: number): Promise<Vote | null> {
+    return await this._repository.findOne({
+      relations: {
+        user: true
+      },
+      where: {
+        time: LessThanOrEqual(expireTime),
+        type: Like('war%')
+      }
     });
   }
 
