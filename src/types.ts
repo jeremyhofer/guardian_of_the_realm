@@ -29,3 +29,12 @@ export interface ParsedArgs {
   values: any[]
   types: ArgTypes[]
 };
+
+export interface CommandConfig {
+  function: (...all: any) => any
+  args: string[]
+  command_args: CommandArgs
+  usage: string[]
+}
+
+export type CommandDispatch = Record<string, CommandConfig>;
