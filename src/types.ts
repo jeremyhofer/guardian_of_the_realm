@@ -1,3 +1,5 @@
+import { Loan } from './entity/Loan';
+import { PlayerData } from './entity/PlayerData';
 import { ArgTypes } from './enums';
 
 export type Rank = 'baron' | 'earl' | 'duke' | 'unsworn';
@@ -48,6 +50,23 @@ export type CommandDispatch = Record<string, CommandConfig>;
 
 export interface CommandReturn {
   reply: string
-  update?: { [key: string]: any }
+  update?: {
+    playerData?: PlayerData
+    roles?: {
+      player?: {
+        add: string[]
+        remove: string[]
+      }
+    }
+  }
+  loans?: {
+    add?: {
+      user: PlayerData
+      amount_due: number
+      time_due: string
+    }
+    remove?: Loan
+    update?: Loan
+  }
   success: boolean
 }
