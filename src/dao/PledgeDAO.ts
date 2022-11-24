@@ -6,8 +6,8 @@ import { Pledge } from '../entity/Pledge';
 export class PledgeDAO {
   constructor(private readonly _repository: Repository<Pledge>) {}
 
-  async getPlayerPledgeForSiege(user: PlayerData, siege: Siege): Promise<Pledge[]> {
-    return await this._repository.findBy({
+  async getPlayerPledgeForSiege(user: PlayerData, siege: Siege): Promise<Pledge | null> {
+    return await this._repository.findOneBy({
       user,
       siege
     });

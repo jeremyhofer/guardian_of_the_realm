@@ -24,9 +24,11 @@ export class SiegeDAO {
     });
   }
 
-  async getSiegeOnTile(tileOwner: TileOwner): Promise<Siege | null> {
+  async getSiegeOnTile(qTile: string): Promise<Siege | null> {
     return await this._repository.findOneBy({
-      tile: tileOwner
+      tile: {
+        tile: qTile
+      }
     });
   }
 

@@ -8,8 +8,8 @@ export class TileOwnerDAO {
     return await this._repository.find();
   }
 
-  async getTileOwner(tile: string): Promise<TileOwner[]> {
-    return await this._repository.findBy({
+  async getTileOwner(tile: string): Promise<TileOwner | null> {
+    return await this._repository.findOneBy({
       tile
     });
   }

@@ -1,5 +1,7 @@
 import { Loan } from './entity/Loan';
 import { PlayerData } from './entity/PlayerData';
+import { Pledge } from './entity/Pledge';
+import { Siege } from './entity/Siege';
 import { ArgTypes } from './enums';
 
 export type Rank = 'baron' | 'earl' | 'duke' | 'unsworn';
@@ -13,6 +15,8 @@ export type StoreItemTypes = 'income' | 'title' | ArmyUnits;
 export type AvailableStoreItems = Exclude<Rank, 'unsworn'> | Buildings | ArmyUnits;
 
 export type Houses = 'Unsworn' | 'Scorpion' | 'Falcon' | 'Wolf' | 'Lion' | 'Bear' | 'Hydra' | 'Dragon';
+
+export type AttackTypes = 'siege' | 'blockade';
 
 export interface StoreItems {
   type: StoreItemTypes
@@ -44,7 +48,8 @@ export interface CommandConfig {
   command_args: CommandArgs
   usage: string[]
   cooldown?: CooldownConfig
-  allowed_channels: string[]
+  allowed_channels?: string[]
+  cooldown_from_start?: number
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;
@@ -73,6 +78,15 @@ export interface CommandReturn {
     }
     remove?: Loan
     update?: Loan
+  }
+  sieges?: {
+    update?: Siege
+  }
+  pledges?: {
+    add?: Pledge
+    remove?: Pledge
+  }
+  votes?: {
   }
   success: boolean
 }
