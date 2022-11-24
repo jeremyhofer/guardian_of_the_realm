@@ -43,7 +43,7 @@ export interface CooldownConfig {
 }
 
 export interface CommandConfig {
-  function: (...all: any) => CommandReturn | null | Promise<CommandReturn | null>
+  function: (...all: any) => CommandReturn | null | Promise<CommandReturn | null> | Promise<void>
   args: string[]
   command_args: CommandArgs
   usage: string[]
@@ -66,6 +66,7 @@ export interface CommandReturn {
       }
       other_player?: {
         id: string
+        add: string[]
         remove: string[]
       }
     }
@@ -87,6 +88,14 @@ export interface CommandReturn {
     remove?: Pledge
   }
   votes?: {
+  }
+  send?: {
+    message?: string
+    channel?: string
+  }
+  map?: {
+    message: string
+    embed: any
   }
   success: boolean
 }
