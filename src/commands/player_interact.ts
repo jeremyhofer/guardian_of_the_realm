@@ -651,7 +651,7 @@ const thief = ({ args, playerData }: { args: any[], playerData: PlayerData }): C
  * Trade with a different player that is in a house in which you have a pact
  * @player <SHIPS>
  */
-const trade = ({ args, playerData, playerRoles }: { args: any[], playerData: PlayerData, playerRoles: string[] }): CommandReturn => {
+const trade = async({ args, playerData, playerRoles }: { args: any[], playerData: PlayerData, playerRoles: string[] }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData
@@ -666,7 +666,7 @@ const trade = ({ args, playerData, playerRoles }: { args: any[], playerData: Pla
   (commandReturn.update as any).playerMention = playerMention;
 
   // Make sure the players' houses are in a pact
-  const pact = Database.pact.getPactBetweenHouses(
+  const pact = await Database.pact.getPactBetweenHouses(
     playerData.house,
     playerMention.house
   );
