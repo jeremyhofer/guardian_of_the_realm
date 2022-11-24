@@ -425,6 +425,8 @@ client.on('message', async(msg) => {
   }
 });
 
+let tickProcessing = false;
+
 setInterval(() => {
   /*
    * Give role payouts if it is time. Payout part every 12 hours
@@ -435,20 +437,24 @@ setInterval(() => {
    * Check to see if a siege should be resolved
    * ST guild ID: 572263893729017893
    */
-  if(clientReady && gameActive) {
+  if(clientReady && gameActive && !tickProcessing) {
     const guild = client.guilds.cache.get('572263893729017893');
-    const now = Date.now();
     if(guild !== undefined) {
-      await game_tasks.rolePayouts(guild, now);
-      await game_tasks.collectLoans(guild, now);
-
-      // Resolve expired war votes
+      tickProcessing = true;
+      const now = Date.now();
       const expirationTime =
         now - utils.hoursToMs(assets.timeoutLengths.vote_expiration);
-      await game_tasks.resolveWarVotes(guild, expirationTime);
-      await game_tasks.resolvePactVotes(guild, expirationTime);
-      await game_tasks.resolveSieges(guild, now);
-      gameActive = await game_tasks.isGameActive();
+      // TODO: determine how to loop processing game tick to avoid conflicts
+      game_tasks.rolePayouts(guild, now)
+        .then(async() => await game_tasks.collectLoans(guild, now))
+        .then(async() => await game_tasks.resolveWarVotes(guild, expirationTime))
+        .then(async() => await game_tasks.resolvePactVotes(guild, expirationTime))
+        .then(async() => await game_tasks.resolveSieges(guild, now))
+        .then(async() => {
+          gameActive = await game_tasks.isGameActive();
+          tickProcessing = false;
+        })
+        .catch(() => console.error('issue processing game tick'));
     }
   }
 }, 1000);
