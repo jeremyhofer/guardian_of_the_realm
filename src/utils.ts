@@ -63,13 +63,14 @@ export function findRoleIdGivenName(name: string, roleObj: GameRoles): string {
 }
 
 // Replaces {key} with value in mapping for each key in mapping
-export function templateReplace(template: string, mappings: { [key: string]: string }): string {
+// TODO: update calls to this to allow numbers to be passed
+export function templateReplace(template: string, mappings: { [key: string]: string | number }): string {
   let filledTemplate = template;
 
   for(const key in mappings) {
     if(key in mappings) {
       const re = new RegExp(`\\{${key}\\}`, 'gu');
-      filledTemplate = filledTemplate.replace(re, mappings[key]);
+      filledTemplate = filledTemplate.replace(re, `${mappings[key]}`);
     }
   }
 

@@ -44,6 +44,7 @@ export interface CommandConfig {
   command_args: CommandArgs
   usage: string[]
   cooldown?: CooldownConfig
+  allowed_channels: string[]
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;
@@ -52,9 +53,14 @@ export interface CommandReturn {
   reply: string
   update?: {
     playerData?: PlayerData
+    playerMention?: PlayerData
     roles?: {
       player?: {
         add: string[]
+        remove: string[]
+      }
+      other_player?: {
+        id: string
         remove: string[]
       }
     }
