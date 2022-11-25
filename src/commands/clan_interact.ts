@@ -4,7 +4,6 @@ import { AttackTypes, CommandDispatch, CommandReturn } from '../types';
 import * as assets from '../assets';
 import { Database } from '../data-source';
 import * as utils from '../utils';
-import { Vote } from '../entity/Vote';
 
 /*
  * Assigns player to a house w/ default money and men

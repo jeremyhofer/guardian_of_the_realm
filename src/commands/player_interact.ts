@@ -16,7 +16,7 @@ import { ArgTypes } from 'src/enums';
  * Usage:
  * @player <ROLE>
  */
-const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playerData: PlayerData, playerRoles: string[], guild: Guild }): CommandReturn => {
+const arson = async({ args, playerData, playerRoles, guild }: { args: string[], playerData: PlayerData, playerRoles: string[], guild: Guild }): Promise<CommandReturn> => {
   const [
     playerMention,
     roleToArson
@@ -31,6 +31,7 @@ const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playe
         other_player: {
           // TODO: fix args typings
           id: playerMentionUser,
+          add: [],
           remove: [] as string[]
         }
       }
@@ -45,14 +46,12 @@ const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playe
 
   for(const key in assets.storeItems) {
     const tKey = key as AvailableStoreItems;
-    if(tKey in assets.storeItems) {
-      if(assets.storeItems[tKey].type === 'income') {
-        const roleId = utils.findRoleIdGivenName(
-          tKey,
-          assets.gameRoles
-        );
-        incomeRoleIds.push(roleId);
-      }
+    if(assets.storeItems[tKey].type === 'income') {
+      const roleId = utils.findRoleIdGivenName(
+        tKey,
+        assets.gameRoles
+      );
+      incomeRoleIds.push(roleId);
     }
   }
 
@@ -73,15 +72,14 @@ const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playe
   if(incomeRoleIds.includes(roleToArson)) {
     if(otherPlayerRoleIds.includes(roleToArson)) {
       // Ensure player has enough money to arson this role
-      const arsonPrice =
-        Math.round(assets.storeItems[targetRoleName as AvailableStoreItems].cost / 2);
+      const arsonPrice = Math.round(assets.storeItems[targetRoleName as AvailableStoreItems].cost / 2);
       const playerMoney = playerData.money;
 
       if(playerMoney >= arsonPrice) {
         // Good to arson!
-        let failRisk = Math.round(playerRoles.length /
-          (playerRoles.length + otherPlayerRoleIds.length) * 100);
+        let failRisk = Math.round(playerRoles.length / (playerRoles.length + otherPlayerRoleIds.length) * 100);
 
+        // TODO: create clamp util?
         if(failRisk < 0) {
           failRisk = 0;
         } else if(failRisk > 100) {
@@ -119,15 +117,13 @@ const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playe
         (commandReturn.update?.playerData as PlayerData).money -= arsonPrice;
         commandReturn.success = true;
       } else {
-        commandReturn.reply =
-          `You do not have enough money to arson the <@&${roleToArson}>. The cost is ${arsonPrice}`;
+        commandReturn.reply = `You do not have enough money to arson the <@&${roleToArson}>. The cost is ${arsonPrice}`;
       }
     } else {
       commandReturn.reply = `<@${playerMentionUser}> does not have the <@&${roleToArson}> role`;
     }
   } else {
-    commandReturn.reply =
-      `<@&${roleToArson}> is not an income producing role`;
+    commandReturn.reply = `<@&${roleToArson}> is not an income producing role`;
   }
 
   return commandReturn;
@@ -137,7 +133,7 @@ const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playe
  * Give another player money
  * @player <VALUE>
  */
-const gift = ({ args, playerData }: { args: any[], playerData: PlayerData }): CommandReturn => {
+const gift = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData: { ...playerData }
@@ -182,7 +178,7 @@ const gift = ({ args, playerData }: { args: any[], playerData: PlayerData }): Co
  * fail lose 5-15, other 1-9. win lose 1-9, other 10-20
  * <PLAYER>
  */
-const pirate = ({ args, playerData }: { args: any[], playerData: PlayerData }): CommandReturn => {
+const pirate = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData: { ...playerData }
@@ -246,22 +242,15 @@ const pirate = ({ args, playerData }: { args: any[], playerData: PlayerData }): 
         winner = 'mention';
       }
 
-      playerLose = playerLose > pShips
-        ? pShips
-        : playerLose;
+      playerLose = playerLose > pShips ? pShips : playerLose;
 
-      mentionLose = mentionLose > mShips
-        ? mShips
-        : mentionLose;
+      mentionLose = mentionLose > mShips ? mShips : mentionLose;
 
       (commandReturn.update?.playerData as PlayerData).ships -= playerLose;
       (commandReturn.update?.playerMention as PlayerData).ships -= mentionLose;
-      const successReplyTemplate =
-        utils.randomElement(flavor.pirate_success);
+      const successReplyTemplate = utils.randomElement(flavor.pirate_success);
       const failReplyTemplate = utils.randomElement(flavor.pirate_fail);
-      const usedTemplate = winner === 'player'
-        ? successReplyTemplate
-        : failReplyTemplate;
+      const usedTemplate = winner === 'player' ? successReplyTemplate : failReplyTemplate;
       commandReturn.reply = utils.templateReplace(
         usedTemplate,
         {
@@ -277,8 +266,7 @@ const pirate = ({ args, playerData }: { args: any[], playerData: PlayerData }): 
       commandReturn.reply = 'The other player must have at least 5 ships';
     }
   } else {
-    commandReturn.reply =
-      'You must have a least 5 ships to launch a pirate raid.';
+    commandReturn.reply = 'You must have a least 5 ships to launch a pirate raid.';
   }
 
   return commandReturn;
@@ -289,7 +277,7 @@ const pirate = ({ args, playerData }: { args: any[], playerData: PlayerData }): 
  * fail lose 50-150, other 10-90. win lose 10-90, other 100-150
  * <PLAYER>.
  */
-const raid = ({ args, playerData }: { args: any[], playerData: PlayerData }): CommandReturn => {
+const raid = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData
@@ -353,22 +341,15 @@ const raid = ({ args, playerData }: { args: any[], playerData: PlayerData }): Co
         winner = 'mention';
       }
 
-      playerLose = playerLose > pMen
-        ? pMen
-        : playerLose;
+      playerLose = playerLose > pMen ? pMen : playerLose;
 
-      mentionLose = mentionLose > mMen
-        ? mMen
-        : mentionLose;
+      mentionLose = mentionLose > mMen ? mMen : mentionLose;
 
       (commandReturn.update?.playerData as PlayerData).men -= playerLose;
       (commandReturn.update?.playerMention as PlayerData).men -= mentionLose;
-      const successReplyTemplate =
-        utils.randomElement(flavor.raid_success);
+      const successReplyTemplate = utils.randomElement(flavor.raid_success);
       const failReplyTemplate = utils.randomElement(flavor.raid_fail);
-      const usedTemplate = winner === 'player'
-        ? successReplyTemplate
-        : failReplyTemplate;
+      const usedTemplate = winner === 'player' ? successReplyTemplate : failReplyTemplate;
       commandReturn.reply = utils.templateReplace(
         usedTemplate,
         {
@@ -399,10 +380,10 @@ const raid = ({ args, playerData }: { args: any[], playerData: PlayerData }): Co
  * Usage:
  * @player
  */
-const scandal = ({ args, playerData, guild }: { args: any[], playerData: PlayerData, guild: Guild }): CommandReturn => {
+const scandal = async({ args, playerData, guild }: { args: any[], playerData: PlayerData, guild: Guild }): Promise<CommandReturn> => {
   const playerMention = args[0] as PlayerData;
 
-  const commandReturn = {
+  const commandReturn: CommandReturn = {
     update: {
       playerData,
       roles: {
@@ -420,14 +401,12 @@ const scandal = ({ args, playerData, guild }: { args: any[], playerData: PlayerD
   const nobleRoleIds: string[] = [];
 
   for(const key in assets.storeItems) {
-    if(key in assets.storeItems) {
-      if(assets.storeItems[key as AvailableStoreItems].type === 'title') {
-        const roleId = utils.findRoleIdGivenName(
-          key,
-          assets.gameRoles
-        );
-        nobleRoleIds.push(roleId);
-      }
+    if(assets.storeItems[key as AvailableStoreItems].type === 'title') {
+      const roleId = utils.findRoleIdGivenName(
+        key,
+        assets.gameRoles
+      );
+      nobleRoleIds.push(roleId);
     }
   }
 
@@ -453,8 +432,7 @@ const scandal = ({ args, playerData, guild }: { args: any[], playerData: PlayerD
   let highestRole = '';
 
   for(let iter = 0; iter < nobleRoles.length; iter += 1) {
-    const checkRoleId =
-      utils.findRoleIdGivenName(nobleRoles[iter], assets.gameRoles);
+    const checkRoleId = utils.findRoleIdGivenName(nobleRoles[iter], assets.gameRoles);
     if(otherPlayerRoleIds.includes(checkRoleId)) {
       highestRole = nobleRoles[iter];
       highestRoleId = checkRoleId;
@@ -475,21 +453,19 @@ const scandal = ({ args, playerData, guild }: { args: any[], playerData: PlayerD
       if(chance >= 50) {
         // The scandal succeeded! Determine what role the other player drops to
         const currentRoleIndex = nobleRoles.indexOf(highestRole);
-        const newRole = currentRoleIndex < nobleRoles.length - 1
-          ? nobleRoles[currentRoleIndex + 1]
-          : 'unsworn';
+        const newRole = currentRoleIndex < nobleRoles.length - 1 ? nobleRoles[currentRoleIndex + 1] : 'unsworn';
 
         if(newRole !== 'unsworn') {
-          commandReturn.update.roles.other_player.add.push(newRole);
+          commandReturn.update?.roles?.other_player?.add.push(newRole);
         }
-        commandReturn.update.roles.other_player.remove.push(highestRole);
+        commandReturn.update?.roles?.other_player?.remove.push(highestRole);
         replyTemplate = utils.randomElement(flavor.scandal_success);
       } else {
         penalty = utils.getRandomValueInRange(
           assets.rewardPayoutsPenalties.scandal_penalty_min,
           assets.rewardPayoutsPenalties.scandal_penalty_max
         );
-        commandReturn.update.playerData.money -= penalty;
+        (commandReturn.update?.playerData as PlayerData).money -= penalty;
         replyTemplate = utils.randomElement(flavor.scandal_fail);
       }
 
@@ -501,7 +477,7 @@ const scandal = ({ args, playerData, guild }: { args: any[], playerData: PlayerD
           role_to_scandal: highestRole
         }
       );
-      commandReturn.update.playerData.money -= scandalCost;
+      (commandReturn.update?.playerData as PlayerData).money -= scandalCost;
       commandReturn.success = true;
     } else {
       commandReturn.reply = `Instigating a scandal against ${highestRole} ` +
@@ -519,8 +495,8 @@ const scandal = ({ args, playerData, guild }: { args: any[], playerData: PlayerD
  * View money, ships, men of a player. costs 400
  * <PLAYER>
  */
-const spy = ({ args, playerData, guild }: { args: any[], playerData: PlayerData, guild: Guild }): CommandReturn => {
-  const commandReturn = {
+const spy = async({ args, playerData, guild }: { args: any[], playerData: PlayerData, guild: Guild }): Promise<CommandReturn> => {
+  const commandReturn: CommandReturn = {
     update: {
       playerData
     },
@@ -541,15 +517,14 @@ const spy = ({ args, playerData, guild }: { args: any[], playerData: PlayerData,
       playerRoles.push(role.name.toLowerCase());
     });
     const roleReply = game_tasks.generateRolesReply({ playerRoles });
-    commandReturn.update.playerData.money -= assets.rewardPayoutsPenalties.spy_cost;
+    (commandReturn.update?.playerData as PlayerData).money -= assets.rewardPayoutsPenalties.spy_cost;
     commandReturn.reply = `<@${playerMention.user}> has ` +
       `${playerMention.money} :moneybag: ${playerMention.men} ` +
       `${assets.emojis.MenAtArms} ${playerMention.ships} ` +
       `${assets.emojis.Warship}\n\n${roleReply}`;
     commandReturn.success = true;
   } else {
-    commandReturn.reply = 'You do not have enough money. ' +
-      `Spy costs ${assets.rewardPayoutsPenalties.spy_cost}.`;
+    commandReturn.reply = `You do not have enough money. Spy costs ${assets.rewardPayoutsPenalties.spy_cost}.`;
   }
 
   return commandReturn;
@@ -560,7 +535,7 @@ const spy = ({ args, playerData, guild }: { args: any[], playerData: PlayerData,
  * on succeed, take 2-10%. fail pay 100-1000 to player
  * <PLAYER>
  */
-const thief = ({ args, playerData }: { args: any[], playerData: PlayerData }): CommandReturn => {
+const thief = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData
@@ -611,9 +586,7 @@ const thief = ({ args, playerData }: { args: any[], playerData: PlayerData }): C
       }
 
       if(winner === 'player') {
-        moneyChange = moneyChange > mMoney
-          ? mMoney
-          : moneyChange;
+        moneyChange = moneyChange > mMoney ? mMoney : moneyChange;
         (commandReturn.update?.playerData as PlayerData).money += moneyChange;
         (commandReturn.update?.playerMention as PlayerData).money += moneyChange;
       } else {
@@ -621,12 +594,9 @@ const thief = ({ args, playerData }: { args: any[], playerData: PlayerData }): C
         (commandReturn.update?.playerMention as PlayerData).money += moneyChange;
       }
 
-      const successReplyTemplate =
-        utils.randomElement(flavor.thief_success);
+      const successReplyTemplate = utils.randomElement(flavor.thief_success);
       const failReplyTemplate = utils.randomElement(flavor.thief_fail);
-      const usedTemplate = winner === 'player'
-        ? successReplyTemplate
-        : failReplyTemplate;
+      const usedTemplate = winner === 'player' ? successReplyTemplate : failReplyTemplate;
       commandReturn.reply = utils.templateReplace(
         usedTemplate,
         {
@@ -640,8 +610,7 @@ const thief = ({ args, playerData }: { args: any[], playerData: PlayerData }): C
       commandReturn.reply = 'The other player does not have any money';
     }
   } else {
-    commandReturn.reply = 'You are in debt. You should find other ways ' +
-      'to make money';
+    commandReturn.reply = 'You are in debt. You should find other ways to make money';
   }
 
   return commandReturn;
@@ -718,15 +687,13 @@ const trade = async({ args, playerData, playerRoles }: { args: any[], playerData
         );
         commandReturn.success = true;
       } else {
-        commandReturn.reply = `You only have ${pShips} ` +
-          `${assets.emojis.Warship} available`;
+        commandReturn.reply = `You only have ${pShips} ${assets.emojis.Warship} available`;
       }
     } else {
       commandReturn.reply = 'You do not have any ships to trade with';
     }
   } else {
-    commandReturn.reply = 'Your house is not in a pact with ' +
-      `<@&${playerMention.house}>!`;
+    commandReturn.reply = `Your house is not in a pact with <@&${playerMention.house}>!`;
   }
 
   return commandReturn;

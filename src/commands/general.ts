@@ -1,12 +1,11 @@
 import { CommandDispatch, CommandReturn } from '../types';
 import * as assets from '../assets';
-import { Database } from '../data-source';
 import * as gameTasks from '../game_tasks';
 import * as utils from '../utils';
 import { PlayerData } from '../entity/PlayerData';
 
 // Show help text. optional specific command
-const help = (): null => null;
+const help = async(): Promise<null> => null;
 
 /*
  * Lists the players money, men, and ships with
@@ -25,12 +24,10 @@ const bal = async({ playerData, playerRoles }: { playerData: PlayerData, playerR
 
   // TODO: select all siege + tile + pledge by user
   playerPledges.forEach(pledge => {
-    if(pledge.type === 'port') {
-      blockadeContributions += `${pledge.tile} ${pledge.units} ` +
-        `${assets.emojis.Warship} ${pledge.choice}\n`;
+    if(pledge.siege.tile.type === 'port') {
+      blockadeContributions += `${pledge.siege.tile.tile} ${pledge.units} ${assets.emojis.Warship} ${pledge.choice}\n`;
     } else {
-      siegeContributions += `${pledge.tile} ${pledge.units} ` +
-        `${assets.emojis.MenAtArms} ${pledge.choice}\n`;
+      siegeContributions += `${pledge.siege.tile.tile} ${pledge.units} ${assets.emojis.MenAtArms} ${pledge.choice}\n`;
     }
   });
 
@@ -47,7 +44,7 @@ const bal = async({ playerData, playerRoles }: { playerData: PlayerData, playerR
   return { reply, success: true };
 };
 
-const cooldown = ({ playerData, commandDispatch }: { playerData: PlayerData, commandDispatch: CommandDispatch }): CommandReturn => {
+const cooldown = async({ playerData, commandDispatch }: { playerData: PlayerData, commandDispatch: CommandDispatch }): Promise<CommandReturn> => {
   const now = Date.now();
 
   const cooldownMap: { [key: string]: string } = {
@@ -68,15 +65,13 @@ const cooldown = ({ playerData, commandDispatch }: { playerData: PlayerData, com
   let reply = '';
 
   for(const key in cooldownMap) {
-    if(key in cooldownMap) {
-      const commandCooldown = commandDispatch[cooldownMap[key]].cooldown?.time ?? 0;
-      // TODO: consider improving things to remove this any cast
-      let timeLeft = (playerData as any)[key] - now + commandCooldown;
-      const keyCap = cooldownMap[key][0].toUpperCase() + cooldownMap[key].slice(1);
-      timeLeft = timeLeft < 0 ? 0 : timeLeft;
-      const timeUntilString = utils.getTimeUntilString(timeLeft);
-      reply += `${keyCap} ${timeUntilString}\n`;
-    }
+    const commandCooldown = commandDispatch[cooldownMap[key]].cooldown?.time ?? 0;
+    // TODO: consider improving things to remove this any cast
+    let timeLeft = (playerData as any)[key] - now + commandCooldown;
+    const keyCap = cooldownMap[key][0].toUpperCase() + cooldownMap[key].slice(1);
+    timeLeft = timeLeft < 0 ? 0 : timeLeft;
+    const timeUntilString = utils.getTimeUntilString(timeLeft);
+    reply += `${keyCap} ${timeUntilString}\n`;
   }
 
   return { reply, success: true };

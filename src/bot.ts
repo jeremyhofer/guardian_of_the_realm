@@ -165,8 +165,7 @@ client.on('message', async(msg) => {
               }
             });
 
-            // TODO: need to handle promise vs. not promise from calls
-            const commandReturn = callFunction(callArgs);
+            const commandReturn = await callFunction(callArgs);
 
             if(commandReturn != null) {
               if('update' in commandReturn && commandReturn.update !== undefined) {

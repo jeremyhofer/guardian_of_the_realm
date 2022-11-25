@@ -8,8 +8,8 @@ import { PlayerData } from '../entity/PlayerData';
  * Possibly earn money. 1h cooldown
  * min: 0, max: 200
  */
-const pray = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
-  const commandReturn = {
+const pray = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+  const commandReturn: CommandReturn = {
     reply: '',
     update: {
       playerData
@@ -25,7 +25,7 @@ const pray = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
     assets.rewardPayoutsPenalties.pray_reward_min,
     assets.rewardPayoutsPenalties.pray_reward_max
   );
-  commandReturn.update.playerData.money += payout;
+  (commandReturn.update?.playerData as PlayerData).money += payout;
   const replyTemplate = utils.randomElement(flavor.pray);
   commandReturn.reply = utils.templateReplace(
     replyTemplate,
@@ -39,8 +39,8 @@ const pray = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
  * Possible earn money. 12h cooldown
  * min: 1000, max: 4000. 50/50. fine 200-1000
  */
-const subvert = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
-  const commandReturn = {
+const subvert = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+  const commandReturn: CommandReturn = {
     reply: '',
     update: {
       playerData
@@ -56,7 +56,7 @@ const subvert = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
       assets.rewardPayoutsPenalties.subvert_reward_min,
       assets.rewardPayoutsPenalties.subvert_reward_max
     );
-    commandReturn.update.playerData.money += payout;
+    (commandReturn.update?.playerData as PlayerData).money += payout;
     const replyTemplate = utils.randomElement(flavor.subvert_success);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
@@ -68,7 +68,7 @@ const subvert = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
       assets.rewardPayoutsPenalties.subvert_penalty_min,
       assets.rewardPayoutsPenalties.subvert_penalty_max
     );
-    commandReturn.update.playerData.money -= penalty;
+    (commandReturn.update?.playerData as PlayerData).money -= penalty;
     const replyTemplate = utils.randomElement(flavor.subvert_fail);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
@@ -83,8 +83,8 @@ const subvert = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
  * Possible earn men. 12h cooldown. 20% fail risk - fine 10-100
  * min: 1, max : 20
  */
-const train = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
-  const commandReturn = {
+const train = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+  const commandReturn: CommandReturn = {
     reply: '',
     update: {
       playerData
@@ -100,7 +100,7 @@ const train = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
       assets.rewardPayoutsPenalties.train_reward_min,
       assets.rewardPayoutsPenalties.train_reward_max
     );
-    commandReturn.update.playerData.men += payout;
+    (commandReturn.update?.playerData as PlayerData).men += payout;
     const replyTemplate = utils.randomElement(flavor.train_success);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
@@ -115,7 +115,7 @@ const train = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
       assets.rewardPayoutsPenalties.train_penalty_min,
       assets.rewardPayoutsPenalties.train_penalty_max
     );
-    commandReturn.update.playerData.money -= penalty;
+    (commandReturn.update?.playerData as PlayerData).money -= penalty;
     const replyTemplate = utils.randomElement(flavor.train_fail);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
@@ -130,8 +130,8 @@ const train = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
  * Gain money. 6h cooldown
  * min: 500, max: 2000
  */
-const work = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
-  const commandReturn = {
+const work = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+  const commandReturn: CommandReturn = {
     reply: '',
     update: {
       playerData
@@ -147,7 +147,7 @@ const work = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
     assets.rewardPayoutsPenalties.work_reward_min,
     assets.rewardPayoutsPenalties.work_reward_max
   );
-  commandReturn.update.playerData.money += payout;
+  (commandReturn.update?.playerData as PlayerData).money += payout;
   const replyTemplate = utils.randomElement(flavor.work);
   commandReturn.reply = utils.templateReplace(
     replyTemplate,

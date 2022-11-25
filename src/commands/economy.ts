@@ -9,7 +9,7 @@ import * as utils from '../utils';
  * Buy some item in a quantity. titles only one, cant buy more or same
  * again.  <OBJECT> <AMOUNT>
  */
-const buy = ({ args, playerData, playerRoles }: { args: string[], playerData: PlayerData, playerRoles: string[] }): CommandReturn => {
+const buy = async({ args, playerData, playerRoles }: { args: string[], playerData: PlayerData, playerRoles: string[] }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     reply: '',
     update: {
@@ -27,9 +27,7 @@ const buy = ({ args, playerData, playerRoles }: { args: string[], playerData: Pl
   if(Array.isArray(args) && args.length > 0) {
     // Get item and quanity. Default quantity is 1
     let possibleItem = args[0].toLowerCase();
-    const quantity = args.length > 1
-      ? parseInt(args[1], 10)
-      : 1;
+    const quantity = args.length > 1 ? parseInt(args[1], 10) : 1;
 
     let itemExists = possibleItem in assets.storeItems;
 
@@ -110,7 +108,7 @@ const buy = ({ args, playerData, playerRoles }: { args: string[], playerData: Pl
  * no more than 50% total money. random 5-50% interest. only one at a time.
  * .loan <GET|PAY|SHOW> <amount>
  */
-const loan = ({ args, playerData, loans }: { args: string[], playerData: PlayerData, loans: Loan[] }): CommandReturn => {
+const loan = async({ args, playerData, loans }: { args: string[], playerData: PlayerData, loans: Loan[] }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData
@@ -141,8 +139,7 @@ const loan = ({ args, playerData, loans }: { args: string[], playerData: PlayerD
       } else if(playerData.money < 0) {
         commandReturn.reply = 'You are in debt and may not buy a loan';
       } else if(loanAmount > maxLoanAmount) {
-        commandReturn.reply = 'The maximum loan amount you may get is ' +
-          `${maxLoanAmount}`;
+        commandReturn.reply = `The maximum loan amount you may get is ${maxLoanAmount}`;
       } else {
         // Good to go! Grant player loan amount. Determine interest
         const interest = utils.getPercentOfValueGivenRange(
@@ -151,6 +148,7 @@ const loan = ({ args, playerData, loans }: { args: string[], playerData: PlayerD
           50
         );
         (commandReturn?.update?.playerData as PlayerData).money += loanAmount;
+        // TODO: cleanup loan creation
         (commandReturn.loans as any).add = {
           user: playerData.user,
           amount_due: loanAmount + interest,
@@ -173,9 +171,7 @@ const loan = ({ args, playerData, loans }: { args: string[], playerData: PlayerD
         } else {
           payAmount = parseInt(value);
           if(!isNaN(payAmount)) {
-            payAmount = payAmount > loanInfo.amount_due
-              ? loanInfo.amount_due
-              : payAmount;
+            payAmount = payAmount > loanInfo.amount_due ? loanInfo.amount_due : payAmount;
           }
         }
       }
@@ -208,9 +204,7 @@ const loan = ({ args, playerData, loans }: { args: string[], playerData: PlayerD
       // Output loan info
       loans.forEach(thisLoan => {
         const timeUntilDue = thisLoan.time_due - Date.now();
-        const dueString = timeUntilDue > 0
-          ? `due in ${utils.getTimeUntilString(timeUntilDue)}`
-          : 'past due';
+        const dueString = timeUntilDue > 0 ? `due in ${utils.getTimeUntilString(timeUntilDue)}` : 'past due';
         commandReturn.reply = `You owe ${thisLoan.amount_due} on your loan. The loan is ${dueString}`;
       });
     } else {
@@ -224,7 +218,7 @@ const loan = ({ args, playerData, loans }: { args: string[], playerData: PlayerD
 };
 
 // Lists everything in the market they may buy
-const market = (): CommandReturn => {
+const market = async(): Promise<CommandReturn> => {
   let titlesReply = 'TITLES WILL EARN YOU MONEY EVERY DAY - BUY THEM ALL - LIMIT ONE PER HOUSEHOLD:\n';
   let nobilityReply = 'NOBILITY:\n';
   let warriorReply = 'WARRIOR:\n';

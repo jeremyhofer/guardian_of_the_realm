@@ -43,7 +43,7 @@ export interface CooldownConfig {
 }
 
 export interface CommandConfig {
-  function: (...all: any) => CommandReturn | null | Promise<CommandReturn | null> | Promise<void>
+  function: (...all: any) => Promise<CommandReturn | null> | Promise<void>
   args: string[]
   command_args: CommandArgs
   usage: string[]

@@ -6,16 +6,16 @@ import { CommandDispatch } from '../types';
  * value given @player --house <HOUSE> --money <MONEY> --men <MEN> --ships
  * <SHIPS> --title <array>
  */
-const edit = (): null => null;
+const edit = async(): Promise<null> => null;
 
 /*
  * Take person title, men, ships, money
  * @player [TITLE|MEN|SHIPS|MONEY] <VALUE>
  */
-const take = (): null => null;
+const take = async(): Promise<null> => null;
 
 // VIEW ALL THE STUFF!!!!!!!!!!
-const view = (): null => null;
+const view = async(): Promise<null> => null;
 
 export const dispatch: CommandDispatch = {
   edit: {
