@@ -126,7 +126,7 @@ client.on('message', async(msg) => {
         // If we do not have a cooldown or the cooldown is passed, continue
         if(!cooldown || cooldownPassed) {
           // Parse and validate the arguments for the command
-          const parsedArgs = args.parseCommandArgs(otherTokens);
+          const parsedArgs = await args.parseCommandArgs(otherTokens);
           const expectedArgs = commandDispatch[command].command_args;
           if(args.valid(parsedArgs.types, expectedArgs)) {
             const playerRoles: string[] = [];

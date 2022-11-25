@@ -4,14 +4,14 @@ import * as utils from './utils';
 import { ArgTypes } from './enums';
 import { CommandArgs, ParsedArgs } from './types';
 
-export function parseCommandArgs(tokens: string[]): ParsedArgs {
+export async function parseCommandArgs(tokens: string[]): Promise<ParsedArgs> {
   // Parse command tokens to determine types
   const args: ParsedArgs = {
     values: [],
     types: []
   };
 
-  tokens.forEach(token => {
+  for(const token of tokens) {
     const playerMention = token.match(/^<@!?(?<player_id>\d+)>$/u);
     const roleMention = token.match(/^<@&(?<role_id>\d+)>$/u);
     const channelMention = token.match(/^<#(?<channel_id>\d+)>$/u);
@@ -57,7 +57,7 @@ export function parseCommandArgs(tokens: string[]): ParsedArgs {
         args.types.push(ArgTypes.string);
       }
     }
-  });
+  };
 
   return args;
 };
@@ -66,9 +66,7 @@ export function valid(parsed: ArgTypes[], expected: CommandArgs): boolean {
   let valid = false;
 
   expected.forEach(argList => {
-    const match = parsed.length ===
-      argList.length && parsed.every((value, index) => value ===
-        argList[index]);
+    const match = parsed.length === argList.length && parsed.every((value, index) => value === argList[index]);
     if(match) {
       valid = true;
     }
