@@ -20,6 +20,11 @@ export class TrackerDAO {
     return await this._repository.save(loan);
   }
 
+  async createMapTrackers(messageIds: string[]): Promise<Tracker[]> {
+    const newTrackers = messageIds.map((id) => this._repository.create({ text: id, value: 0, name: 'map' }));
+    return await this._repository.save(newTrackers);
+  }
+
   async removeTracker(tracker: Tracker): Promise<DeleteResult> {
     return await this._repository.delete(tracker);
   }

@@ -1,4 +1,4 @@
-import { GameRoles } from "./types";
+import { GameRoles } from './types';
 
 /**
 * Convert milliseconds to a countdown-like string.

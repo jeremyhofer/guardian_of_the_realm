@@ -1,11 +1,8 @@
 import { Guild, RoleManager } from 'discord.js';
 import * as assets from './assets';
 import { Database } from './data-source';
-import { Pact } from './entity/Pact';
 import { PlayerData } from './entity/PlayerData';
 import { Siege } from './entity/Siege';
-import { Tracker } from './entity/Tracker';
-import { War } from './entity/War';
 import { Buildings, Rank } from './types';
 import * as utils from './utils';
 
@@ -14,21 +11,16 @@ export const rolePayouts = async(guild: Guild, currentTime: number): Promise<voi
   const payoutPercent = hoursBetweenPayout / 24;
   const lastPayout = await Database.tracker.getTrackerByName('payout_time');
 
-  if(lastPayout !== null && lastPayout.value +
-    utils.hoursToMs(hoursBetweenPayout) <= currentTime) {
+  if(lastPayout !== null && lastPayout.value + utils.hoursToMs(hoursBetweenPayout) <= currentTime) {
     // Payout roles
     for(const title in assets.dailyPayouts) {
-      if(title in assets.dailyPayouts) {
-        // TODO: fix things to remove cast
-        const payout = Math.round(assets.dailyPayouts[title as Buildings] * payoutPercent);
-        const roleId =
-        utils.findRoleIdGivenName(title, assets.gameRoles);
-        // TODO: test this out
-        await Database.playerData.grantRolePayoutToAllPlayers(
-          guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [],
-          payout
-        );
-      }
+      const payout = Math.round(assets.dailyPayouts[title as Buildings] * payoutPercent);
+      const roleId = utils.findRoleIdGivenName(title, assets.gameRoles);
+      // TODO: test this out
+      await Database.playerData.grantRolePayoutToAllPlayers(
+        guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [],
+        payout
+      );
     }
 
     // Deduct troop prices
@@ -39,8 +31,8 @@ export const rolePayouts = async(guild: Guild, currentTime: number): Promise<voi
 
     // Pay port ownership
     const portPayout = Math.round(assets.rewardPayoutsPenalties.port_daily * payoutPercent);
-    // TODO: test this out
 
+    // TODO: test this out
     const ports = await Database.tileOwner.getPorts();
 
     for(const port of ports) {
@@ -93,8 +85,7 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
 
     const pHouseVoteCount = pYesCount + pNoCount;
 
-    let voteReply = `A war vote by <@&${playerData.house}> against ` +
-      `<@&${otherHouse}> has finished. `;
+    let voteReply = `A war vote by <@&${playerData.house}> against <@&${otherHouse}> has finished. `;
 
     let regenMap = false;
 
@@ -114,16 +105,14 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
         regenMap = true;
       } else {
         // We continue to WAR
-        voteReply +=
-        'The warmongers were shouted down - the Pact holds for now.';
+        voteReply += 'The warmongers were shouted down - the Pact holds for now.';
       }
     } else {
       // This should indicate that the other house did not vote. War continues
       voteReply += 'Not very many people showed up - the Pact holds.';
     }
 
-    voteReply += `\n<@&${playerData.house}>: ${pYesCount} yays ` +
-      `${pNoCount} nays`;
+    voteReply += `\n<@&${playerData.house}>: ${pYesCount} yays ${pNoCount} nays`;
 
     // Send the reply
     // TODO: figure out how to send
@@ -171,8 +160,7 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
     const pHouseVoteCount = pYesCount + pNoCount;
     const oHouseVoteCount = oYesCount + oNoCount;
 
-    let voteReply = `A pact vote between <@&${playerData.house}> and ` +
-      `<@&${otherHouse}> has finished. `;
+    let voteReply = `A pact vote between <@&${playerData.house}> and <@&${otherHouse}> has finished. `;
 
     let regenMap = false;
 
@@ -185,11 +173,7 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
           otherHouse
         );
 
-        const newPact = new Pact();
-        newPact.house_a = playerData.house;
-        newPact.house_b = otherHouse;
-
-        await Database.pact.savePact(newPact);
+        await Database.pact.createPact({ house_a: playerData.house, house_b: otherHouse });
 
         /*
         * If there were any sieges between the houses, remove them
@@ -202,13 +186,13 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
         );
 
         // Iterate over each siege
-        siegesBetweenHouses.forEach(siege => {
+        for(const siege of siegesBetweenHouses) {
           const tileOwner = siege.tile;
           const pledges = siege.pledges;
           const isPort = tileOwner.type === 'port';
 
           // Iterate over each pledge. Return the men and remore the pledge
-          pledges.forEach(pledge => {
+          for(const pledge of pledges) {
             const pledgerData = pledge.user;
             if(isPort) {
               pledgerData.ships += pledge.units;
@@ -217,11 +201,11 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
             }
             await Database.playerData.setPlayer(pledgerData);
             await Database.pledge.removePledge(pledge);
-          });
+          };
 
           // Remove the siege
           await Database.siege.removeSiege(siege);
-        });
+        };
         // Pact was a success, both agreed.
         voteReply += 'A Pact has been brokered - pray the peace lasts!';
         regenMap = true;
@@ -234,11 +218,9 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
       voteReply += 'The attempt failed horribly - War continues!';
     }
 
-    voteReply += `\n<@&${playerData.house}>: ${pYesCount} yays ` +
-      `${pNoCount} nays`;
+    voteReply += `\n<@&${playerData.house}>: ${pYesCount} yays ${pNoCount} nays`;
 
-    voteReply += `\n<@&${otherHouse}>: ${oYesCount} yays ` +
-      `${oNoCount} nays`;
+    voteReply += `\n<@&${otherHouse}>: ${oYesCount} yays ${oNoCount} nays`;
 
     // Send the reply
     // TODO: figure out how to send messages to channels
@@ -265,10 +247,8 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
   while(expiredSiege !== null) {
     // Get pledges for the siege
     const pledges = expiredSiege.pledges;
-    const attackPledges = pledges.filter(pledge => pledge.choice ===
-      'attack');
-    const defendPledges = pledges.filter(pledge => pledge.choice ===
-      'defend');
+    const attackPledges = pledges.filter(pledge => pledge.choice === 'attack');
+    const defendPledges = pledges.filter(pledge => pledge.choice === 'defend');
 
     const tileOwner = expiredSiege.tile;
     const isPort = tileOwner.type === 'port';
@@ -279,12 +259,8 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       expiredSiege
     );
 
-    const type = isPort
-      ? 'blockade'
-      : 'siege';
-    const tileType = isPort
-      ? 'port'
-      : 'castle';
+    const type = isPort ? 'blockade' : 'siege';
+    const tileType = isPort ? 'port' : 'castle';
 
     embed.title = `FINISHED ${type} on ${expiredSiege.tile.tile.toUpperCase()}`;
 
@@ -318,8 +294,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       });
 
       // Determine chance to win, the reward pots, and the losses
-      let winChance = Math.round(attackerCount /
-        (attackerCount + defenderCount) * 100);
+      let winChance = Math.round(attackerCount / (attackerCount + defenderCount) * 100);
 
       if(winChance < 0) {
         winChance = 0;
@@ -328,12 +303,8 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       }
 
       const numPledgers = attackPledges.length + defendPledges.length;
-      const winPot = isPort
-        ? 0
-        : 0 * numPledgers;
-      const losePot = isPort
-        ? 0
-        : 0 * numPledgers;
+      const winPot = isPort ? 0 : 0 * numPledgers;
+      const losePot = isPort ? 0 : 0 * numPledgers;
       const attackerLosses = utils.getPercentOfValueGivenRange(
         defenderCount,
         20,
@@ -355,15 +326,10 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
         // Handle winnings for all attackers
         for(const att in attackers) {
           if(att in attackers && att in allPledgers) {
-            const winnings = Math.round(winPot * attackers[att] /
-              attackerCount);
-            let troopsReturned =
-              attackers[att] - Math.round(attackerLosses *
-                attackers[att] / attackerCount);
+            const winnings = Math.round(winPot * attackers[att] / attackerCount);
+            let troopsReturned = attackers[att] - Math.round(attackerLosses * attackers[att] / attackerCount);
 
-            troopsReturned = troopsReturned < 0
-              ? 0
-              : troopsReturned;
+            troopsReturned = troopsReturned < 0 ? 0 : troopsReturned;
             allPledgers[att].money += winnings;
 
             if(isPort) {
@@ -377,15 +343,10 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
         // Handle winnings for all defenders
         for(const att in defenders) {
           if(att in defenders && att in allPledgers) {
-            const winnings = Math.round(losePot * defenders[att] /
-              defenderCount);
-            let troopsReturned =
-              defenders[att] - Math.round(defenderLosses *
-                defenders[att] / defenderCount);
+            const winnings = Math.round(losePot * defenders[att] / defenderCount);
+            let troopsReturned = defenders[att] - Math.round(defenderLosses * defenders[att] / defenderCount);
 
-            troopsReturned = troopsReturned < 0
-              ? 0
-              : troopsReturned;
+            troopsReturned = troopsReturned < 0 ? 0 : troopsReturned;
 
             const unitAdjust = winnings + troopsReturned;
             if(isPort) {
@@ -398,8 +359,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
 
         // Reassign the tile
         await Database.tileOwner.updateTileOwner(expiredSiege.attacker, expiredSiege.tile.tile);
-        winMessage = `${attackerName} successfully captured the ` +
-          `${tileType}!`;
+        winMessage = `${attackerName} successfully captured the ${tileType}!`;
         regenMap = true;
       } else {
         // Defender wins!
@@ -407,15 +367,10 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
         // Handle winnings for all defenders
         for(const att in defenders) {
           if(att in defenders && att in allPledgers) {
-            const winnings = Math.round(winPot * defenders[att] /
-              defenderCount);
-            let troopsReturned =
-              defenders[att] - Math.round(defenderLosses *
-                defenders[att] / defenderCount);
+            const winnings = Math.round(winPot * defenders[att] / defenderCount);
+            let troopsReturned = defenders[att] - Math.round(defenderLosses * defenders[att] / defenderCount);
 
-            troopsReturned = troopsReturned < 0
-              ? 0
-              : troopsReturned;
+            troopsReturned = troopsReturned < 0 ? 0 : troopsReturned;
             allPledgers[att].money += winnings;
 
             if(isPort) {
@@ -429,15 +384,10 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
         // Handle winnings for all attackers
         for(const att in attackers) {
           if(att in attackers && att in allPledgers) {
-            const winnings = Math.round(losePot * attackers[att] /
-              attackerCount);
-            let troopsReturned =
-              attackers[att] - Math.round(attackerLosses *
-                attackers[att] / attackerCount);
+            const winnings = Math.round(losePot * attackers[att] / attackerCount);
+            let troopsReturned = attackers[att] - Math.round(attackerLosses * attackers[att] / attackerCount);
 
-            troopsReturned = troopsReturned < 0
-              ? 0
-              : troopsReturned;
+            troopsReturned = troopsReturned < 0 ? 0 : troopsReturned;
 
             const unitAdjust = winnings + troopsReturned;
             if(isPort) {
@@ -448,8 +398,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
           }
         }
 
-        winMessage = `${defenderName} successfully defended the ` +
-          `${tileType}!`;
+        winMessage = `${defenderName} successfully defended the ${tileType}!`;
       }
 
       let message = `${numPledgers} player(s) contributed to this ${type}. `;
@@ -553,8 +502,8 @@ export const generateSiegeEmbed = (guildRoles: RoleManager, siege: Siege): any =
   let defenderWinChance = 0;
 
   if(attackerTotal !== 0) {
-    attackerWinChance = Math.round(attackerTotal /
-      (attackerTotal + defenderTotal) * 100);
+    // TODO: move win chance to a util method
+    attackerWinChance = Math.round(attackerTotal / (attackerTotal + defenderTotal) * 100);
   }
 
   if(defenderTotal !== 0) {
@@ -563,35 +512,25 @@ export const generateSiegeEmbed = (guildRoles: RoleManager, siege: Siege): any =
 
   let attackers = '';
   let defenders = '';
-  const emoji = isPort
-            ? assets.emojis.Warship
-            : assets.emojis.MenAtArms;
+  const emoji = isPort ? assets.emojis.Warship : assets.emojis.MenAtArms;
 
   for(const house in attackerCounts) {
-    if(house in attackerCounts) {
-      const num = attackerCounts[house];
-      attackers += `<@&${house}> ${num} ${emoji}\n`;
-    }
+    const num = attackerCounts[house];
+    attackers += `<@&${house}> ${num} ${emoji}\n`;
   }
 
   for(const house in defenderCounts) {
-    if(house in defenderCounts) {
-      const num = defenderCounts[house];
-      defenders += `<@&${house}> ${num} ${emoji}\n`;
-    }
+    const num = defenderCounts[house];
+    defenders += `<@&${house}> ${num} ${emoji}\n`;
   }
 
   attackers = attackers !== '' ? attackers : 'no pledges';
 
   defenders = defenders !== '' ? defenders : 'no pledges';
 
-  const attackerFieldName = `Attacker: ${attackerName} ` +
-              `${attackerTotal} ${emoji} ` +
-              `${attackerWinChance}%`;
+  const attackerFieldName = `Attacker: ${attackerName} ${attackerTotal} ${emoji} ${attackerWinChance}%`;
 
-  const defenderFieldName = `Defender: ${defenderName} ` +
-    `${defenderTotal} ${emoji} ` +
-    `${defenderWinChance}%`;
+  const defenderFieldName = `Defender: ${defenderName} ${defenderTotal} ${emoji} ${defenderWinChance}%`;
 
   /*
   const winner_payout = pledges.length * 3000;
@@ -676,9 +615,7 @@ export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> 
     const column = parseInt(`${coords.slice(0, 1).charCodeAt(0)}`, 10) - 96;
     const row = parseInt(coords.slice(1), 10);
     const ownerTile = assets.houseTiles[tile.house];
-    const ownerTileType = tile.type === 'port'
-      ? 'Port' + ownerTile
-      : 'Tile' + ownerTile;
+    const ownerTileType = tile.type === 'port' ? 'Port' + ownerTile : 'Tile' + ownerTile;
     const tileEmoji = e[ownerTileType];
     mapData[row][column] = tileEmoji;
 
@@ -714,11 +651,9 @@ export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> 
   const allSieges = await Database.siege.getAllSieges();
   allSieges.forEach(siege => {
     if(siege.tile.type === 'port') {
-      activeBlockades += `${siege.tile.tile}: :crossed_swords: ` +
-        `<@&${siege.attacker}>\n`;
+      activeBlockades += `${siege.tile.tile}: :crossed_swords: <@&${siege.attacker}>\n`;
     } else {
-      activeSieges += `${siege.tile.tile}: :crossed_swords: ` +
-        `<@&${siege.attacker}>\n`;
+      activeSieges += `${siege.tile.tile}: :crossed_swords: <@&${siege.attacker}>\n`;
     }
   });
 
@@ -754,13 +689,13 @@ export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> 
   const channel = guild.channels.cache.get(assets.replyChannels.overworld);
   const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
 
-  existingMapMessages.forEach(toDelete => {
+  for(const toDelete of existingMapMessages) {
     // TODO: figure out how to delete message
     channel?.messages.fetch(toDelete.text).then(message => {
       message.delete();
     });
     await Database.tracker.removeTracker(toDelete);
-  });
+  };
 
   // TODO: figure out how to send message
   channel?.send(
@@ -769,15 +704,9 @@ export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> 
       embed,
       split: true
     }
-  ).then(messages => {
+  ).then(async(messages) => {
     if(Array.isArray(messages)) {
-      messages.forEach(message => {
-        const newTracker = new Tracker();
-        newTracker.name = 'map';
-        newTracker.value = 0;
-        newTracker.text = message.id;
-        await Database.tracker.saveTracker(newTracker);
-      });
+      await Database.tracker.createMapTrackers(messages.map((m) => m.id));
     }
   });
 };
@@ -791,7 +720,7 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
   if(playerRoles.includes('developer')) {
     // Remove everyone from game roles
     for(const roleId in assets.gameRoles) {
-      if(roleId in assets.gameRoles && roleId !== '625905668263510017') {
+      if(roleId !== '625905668263510017') {
         guild.roles.cache.get(roleId)?.members.forEach(member => {
           member.roles.remove(roleId).catch(console.error);
         });
@@ -816,14 +745,11 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
       'house-wolf'
     ];
 
-    const houseCategory = guild.channels.cache.find(channel => channel.name ===
-      'The Great Houses');
+    const houseCategory = guild.channels.cache.find(channel => channel.name === 'The Great Houses');
 
     if(houseCategory !== undefined) {
       for(let inc = 0; inc < remakeChannels.length; inc += 1) {
-        const channelToRemake =
-        guild.channels.cache.find(channel => channel.name ===
-          remakeChannels[inc]);
+        const channelToRemake = guild.channels.cache.find(channel => channel.name === remakeChannels[inc]);
 
         if(channelToRemake !== undefined) {
           // TODO: determine how to clone channel
@@ -840,8 +766,7 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
     commandReturn.reply = 'Done';
     commandReturn.enableGame = true;
   } else {
-    commandReturn.reply =
-      'You dare command this of me? Be gone, before you destroy these lands.';
+    commandReturn.reply = 'You dare command this of me? Be gone, before you destroy these lands.';
   }
 
   return commandReturn;
@@ -870,9 +795,7 @@ export const generateRolesReply = ({ playerRoles }: { playerRoles: string[] }): 
 
   moneyRoles.forEach(role => {
     const roleCap = role[0].toUpperCase() + role.slice(1);
-    const symbol = playerRoles.includes(role)
-      ? ':white_check_mark:'
-      : ':x:';
+    const symbol = playerRoles.includes(role) ? ':white_check_mark:' : ':x:';
     reply += `${symbol} ${roleCap}: ${assets.dailyPayouts[role]} :moneybag: per Day\n`;
   });
 
@@ -895,8 +818,7 @@ export const generateRolesReply = ({ playerRoles }: { playerRoles: string[] }): 
       roleMark = ':arrow_down:';
     }
 
-    roleReply = `${roleMark} ${roleCap} ${troopLimit} ` +
-      `${assets.emojis.MenAtArms} per Siege\n${roleReply}`;
+    roleReply = `${roleMark} ${roleCap} ${troopLimit} ${assets.emojis.MenAtArms} per Siege\n${roleReply}`;
   }
 
   reply += `\nNobility Roles:\n${roleReply}`;
@@ -920,10 +842,8 @@ export const isGameActive = async(): Promise<boolean> => {
   });
 
   for(const house in ownerCounts) {
-    if(house in ownerCounts) {
-      if(ownerCounts[house] >= 7) {
-        gameActive = false;
-      }
+    if(ownerCounts[house] >= 7) {
+      gameActive = false;
     }
   }
 

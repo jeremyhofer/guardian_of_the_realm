@@ -25,6 +25,10 @@ export class PactDAO {
     return await this._repository.save(loan);
   }
 
+  async createPact(pPact: Partial<Pact>): Promise<Pact> {
+    return await this._repository.save(this._repository.create(pPact));
+  }
+
   async removePactBetweenHouses(house1: string, house2: string): Promise<DeleteResult> {
     return await this._repository.createQueryBuilder()
       .delete()
