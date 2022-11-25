@@ -67,10 +67,8 @@ export function templateReplace(template: string, mappings: { [key: string]: str
   let filledTemplate = template;
 
   for(const key in mappings) {
-    if(key in mappings) {
-      const re = new RegExp(`\\{${key}\\}`, 'gu');
-      filledTemplate = filledTemplate.replace(re, `${mappings[key]}`);
-    }
+    const re = new RegExp(`\\{${key}\\}`, 'gu');
+    filledTemplate = filledTemplate.replace(re, `${mappings[key]}`);
   }
 
   return filledTemplate;
