@@ -26,8 +26,8 @@ export class LoanDAO {
     return await this._repository.save(loan);
   }
 
-  async removeLoan(loanId: number): Promise<DeleteResult> {
-    return await this._repository.delete({ loan_id: loanId });
+  async removeLoan(loan: Loan): Promise<DeleteResult> {
+    return await this._repository.delete(loan);
   }
 
   async deleteAll(): Promise<void> {

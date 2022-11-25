@@ -63,7 +63,6 @@ export function findRoleIdGivenName(name: string, roleObj: GameRoles): string {
 }
 
 // Replaces {key} with value in mapping for each key in mapping
-// TODO: update calls to this to allow numbers to be passed
 export function templateReplace(template: string, mappings: { [key: string]: string | number }): string {
   let filledTemplate = template;
 

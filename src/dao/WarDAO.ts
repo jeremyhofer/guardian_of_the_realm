@@ -12,6 +12,10 @@ export class WarDAO {
     return await this._repository.save(loan);
   }
 
+  async createWar(pWar: Partial<War>): Promise<War> {
+    return await this._repository.save(this._repository.create(pWar));
+  }
+
   async getWarBetweenHouses(house1: string, house2: string): Promise<War | null> {
     return await this._repository.findOneBy([
       {
@@ -25,8 +29,11 @@ export class WarDAO {
     ]);
   }
 
-  async removeWar(warId: number): Promise<DeleteResult> {
-    return await this._repository.delete({ war_id: warId });
+  async removeWarBetweenHouses(house1: string, house2: string): Promise<DeleteResult> {
+    return await this._repository.createQueryBuilder()
+      .delete()
+      .where('(war.house_a = :house1 AND war.house_b = :house2) OR (war.house_a = :house2 AND war.house_b = :house1)', { house1, house2 })
+      .execute();
   }
 
   async deleteAll(): Promise<void> {

@@ -23,8 +23,12 @@ export class PledgeDAO {
     return await this._repository.save(loan);
   }
 
-  async removePledge(pledgeId: number): Promise<DeleteResult> {
-    return await this._repository.delete({ pledge_id: pledgeId });
+  async removePledge(pledge: Pledge): Promise<DeleteResult> {
+    return await this._repository.delete(pledge);
+  }
+
+  async removePledgesForSiege(siege: Siege): Promise<DeleteResult> {
+    return await this._repository.delete({ siege });
   }
 
   async deleteAll(): Promise<void> {

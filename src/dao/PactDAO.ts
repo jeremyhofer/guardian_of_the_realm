@@ -25,8 +25,11 @@ export class PactDAO {
     return await this._repository.save(loan);
   }
 
-  async removePact(pactId: number): Promise<DeleteResult> {
-    return await this._repository.delete({ pact_id: pactId });
+  async removePactBetweenHouses(house1: string, house2: string): Promise<DeleteResult> {
+    return await this._repository.createQueryBuilder()
+      .delete()
+      .where('(pact.house_a = :house1 AND pact.house_b = :house2) OR (pact.house_a = :house2 AND pact.house_b = :house1)', { house1, house2 })
+      .execute();
   }
 
   async deleteAll(): Promise<void> {

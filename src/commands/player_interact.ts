@@ -109,7 +109,7 @@ const arson = ({ args, playerData, playerRoles, guild }: { args: string[], playe
         commandReturn.reply = utils.templateReplace(
           replyTemplate,
           {
-            amount: `${penalty}`,
+            amount: penalty,
             target_mention: `<@${playerMentionUser}>`,
             roleToArson: targetRoleName
           }

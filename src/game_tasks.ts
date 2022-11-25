@@ -63,8 +63,7 @@ export const collectLoans = async(guild: Guild, currentTime: number): Promise<vo
   for(const loan of dueLoans) {
     loan.user.money -= loan.amount_due;
     await Database.playerData.setPlayer(loan.user);
-    // TODO: remove by passing loan instance
-    await Database.loan.removeLoan(loan.loan_id);
+    await Database.loan.removeLoan(loan);
 
     // TODO: determine how we now send messages to channels
     guild.channels.cache.get(assets.replyChannels.command_tent)?.send("<@" +
@@ -82,7 +81,6 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
     const otherHouse = expiredWarVote.choice;
 
     // Get all votes for this specific war vote
-    // TODO: write DAO method to access all this data
     const pHouseVoteResults = await Database.vote.getVotesForHouseAgainstHouseByTypes(
       playerData.house,
       otherHouse,
@@ -104,22 +102,12 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
     if(pHouseVoteCount > 0) {
       if(pYesCount > pNoCount) {
         // We have a war! Remove the pact
-        // TODO: add pact dao method to remove pact given houses
-        const pact = await Database.pact.getPactBetweenHouses(
+        await Database.pact.removePactBetweenHouses(
           playerData.house,
           otherHouse
         );
 
-        if(pact !== null) {
-          await Database.pact.removePact(pact.pact_id);
-        }
-
-        // TODO: need a new war helper
-        const newWar = new War();
-        newWar.house_a = playerData.house;
-        newWar.house_b = otherHouse;
-
-        await Database.war.saveWar(newWar);
+        await Database.war.createWar({ house_a: playerData.house, house_b: otherHouse });
 
         // War Happens!
         voteReply += 'Their Pact has been broken - this betrayal means War!';
@@ -192,15 +180,10 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
     if(pHouseVoteCount > 0 && oHouseVoteCount > 0) {
       if(pYesCount > pNoCount && oYesCount > oNoCount) {
         // We have a pact! Remove the war
-        // TODO: add war dao helper to remove war between houses
-        const war = await Database.war.getWarBetweenHouses(
+        await Database.war.removeWarBetweenHouses(
           playerData.house,
           otherHouse
         );
-
-        if(war !== null) {
-          await Database.war.removeWar(war.war_id);
-        }
 
         const newPact = new Pact();
         newPact.house_a = playerData.house;
@@ -233,13 +216,11 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
               pledgerData.men += pledge.units;
             }
             await Database.playerData.setPlayer(pledgerData);
-            // TODO: add helper method for removing pledges
-            await Database.pledge.removePledge(pledge.pledge_id);
+            await Database.pledge.removePledge(pledge);
           });
 
           // Remove the siege
-          // TODO: add helper method for removing siege
-          await Database.siege.removeSiege(siege.siege_id);
+          await Database.siege.removeSiege(siege);
         });
         // Pact was a success, both agreed.
         voteReply += 'A Pact has been brokered - pray the peace lasts!';
@@ -492,14 +473,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       await Database.playerData.saveMultiple(Object.values(allPledgers));
 
       // Iterate over each pledge and remove it
-      // TODO: add helper method for removing pledges
-      attackPledges.forEach(pledge => {
-        await Database.pledge.removePledge(pledge.pledge_id);
-      });
-
-      defendPledges.forEach(pledge => {
-        await Database.pledge.removePledge(pledge.pledge_id);
-      });
+      await Database.pledge.removePledgesForSiege(expiredSiege);
     } else {
       // No one pledged
       embed.fields.push({
@@ -515,8 +489,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
     });
 
     // Remove the siege
-    // TODO: add helper for removing siege
-    await Database.siege.removeSiege(expiredSiege.siege_id);
+    await Database.siege.removeSiege(expiredSiege);
 
     // Get next siege to try and resolve, if exists
     expiredSiege = await Database.siege.getExpiredSiege(currentTime);
@@ -786,8 +759,7 @@ export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> 
     channel?.messages.fetch(toDelete.text).then(message => {
       message.delete();
     });
-    // TODO: add helper for removing tracker
-    await Database.tracker.removeTracker(toDelete.tracker_id);
+    await Database.tracker.removeTracker(toDelete);
   });
 
   // TODO: figure out how to send message

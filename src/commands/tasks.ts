@@ -29,7 +29,7 @@ const pray = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
   const replyTemplate = utils.randomElement(flavor.pray);
   commandReturn.reply = utils.templateReplace(
     replyTemplate,
-    { amount: `${payout}` }
+    { amount: payout }
   );
 
   return commandReturn;
@@ -60,7 +60,7 @@ const subvert = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
     const replyTemplate = utils.randomElement(flavor.subvert_success);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
-      { amount: `${payout}` }
+      { amount: payout }
     );
   } else {
     // Failure. Take penalty.
@@ -72,7 +72,7 @@ const subvert = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
     const replyTemplate = utils.randomElement(flavor.subvert_fail);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
-      { amount: `${penalty}` }
+      { amount: penalty }
     );
   }
 
@@ -105,7 +105,7 @@ const train = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
       {
-        amount: `${payout}`,
+        amount: payout,
         e_MenAtArms: assets.emojis.MenAtArms
       }
     );
@@ -119,7 +119,7 @@ const train = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
     const replyTemplate = utils.randomElement(flavor.train_fail);
     commandReturn.reply = utils.templateReplace(
       replyTemplate,
-      { amount: `${penalty}` }
+      { amount: penalty }
     );
   }
 
@@ -151,7 +151,7 @@ const work = ({ playerData }: { playerData: PlayerData }): CommandReturn => {
   const replyTemplate = utils.randomElement(flavor.work);
   commandReturn.reply = utils.templateReplace(
     replyTemplate,
-    { amount: `${payout}` }
+    { amount: payout }
   );
 
   return commandReturn;

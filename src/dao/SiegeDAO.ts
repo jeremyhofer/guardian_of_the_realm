@@ -91,8 +91,8 @@ export class SiegeDAO {
     return await this._repository.update(siegeId, { message });
   }
 
-  async removeSiege(siegeId: number): Promise<DeleteResult> {
-    return await this._repository.delete({ siege_id: siegeId });
+  async removeSiege(siege: Siege): Promise<DeleteResult> {
+    return await this._repository.delete(siege);
   }
 
   async deleteAll(): Promise<void> {

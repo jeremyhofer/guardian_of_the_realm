@@ -324,7 +324,7 @@ client.on('message', async(msg) => {
                 } else if ('update' in commandReturn.loans && commandReturn.loans.update !== undefined) {
                   await Database.loan.saveLoan(commandReturn.loans.update);
                 } else if ('remove' in commandReturn.loans && commandReturn.loans.remove !== undefined) {
-                  await Database.loan.removeLoan(commandReturn.loans.remove.loan_id);
+                  await Database.loan.removeLoan(commandReturn.loans.remove);
                 }
               }
 
@@ -344,7 +344,7 @@ client.on('message', async(msg) => {
 
                 if('remove' in commandReturn.pledges && commandReturn.pledges.remove !== undefined) {
                   // Remove the pledge
-                  await Database.pledge.removePledge(commandReturn.pledges.remove.pledge_id);
+                  await Database.pledge.removePledge(commandReturn.pledges.remove);
                 }
               }
 
@@ -435,7 +435,7 @@ setInterval(() => {
       const now = Date.now();
       const expirationTime =
         now - utils.hoursToMs(assets.timeoutLengths.vote_expiration);
-      // TODO: determine how to loop processing game tick to avoid conflicts
+      // TODO: determine how to better loop game tick to avoid conflicts
       game_tasks.rolePayouts(guild, now)
         .then(async() => await game_tasks.collectLoans(guild, now))
         .then(async() => await game_tasks.resolveWarVotes(guild, expirationTime))
