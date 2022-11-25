@@ -314,18 +314,7 @@ const pact = async({ args, playerData }: { args: any[], playerData: PlayerData }
   const playerChoice: string = args[1].toLowerCase();
 
   // See if the player has already voted for this
-  const yesVotes = await Database.vote.getPlayerVoteByType(
-    playerData,
-    'pact_yes'
-  );
-  const noVotes = await Database.vote.getPlayerVoteByType(
-    playerData,
-    'pact_no'
-  );
-  const allVotes: Vote[] = yesVotes.concat(noVotes);
-
-  // TODO: move this operation to a database query
-  const existingVote = allVotes.filter(vote => 'choice' in vote && vote.choice === houseVote);
+  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(playerData, houseVote, ['pact_yes', 'pact_no']);
 
   if(existingVote.length > 0) {
     // Already voted in this pact vote
@@ -417,17 +406,7 @@ const war = async({ args, playerData }: { args: any[], playerData: PlayerData })
   const playerChoice: string = args[1].toLowerCase();
 
   // See if the player has already voted for this
-  const yesVotes = await Database.vote.getPlayerVoteByType(
-    playerData,
-    'war_yes'
-  );
-  const noVotes = await Database.vote.getPlayerVoteByType(
-    playerData,
-    'war_no'
-  );
-  const allVotes: Vote[] = yesVotes.concat(noVotes);
-
-  const existingVote = allVotes.filter(vote => 'choice' in vote && vote.choice === houseVote);
+  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(playerData, houseVote, ['war_yes', 'war_no']);
 
   if(existingVote.length > 0) {
     // Already voted in this war vote

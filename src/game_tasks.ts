@@ -83,24 +83,15 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
 
     // Get all votes for this specific war vote
     // TODO: write DAO method to access all this data
-    const pHouseVoteYes = await Database.vote.getVotesForHouseByType(
-      'war_yes',
-      playerData.house
+    const pHouseVoteResults = await Database.vote.getVotesForHouseAgainstHouseByTypes(
+      playerData.house,
+      otherHouse,
+      ['war_yes', 'war_no']
     );
-    const pHouseVoteNo = await Database.vote.getVotesForHouseByType(
-      'war_no',
-      playerData.house
-    );
-
-    // Filter all the votes by vote type and specific war vote
-    const pHouseYes = pHouseVoteYes.filter(vote => vote.choice ===
-      otherHouse);
-    const pHouseNo = pHouseVoteNo.filter(vote => vote.choice ===
-      otherHouse);
 
     // Get the votes for/against
-    const pYesCount = pHouseYes.length;
-    const pNoCount = pHouseNo.length;
+    const pYesCount = pHouseVoteResults.filter((r) => r.type === 'war_yes').length;
+    const pNoCount = pHouseVoteResults.filter((r) => r.type === 'war_no').length;
 
     const pHouseVoteCount = pYesCount + pNoCount;
 
@@ -111,7 +102,7 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
 
     // Determine the vote outcome
     if(pHouseVoteCount > 0) {
-      if(pHouseYes > pHouseNo) {
+      if(pYesCount > pNoCount) {
         // We have a war! Remove the pact
         // TODO: add pact dao method to remove pact given houses
         const pact = await Database.pact.getPactBetweenHouses(
@@ -151,14 +142,7 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
     guild.channels.cache.get(assets.replyChannels.battle_reports)?.send(voteReply);
 
     // Remove all associated votes
-    // TODO: add vote dao helper to remove all votes in one call
-    pHouseYes.forEach(vote => {
-      await Database.vote.removeVote(vote.vote_id);
-    });
-
-    pHouseNo.forEach(vote => {
-      await Database.vote.removeVote(vote.vote_id);
-    });
+    await Database.vote.removeMultiple(pHouseVoteResults.map((r) => r.vote_id));
 
     if(regenMap) {
       await postUpdatedMap({ guild });
@@ -178,39 +162,23 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
     const otherHouse = expiredPactVote.choice;
 
     // Get all votes for both houses
-    // TODO: retrieve all needed votes at the same time
-    const pHouseVoteYes = await Database.vote.getVotesForHouseByType(
-      'pact_yes',
-      playerData.house
+    // TODO: further combine these selects?
+    const pHouseVoteResults = await Database.vote.getVotesForHouseAgainstHouseByTypes(
+      playerData.house,
+      otherHouse,
+      ['pact_yes', 'pact_no']
     );
-    const pHouseVoteNo = await Database.vote.getVotesForHouseByType(
-      'pact_no',
-      playerData.house
+    const oHouseVoteResults = await Database.vote.getVotesForHouseAgainstHouseByTypes(
+      otherHouse,
+      playerData.house,
+      ['pact_yes', 'pact_no']
     );
-    const oHouseVoteYes = await Database.vote.getVotesForHouseByType(
-      'pact_yes',
-      otherHouse
-    );
-    const oHouseVoteNo = await Database.vote.getVotesForHouseByType(
-      'pact_no',
-      otherHouse
-    );
-
-    // Filter all the votes by vote type and specific pact vote
-    const pHouseYes = pHouseVoteYes.filter(vote => vote.choice ===
-      otherHouse);
-    const pHouseNo = pHouseVoteNo.filter(vote => vote.choice ===
-      otherHouse);
-    const oHouseYes = oHouseVoteYes.filter(vote => vote.choice ===
-      playerData.house);
-    const oHouseNo = oHouseVoteNo.filter(vote => vote.choice ===
-      playerData.house);
 
     // Get the votes for/against
-    const pYesCount = pHouseYes.length;
-    const pNoCount = pHouseNo.length;
-    const oYesCount = oHouseYes.length;
-    const oNoCount = oHouseNo.length;
+    const pYesCount = pHouseVoteResults.filter((r) => r.type === 'pact_yes').length;
+    const pNoCount = pHouseVoteResults.filter((r) => r.type === 'pact_no').length;
+    const oYesCount = oHouseVoteResults.filter((r) => r.type === 'pact_yes').length;
+    const oNoCount = oHouseVoteResults.filter((r) => r.type === 'pact_no').length;
 
     const pHouseVoteCount = pYesCount + pNoCount;
     const oHouseVoteCount = oYesCount + oNoCount;
@@ -222,7 +190,7 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
 
     // Determine the vote outcome
     if(pHouseVoteCount > 0 && oHouseVoteCount > 0) {
-      if(pHouseYes > pHouseNo && oHouseYes > oHouseNo) {
+      if(pYesCount > pNoCount && oYesCount > oNoCount) {
         // We have a pact! Remove the war
         // TODO: add war dao helper to remove war between houses
         const war = await Database.war.getWarBetweenHouses(
@@ -296,22 +264,10 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
     guild.channels.cache.get(assets.replyChannels.battle_reports)?.send(voteReply);
 
     // Remove all associated votes
-    // TODO: add helper to remove all votes
-    pHouseYes.forEach(vote => {
-      await Database.vote.removeVote(vote.vote_id);
-    });
-
-    pHouseNo.forEach(vote => {
-      await Database.vote.removeVote(vote.vote_id);
-    });
-
-    oHouseYes.forEach(vote => {
-      await Database.vote.removeVote(vote.vote_id);
-    });
-
-    oHouseNo.forEach(vote => {
-      await Database.vote.removeVote(vote.vote_id);
-    });
+    await Database.vote.removeMultiple([
+      ...pHouseVoteResults.map((r) => r.vote_id),
+      ...oHouseVoteResults.map((r) => r.vote_id)
+    ]);
 
     if(regenMap) {
       await postUpdatedMap({ guild });
