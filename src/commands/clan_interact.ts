@@ -31,16 +31,12 @@ const join = async({ playerData }: { playerData: PlayerData }): Promise<CommandR
     commandReturn.reply = 'You are already part of a house';
   } else {
     // Add the player to a house with an opening
-    const houseCounts: { [key: string]: number } = {};
+    const houseCounts: { [key: string]: number } = await Database.playerData.getPlayerCountsInAllHouses();
 
     assets.houses.forEach(house => {
-      if(house !== '625905668263510017') {
+      if(house !== '625905668263510017' && !(house in houseCounts)) {
         houseCounts[house] = 0;
       }
-    });
-
-    (await Database.playerData.countAllPlayersInHouse()).forEach(data => {
-      houseCounts[data.house] = data.num_members;
     });
 
     const sortedHouses = [];

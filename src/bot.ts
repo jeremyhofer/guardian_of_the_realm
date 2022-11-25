@@ -12,7 +12,6 @@ import * as game_tasks from './game_tasks';
 import * as tasks from './commands/tasks';
 import * as utils from './utils';
 import { CommandDispatch } from './types';
-import { defaultPlayer } from './constants';
 import { PlayerData } from './entity/PlayerData';
 import { Loan } from './entity/Loan';
 import { Vote } from './entity/Vote';
@@ -89,15 +88,7 @@ client.on('message', async(msg) => {
         const otherTokens = tokens.slice(1);
 
         // Get playerData
-        let playerData = await Database.playerData.getPlayer(msg.member.id);
-
-        if (playerData === null) {
-          // TODO: add DB method to get or create player
-          playerData = {
-            ...defaultPlayer,
-            user: msg.member.id
-          };
-        }
+        const playerData = await Database.playerData.getOrCreatePlayer(msg.member.id);
 
         let cooldown = false;
         let cooldownPassed = false;

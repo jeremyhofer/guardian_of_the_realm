@@ -2,9 +2,7 @@ import * as assets from './assets';
 import { Database } from './data-source';
 import * as utils from './utils';
 import { ArgTypes } from './enums';
-import { defaultPlayer } from './constants';
 import { CommandArgs, ParsedArgs } from './types';
-import { PlayerData } from './entity/PlayerData';
 
 export function parseCommandArgs(tokens: string[]): ParsedArgs {
   // Parse command tokens to determine types
@@ -20,18 +18,7 @@ export function parseCommandArgs(tokens: string[]): ParsedArgs {
     const numberMatch = token.match(/^(?<number>\d+)$/u);
 
     if(playerMention?.groups !== undefined) {
-      // TODO: properly retrieve or generate default database object
-      let playerData: Omit<PlayerData, 'votes' | 'pledges' | 'loans'>;
-      await Database.playerData.getPlayer(playerMention.groups.player_id).then((player) => {
-        if(player !== null) {
-          playerData = player;
-        }
-      });
-      if(playerData === null) {
-        playerData = { ...defaultPlayer };
-        playerData.user = playerMention.groups.player_id;
-      }
-
+      const playerData = await Database.playerData.getOrCreatePlayer(playerMention.groups.player_id);
       args.values.push(playerData);
       args.types.push(ArgTypes.player_mention);
     } else if(roleMention?.groups !== undefined) {

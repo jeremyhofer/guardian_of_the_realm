@@ -1,7 +1,6 @@
 import { PlayerData } from './entity/PlayerData';
 
-export const defaultPlayer: Omit<PlayerData, 'loans' | 'votes' | 'pledges'> = {
-  user: '',
+export const defaultPlayer: Omit<PlayerData, 'loans' | 'votes' | 'pledges' | 'user'> = {
   house: '',
   men: 20,
   ships: 2,

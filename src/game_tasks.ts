@@ -1,6 +1,5 @@
 import { Guild, RoleManager } from 'discord.js';
 import * as assets from './assets';
-import { defaultPlayer } from './constants';
 import { Database } from './data-source';
 import { Pact } from './entity/Pact';
 import { PlayerData } from './entity/PlayerData';
@@ -24,61 +23,33 @@ export const rolePayouts = async(guild: Guild, currentTime: number): Promise<voi
         const payout = Math.round(assets.dailyPayouts[title as Buildings] * payoutPercent);
         const roleId =
         utils.findRoleIdGivenName(title, assets.gameRoles);
-        guild.roles.cache.get(roleId)?.members.forEach((_value, key) => {
-          // Get playerData
-          let playerData = await Database.playerData.getPlayer(key);
-
-          if (playerData === null) {
-            // TODO: properly retrieve or default PlayerData object
-            playerData = {
-              ...defaultPlayer,
-              user: key
-            };
-          }
-
-          // Add payout
-          playerData.money += payout;
-
-          // Save
-          await Database.playerData.setPlayer(playerData);
-        });
+        // TODO: test this out
+        await Database.playerData.grantRolePayoutToAllPlayers(
+          guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [],
+          payout
+        );
       }
     }
 
     // Deduct troop prices
-    const allPlayers = await Database.playerData.getAllPlayers();
-
-    // TODO: make this more efficient
-    allPlayers.forEach(player => {
-      const menCost = player.men * Math.round(assets.dailyCosts.men * payoutPercent);
-      const shopCost = player.ships * Math.round(assets.dailyCosts.ships * payoutPercent);
-      player.money -= menCost;
-      player.money -= shopCost;
-      await Database.playerData.setPlayer(player);
-    });
+    await Database.playerData.deductTroopCosts(
+      Math.round(assets.dailyCosts.men * payoutPercent),
+      Math.round(assets.dailyCosts.ships * payoutPercent)
+    );
 
     // Pay port ownership
     const portPayout = Math.round(assets.rewardPayoutsPenalties.port_daily * payoutPercent);
-    (await Database.tileOwner.getPorts()).forEach(port => {
-      guild.roles.cache.get(port.house)?.members.forEach((_value, key) => {
-        // Get playerData
-        // TODO: properly handle retrieve or create player
-        let playerData = await Database.playerData.getPlayer(key);
+    // TODO: test this out
 
-        if (playerData === null) {
-          playerData = {
-            ...db.default_player,
-            user: key
-          };
-        }
+    const ports = await Database.tileOwner.getPorts();
 
-        // Add payout
-        playerData.money += portPayout;
-
-        // Save
-        await Database.playerData.setPlayer(player);
-      });
-    });
+    for(const port of ports) {
+      // TODO: should do this just based on the house set in the DB?
+      await Database.playerData.grantRolePayoutToAllPlayers(
+        guild.roles.cache.get(port.house)?.members.map((member) => member.id) ?? [],
+        portPayout
+      );
+    }
 
     await Database.tracker.updateTrackerByName('payout_time', currentTime);
   }
@@ -89,7 +60,7 @@ export const collectLoans = async(guild: Guild, currentTime: number): Promise<vo
   // Collect on all loans that are due
   const dueLoans = await Database.loan.getDueLoans(currentTime);
 
-  dueLoans.forEach(loan => {
+  for(const loan of dueLoans) {
     loan.user.money -= loan.amount_due;
     await Database.playerData.setPlayer(loan.user);
     // TODO: remove by passing loan instance
@@ -99,7 +70,7 @@ export const collectLoans = async(guild: Guild, currentTime: number): Promise<vo
     guild.channels.cache.get(assets.replyChannels.command_tent)?.send("<@" +
       `${loan.user.user}> your loan has expired. The remaining balance ` +
       `of ${loan.amount_due} has been deducted from your account`);
-  });
+  };
 };
 
 export const resolveWarVotes = async(guild: Guild, expirationTime: number): Promise<void> => {
@@ -562,12 +533,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       });
 
       // Update all the player data
-      // TODO: improve this
-      for(const pledger in allPledgers) {
-        if(pledger in allPledgers) {
-          await Database.playerData.setPlayer(allPledgers[pledger]);
-        }
-      }
+      await Database.playerData.saveMultiple(Object.values(allPledgers));
 
       // Iterate over each pledge and remove it
       // TODO: add helper method for removing pledges
@@ -905,15 +871,7 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
     }
 
     // Reset everyone's data
-    // TODO: fix promise usage
-    (await Database.playerData.getAllPlayers()).forEach(player => {
-      // TODO: add helper for resetting players
-      const newData = {
-        ...defaultPlayer,
-        user: player.user
-      };
-      await Database.playerData.setPlayer(newData);
-    });
+    await Database.playerData.resetAllPlayers();
 
     // TODO: reimpl reset_everything
     // db.reset_everything();
