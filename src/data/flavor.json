@@ -30,9 +30,9 @@
     "You spent a few hours training in the barracks with your Men-at-Arms. It was not your finest showing. You left bruised, and your armor was rather dented. You had to pay the blacksmith {amount} :moneybag: to repaint your helmet, and beat the dents out of your armor."
   ],
   "train_success": [
-    "A nervous looking villein comes to your castle late one evening, and tells you that a young woman was taken by bandits. He says he can lead you to them. You swiftly rally a few Men-at-Arms, and tell them to only bring a drab cloak, weapons and chain-mail. Your vengeful band silently slip out of your castle. Later that evening, you find the bandits around their campfire - none survived your attack. You managed to save the young woman from dishonor, and several men from her village offer to fight for you if you train them. {amount} {e_MenAtArms} have joined your army!",
-    "You spent a few hours training in the barracks with your Men-at-Arms. Afterwards some enthusiastic farms-hands offered to fight for you if you would train, equip, and feed them. You agreed. {amount} {e_MenAtArms} have joined your army!",
-    "You heard from a local shepard that there several poachers who were caught by the woods marshal. You head to the dungeon, and offer the men a chance to fight for you. They accept, and you commute their sentances. {amount} {e_MenAtArms} have joined your army."
+    "A nervous looking villein comes to your castle late one evening, and tells you that a young woman was taken by bandits. He says he can lead you to them. You swiftly rally a few Men-at-Arms, and tell them to only bring a drab cloak, weapons and chain-mail. Your vengeful band silently slip out of your castle. Later that evening, you find the bandits around their campfire - none survived your attack. You managed to save the young woman from dishonor, and several men from her village offer to fight for you if you train them. {amount} {eMenAtArms} have joined your army!",
+    "You spent a few hours training in the barracks with your Men-at-Arms. Afterwards some enthusiastic farms-hands offered to fight for you if you would train, equip, and feed them. You agreed. {amount} {eMenAtArms} have joined your army!",
+    "You heard from a local shepard that there several poachers who were caught by the woods marshal. You head to the dungeon, and offer the men a chance to fight for you. They accept, and you commute their sentances. {amount} {eMenAtArms} have joined your army."
   ],
   "subvert_fail": [
     "My liege, you were caught doing things a lord shouldn't be seen doing. You've been fined {amount} :moneybag:.",
@@ -62,52 +62,52 @@
     "You spent a pleasurable evening with an influential bishop of The Patriarchy. In the morning you are left with a hangover, and a lack of memories about last nights escapades, but the bishop donated {amount} :moneybag: to you."
   ],
   "raid_fail": [
-    "You and your Men-at-Arms went on a raid. The night was dark, and full of terrors. We killed {enemyLost} {e_MenAtArms} of {target_mention}, but we lost {myLost} {e_MenAtArms}. Some of your Men-at-Arms swore to speak of the night again.",
-    "You and your Men-at-Arms went on a raid. The raid failed. We attacked an enemy patrol, but we were beaten back mercilessly. We killed {enemyLost} {e_MenAtArms} of {target_mention}, but we lost {myLost} {e_MenAtArms}. Your Men-at-Arms were dejected all the way home."
+    "You and your Men-at-Arms went on a raid. The night was dark, and full of terrors. We killed {enemyLost} {eMenAtArms} of {targetMention}, but we lost {myLost} {eMenAtArms}. Some of your Men-at-Arms swore to speak of the night again.",
+    "You and your Men-at-Arms went on a raid. The raid failed. We attacked an enemy patrol, but we were beaten back mercilessly. We killed {enemyLost} {eMenAtArms} of {targetMention}, but we lost {myLost} {eMenAtArms}. Your Men-at-Arms were dejected all the way home."
   ],
   "raid_success": [
-    "You raided a village. You're pretty sure it was an enemy village. Things are a bit murky from all the ale. Your men didn't find any soldiers, but one of your men kept a lame chicken. Oh, you also killed {enemyLost} {e_MenAtArms} of {target_mention}, lost {myLost} {e_MenAtArms}, and looted {reward} :moneybag: from a skirmish on your way back.",
-    "You and your Men-at-Arms suddenly attacked an enemy patrol, and killed {enemyLost} {e_MenAtArms} of {target_mention} after a short, bloody fight. We lost {myLost} {e_MenAtArms} and took {reward} :moneybag: in loot. Your men were in high spirits all the way home.",
-    "You and your men raided an enemy hold-fast. It went splendidly. We only had to kill a dog, {enemyLost} {e_MenAtArms} of {target_mention}, and an old man. We lost {myLost} {e_MenAtArms}, and took {reward} :moneybag: in loot."
+    "You raided a village. You're pretty sure it was an enemy village. Things are a bit murky from all the ale. Your men didn't find any soldiers, but one of your men kept a lame chicken. Oh, you also killed {enemyLost} {eMenAtArms} of {targetMention}, lost {myLost} {eMenAtArms}, and looted {reward} :moneybag: from a skirmish on your way back.",
+    "You and your Men-at-Arms suddenly attacked an enemy patrol, and killed {enemyLost} {eMenAtArms} of {targetMention} after a short, bloody fight. We lost {myLost} {eMenAtArms} and took {reward} :moneybag: in loot. Your men were in high spirits all the way home.",
+    "You and your men raided an enemy hold-fast. It went splendidly. We only had to kill a dog, {enemyLost} {eMenAtArms} of {targetMention}, and an old man. We lost {myLost} {eMenAtArms}, and took {reward} :moneybag: in loot."
   ],
   "pirate_fail": [
-    "A few of your ships sail into hostile waters. Just as you find an enemy fleet you are attacked by a leviathon. In the chaos, it destorys {enemyLost} {e_Warship} of {target_mention}, but you lose {myLost} {e_Warship}. Terror fills your sailors all the way home.",
-    "You slip out to sea to engage in a bit of free booting. Your fleet is ambushed. You manage to sink {enemyLost} {e_Warship} of {target_mention}, but your fleet took heavy damage, and lost {myLost} {e_Warship}. Your men are morose on the journey home."
+    "A few of your ships sail into hostile waters. Just as you find an enemy fleet you are attacked by a leviathon. In the chaos, it destorys {enemyLost} {eWarship} of {targetMention}, but you lose {myLost} {eWarship}. Terror fills your sailors all the way home.",
+    "You slip out to sea to engage in a bit of free booting. Your fleet is ambushed. You manage to sink {enemyLost} {eWarship} of {targetMention}, but your fleet took heavy damage, and lost {myLost} {eWarship}. Your men are morose on the journey home."
   ],
   "pirate_success": [
-    "You slip out to sea to engage in a bit of free booting. Your fleet sunk {enemyLost} {e_Warship} of {target_mention}, and you only lost {myLost} {e_Warship} and take {reward} :moneybag: in loot. This incursion was a success, and your sailors are well pleased with the result!",
-    "In the dead of night your sailors safely navigate the dangerous shaols and slip into a hostile port. After lighting several enemy ships on fire your men flee into the dark embrace of the high seas. Your fleet sunk {enemyLost} {e_Warship} of {target_mention}, lost {myLost} {e_Warship}, took {reward} :moneybag: in loot."
+    "You slip out to sea to engage in a bit of free booting. Your fleet sunk {enemyLost} {eWarship} of {targetMention}, and you only lost {myLost} {eWarship} and take {reward} :moneybag: in loot. This incursion was a success, and your sailors are well pleased with the result!",
+    "In the dead of night your sailors safely navigate the dangerous shaols and slip into a hostile port. After lighting several enemy ships on fire your men flee into the dark embrace of the high seas. Your fleet sunk {enemyLost} {eWarship} of {targetMention}, lost {myLost} {eWarship}, took {reward} :moneybag: in loot."
   ],
   "smuggle_fail": [
-    "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Unfortunately, those same criminal elements also don't mind informing the Inquisition about the less then holy intents of your ships. {amount} {e_Warship} were seized in the harbor, and your ship barely escaped their grasp.",
-    "Your fleet sailed into a distant port, and retrieved a single man with a mysterious cargo. He had hired your whole fleet for a flabbergasting sum of money on the condition that he arrive safely at another port. Your sailors failed to navigate the dangerous shaols of the port, and you lost {amount} {e_Warship}."
+    "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Unfortunately, those same criminal elements also don't mind informing the Inquisition about the less then holy intents of your ships. {amount} {eWarship} were seized in the harbor, and your ship barely escaped their grasp.",
+    "Your fleet sailed into a distant port, and retrieved a single man with a mysterious cargo. He had hired your whole fleet for a flabbergasting sum of money on the condition that he arrive safely at another port. Your sailors failed to navigate the dangerous shaols of the port, and you lost {amount} {eWarship}."
   ],
   "smuggle_success": [
     "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Spices, sugars, weapons, and other tainted artifacts can turn a pretty penny. Today you were lucky, the seas favored you, and your ships returned with {amount} :moneybag:.",
     "Your fleet sailed into a distant port, and retrieved a single man with a mysterious cargo. He had hired your whole fleet for a flabbergasting {amount} :moneybag: on the condition that he arrive safely at another port. Your sailors were able to safely navigate the dangerous shaols of the port."
   ],
   "thief_success": [
-    "Your thief successfully absconded from the castle with {amount} :moneybag:. You payed him his cut, and he vanished into the night before {target_mention} even knew what happened."
+    "Your thief successfully absconded from the castle with {amount} :moneybag:. You payed him his cut, and he vanished into the night before {targetMention} even knew what happened."
   ],
   "thief_fail": [
-    "Guards found your thief, carrying your seal. You were indited, found guilty, and had to pay {amount} :moneybag: in damages, and bail. {target_mention} found out later - much to his amusement.",
-    "You wake up the next morning to find the thief you hired has stolen {amount} :moneybag:. The skank gave the money to {target_mention}. Your steward is livid, and demands you never hire another thief again. You seem to recall that you have heard this from him before.",
-    "Two unsavory fellows approached you with information about the thief that you hired. It seems he was spotted in the fleshpots of The Capital living large after informing {target_mention} about your scheme. You had to pay {amount} :moneybag: in damages. Regardless, you hire a poisoner to murder the thief.",
-    "One of your men tells you that he saw the thief charting a ship to the Southern Isles. It seems he was a double agent for {target_mention}, who betrayed you and stole {amount} :moneybag: from you."
+    "Guards found your thief, carrying your seal. You were indited, found guilty, and had to pay {amount} :moneybag: in damages, and bail. {targetMention} found out later - much to his amusement.",
+    "You wake up the next morning to find the thief you hired has stolen {amount} :moneybag:. The skank gave the money to {targetMention}. Your steward is livid, and demands you never hire another thief again. You seem to recall that you have heard this from him before.",
+    "Two unsavory fellows approached you with information about the thief that you hired. It seems he was spotted in the fleshpots of The Capital living large after informing {targetMention} about your scheme. You had to pay {amount} :moneybag: in damages. Regardless, you hire a poisoner to murder the thief.",
+    "One of your men tells you that he saw the thief charting a ship to the Southern Isles. It seems he was a double agent for {targetMention}, who betrayed you and stole {amount} :moneybag: from you."
   ],
   "trade": [
-    "The seas were calm, and no pirates threatened your fleet. After a fruitful day of trade {trader}'s merchants made {trader_pay} :moneybag:, while {tradee}  earned {tradee_pay} :moneybag: in tariffs."
+    "The seas were calm, and no pirates threatened your fleet. After a fruitful day of trade {trader}'s merchants made {traderPay} :moneybag:, while {tradee}  earned {tradeePay} :moneybag: in tariffs."
   ],
   "arson_success": [
-    "You've recently seen {target_mention}'s holdings, and decided to do a bit of arson for a good cause. After hiring a moderatly sozzled fellow and giving him some fire sticks, you've found he successfully burned down the {role_to_arson}!"
+    "You've recently seen {targetMention}'s holdings, and decided to do a bit of arson for a good cause. After hiring a moderatly sozzled fellow and giving him some fire sticks, you've found he successfully burned down the {roleToArson}!"
   ],
   "arson_fail": [
-    "It seems your scheme to burn down the {role_to_arson} has backfired. {target_mention} caught your arsonist who promptly confessed in a drunken stupor that it was all your idea. You have been fined {amount} :moneybag:, and possibly made a new enemy."
+    "It seems your scheme to burn down the {roleToArson} has backfired. {targetMention} caught your arsonist who promptly confessed in a drunken stupor that it was all your idea. You have been fined {amount} :moneybag:, and possibly made a new enemy."
   ],
   "scandal_success": [
-    "You've heard a rather salacious rumor concerning {target_mention} about some actions involving a sultry abbess, malcontent abbot, and funds that should have been sent to The Faith. It also seems that you might have quitely spoken with an Inquisitor of The Faith and provided a heafty offering to the Inquisition for their holy work. The Inquisition launched an investigation into this matter, and revoked the offender's {role_to_scandal} title for now."
+    "You've heard a rather salacious rumor concerning {targetMention} about some actions involving a sultry abbess, malcontent abbot, and funds that should have been sent to The Faith. It also seems that you might have quitely spoken with an Inquisitor of The Faith and provided a heafty offering to the Inquisition for their holy work. The Inquisition launched an investigation into this matter, and revoked the offender's {roleToScandal} title for now."
   ],
   "scandal_fail": [
-    "You've heard a rather salactious rumor concerning {target_mention} and some actions involving tithes for The Faith that went missing. After giving the Inqusition a heafty bribe, and pointing them in the right direction you were stunned to find out that you we're implicated in the plot. You've been fined {amount} :moneybag:, and should apprear in court later this evening."
+    "You've heard a rather salactious rumor concerning {targetMention} and some actions involving tithes for The Faith that went missing. After giving the Inqusition a heafty bribe, and pointing them in the right direction you were stunned to find out that you we're implicated in the plot. You've been fined {amount} :moneybag:, and should apprear in court later this evening."
   ]
 }

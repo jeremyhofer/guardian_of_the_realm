@@ -16,6 +16,14 @@ export class WarDAO {
     return await this._repository.save(this._repository.create(pWar));
   }
 
+  async createMultipleWars(houseMapping: Array<[string, string]>): Promise<War[]> {
+    return await this._repository.save(
+      houseMapping.map(
+        ([house1, house2]) => this._repository.create({ house_a: house1, house_b: house2 })
+      )
+    );
+  }
+
   async getWarBetweenHouses(house1: string, house2: string): Promise<War | null> {
     return await this._repository.findOneBy([
       {

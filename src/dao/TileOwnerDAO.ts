@@ -24,6 +24,10 @@ export class TileOwnerDAO {
     return await this._repository.update(tile, { house });
   }
 
+  async createMultipleTileOwner(ownerMap: Array<Partial<TileOwner>>): Promise<TileOwner[]> {
+    return await this._repository.save(ownerMap.map((tileOwner) => this._repository.create(tileOwner)));
+  }
+
   async deleteAll(): Promise<void> {
     return await this._repository.clear();
   }

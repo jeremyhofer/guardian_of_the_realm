@@ -1,99 +1,66 @@
+import { Client, GatewayIntentBits } from 'discord.js';
 import { AppDataSource } from './data-source';
-import { TileOwner } from './entity/TileOwner';
-import { Tracker } from './entity/Tracker';
-import { War } from './entity/War';
+import * as game_tasks from './game_tasks';
+import * as auth from './auth.json';
+import * as botHandlers from './bot';
+import * as utils from './utils';
+import * as assets from './assets';
 
-const newTracker = (name: string, value: number): Tracker => {
-  const tracker = new Tracker();
-  tracker.name = name;
-  tracker.value = value;
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-  return tracker;
-};
+let clientReady = false;
+let gameActive = false;
+let tickProcessing = false;
 
-const newTileOwner = (tile: string, house: string, type: string): TileOwner => {
-  const tileOwner = new TileOwner();
-  tileOwner.tile = tile;
-  tileOwner.house = house;
-  tileOwner.type = type;
+AppDataSource.initialize().then(async() => {
+  await client.login(auth.token).catch((err) => {
+    console.error('issue logging in to discord api');
+    console.error(err);
+  });
 
-  return tileOwner;
-};
+  client.on('ready', async() => {
+    console.log(`Logged in as ${client.user?.tag ?? 'BOT NAME ISSUE'}!`);
+    clientReady = true;
+    gameActive = await game_tasks.isGameActive();
+  });
 
-const newWar = (houseA: string, houseB: string): War => {
-  const war = new War();
-  war.house_a = houseA;
-  war.house_b = houseB;
+  client.on('messageCreate', async(message) => {
+    await botHandlers.messageHandler(message, gameActive);
+  });
+}).catch(error => {
+  console.error('app init error');
+  console.error(error);
+  process.exit(1);
+});
 
-  return war;
-};
-
-AppDataSource.initialize().then(async () => {
-  console.log('Configuring trackers');
-  const trackers = [
-    newTracker('payout_time', 0),
-    newTracker('game_active', 1),
-    newTracker('game_start', 0)
-  ];
-  await AppDataSource.manager.save(trackers);
-
-  console.log('Configuring initial tile owners');
-  const tileOwners = [
-    newTileOwner('c2', '572288999843168266', 'castle'),
-    newTileOwner('b3', '572288816652484608', 'castle'),
-    newTileOwner('g3', '572288151419355136', 'castle'),
-    newTileOwner('d4', '572290551357898781', 'castle'),
-    newTileOwner('f5', '572289104742580254', 'castle'),
-    newTileOwner('g5', '572288999843168266', 'castle'),
-    newTileOwner('b6', '572288492101435408', 'castle'),
-    newTileOwner('d6', '572288492101435408', 'castle'),
-    newTileOwner('e6', '572290551357898781', 'castle'),
-    newTileOwner('d7', '572289104742580254', 'castle'),
-    newTileOwner('g9', '572288816652484608', 'castle'),
-    newTileOwner('b10', '572291484288548929', 'castle'),
-    newTileOwner('c10', '572288151419355136', 'castle'),
-    newTileOwner('d10', '572291484288548929', 'castle'),
-    newTileOwner('h1', '625905668263510017', 'port'),
-    newTileOwner('a12', '625905668263510017', 'port'),
-    newTileOwner('h12', '625905668263510017', 'port')
-  ];
-  await AppDataSource.manager.save(tileOwners);
-
-  console.log('Configuring wars');
-  const wars = [
-    newWar('572290551357898781', '572288816652484608'),
-    newWar('572290551357898781', '572291484288548929'),
-    newWar('572290551357898781', '572288999843168266'),
-    newWar('572290551357898781', '572288151419355136'),
-    newWar('572290551357898781', '572289104742580254'),
-    newWar('572290551357898781', '572288492101435408'),
-    newWar('572288816652484608', '572291484288548929'),
-    newWar('572288816652484608', '572288999843168266'),
-    newWar('572288816652484608', '572288151419355136'),
-    newWar('572288816652484608', '572289104742580254'),
-    newWar('572288816652484608', '572288492101435408'),
-    newWar('572291484288548929', '572288999843168266'),
-    newWar('572291484288548929', '572288151419355136'),
-    newWar('572291484288548929', '572289104742580254'),
-    newWar('572291484288548929', '572288492101435408'),
-    newWar('572288999843168266', '572288151419355136'),
-    newWar('572288999843168266', '572289104742580254'),
-    newWar('572288999843168266', '572288492101435408'),
-    newWar('572288151419355136', '572289104742580254'),
-    newWar('572288151419355136', '572288492101435408'),
-    newWar('572289104742580254', '572288492101435408'),
-    newWar('572290551357898781', '625905668263510017'),
-    newWar('572288816652484608', '625905668263510017'),
-    newWar('572288816652484608', '625905668263510017'),
-    newWar('572291484288548929', '625905668263510017'),
-    newWar('572288999843168266', '625905668263510017'),
-    newWar('572288151419355136', '625905668263510017'),
-    newWar('572289104742580254', '625905668263510017')
-  ];
-  await AppDataSource.manager.save(wars);
-
-  // console.log('Loading users from the database...');
-  // const users = await AppDataSource.manager.find(User);
-  // console.log('Loaded users: ', users);
-  // console.log('Here you can setup and run express / fastify / any other framework.');
-}).catch(error => console.log(error));
+setInterval(() => {
+  /*
+   * Give role payouts if it is time. Payout part every 12 hours
+   * Charge 1 money per men every 12 hours
+   * Charge 100 money per ship every 12 hours
+   * Check to see if a war vote should be finalized and finalize it
+   * Check to see if a truce vote should be finalized and finalize it
+   * Check to see if a siege should be resolved
+   * ST guild ID: 572263893729017893
+   */
+  if(clientReady && gameActive && !tickProcessing) {
+    const guild = client.guilds.cache.get('572263893729017893');
+    if(guild !== undefined) {
+      tickProcessing = true;
+      const now = Date.now();
+      const expirationTime =
+        now - utils.hoursToMs(assets.timeoutLengths.vote_expiration);
+      // TODO: determine how to better loop game tick to avoid conflicts
+      game_tasks.rolePayouts(guild, now)
+        .then(async() => await game_tasks.collectLoans(guild, now))
+        .then(async() => await game_tasks.resolveWarVotes(guild, expirationTime))
+        .then(async() => await game_tasks.resolvePactVotes(guild, expirationTime))
+        .then(async() => await game_tasks.resolveSieges(guild, now))
+        .then(async() => {
+          gameActive = await game_tasks.isGameActive();
+          tickProcessing = false;
+        })
+        .catch(() => console.error('issue processing game tick'));
+    }
+  }
+}, 1000);

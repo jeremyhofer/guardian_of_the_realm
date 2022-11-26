@@ -5,7 +5,12 @@ import * as utils from '../utils';
 import { PlayerData } from '../entity/PlayerData';
 
 // Show help text. optional specific command
-const help = async(): Promise<null> => null;
+const help = async(): Promise<CommandReturn> => {
+  return {
+    reply: 'sorry, not much help',
+    success: true
+  };
+};
 
 /*
  * Lists the players money, men, and ships with

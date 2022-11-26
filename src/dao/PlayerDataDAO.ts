@@ -32,7 +32,14 @@ export class PlayerDataDAO {
   }
 
   async getOrCreatePlayer(user: string): Promise<PlayerData> {
-    const existing = await this._repository.findOneBy({ user });
+    const existing = await this._repository.findOne({
+      relations: {
+        pledges: true
+      },
+      where: {
+        user
+      }
+    });
     return existing !== null
       ? existing
       : this._repository.create({

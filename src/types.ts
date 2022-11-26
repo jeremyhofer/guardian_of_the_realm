@@ -55,6 +55,7 @@ export interface CommandConfig {
 export type CommandDispatch = Record<string, CommandConfig>;
 
 export interface CommandReturn {
+  enableGame?: boolean
   reply: string
   update?: {
     playerData?: PlayerData

@@ -1,6 +1,5 @@
-import { Client, Guild, TextChannel } from 'discord.js';
+import { Guild, Message, TextChannel } from 'discord.js';
 import { Database } from './data-source';
-import * as auth from './auth.json';
 import * as args from './args';
 import * as admin from './commands/admin';
 import * as clan_interact from './commands/clan_interact';
@@ -18,7 +17,6 @@ import { Vote } from './entity/Vote';
 import { Siege } from './entity/Siege';
 
 const PREFIX = '.';
-const client = new Client({ intents: [] });
 const commandDispatch: CommandDispatch = {
   ...admin.dispatch,
   ...clan_interact.dispatch,
@@ -33,7 +31,7 @@ const commandDispatch: CommandDispatch = {
     usage: []
   },
   reset: {
-    function: async cmdArgs => await game_tasks.postUpdatedMap(cmdArgs),
+    function: async cmdArgs => await game_tasks.resetEverything(cmdArgs),
     args: [
       'guild',
       'playerRoles',
@@ -44,21 +42,7 @@ const commandDispatch: CommandDispatch = {
   }
 };
 
-let clientReady = false;
-let gameActive = false;
-
-client.on('ready', async() => {
-  console.log(`Logged in as ${client.user?.tag ?? ''}!`);
-  clientReady = true;
-  gameActive = await game_tasks.isGameActive();
-});
-
-client.login(auth.token).catch((err) => {
-  console.error('issue logging in to discord api');
-  console.error(err);
-});
-
-client.on('messageCreate', async(msg) => {
+export async function messageHandler(msg: Message, gameActive: boolean): Promise<void> {
   const tokens: string[] = msg.content.split(' ');
 
   if (tokens[0].startsWith(PREFIX) && msg.member !== null) {
@@ -402,38 +386,4 @@ client.on('messageCreate', async(msg) => {
       await msg.reply(command + ' is not a recognized command');
     }
   }
-});
-
-let tickProcessing = false;
-
-setInterval(() => {
-  /*
-   * Give role payouts if it is time. Payout part every 12 hours
-   * Charge 1 money per men every 12 hours
-   * Charge 100 money per ship every 12 hours
-   * Check to see if a war vote should be finalized and finalize it
-   * Check to see if a truce vote should be finalized and finalize it
-   * Check to see if a siege should be resolved
-   * ST guild ID: 572263893729017893
-   */
-  if(clientReady && gameActive && !tickProcessing) {
-    const guild = client.guilds.cache.get('572263893729017893');
-    if(guild !== undefined) {
-      tickProcessing = true;
-      const now = Date.now();
-      const expirationTime =
-        now - utils.hoursToMs(assets.timeoutLengths.vote_expiration);
-      // TODO: determine how to better loop game tick to avoid conflicts
-      game_tasks.rolePayouts(guild, now)
-        .then(async() => await game_tasks.collectLoans(guild, now))
-        .then(async() => await game_tasks.resolveWarVotes(guild, expirationTime))
-        .then(async() => await game_tasks.resolvePactVotes(guild, expirationTime))
-        .then(async() => await game_tasks.resolveSieges(guild, now))
-        .then(async() => {
-          gameActive = await game_tasks.isGameActive();
-          tickProcessing = false;
-        })
-        .catch(() => console.error('issue processing game tick'));
-    }
-  }
-}, 1000);
+};

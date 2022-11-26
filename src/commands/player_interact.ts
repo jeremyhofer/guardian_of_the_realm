@@ -1,12 +1,12 @@
 import * as assets from '../assets';
-import { Database } from 'src/data-source';
+import { Database } from '../data-source';
 import * as game_tasks from '../game_tasks';
 import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
-import { AvailableStoreItems, CommandDispatch, CommandReturn } from 'src/types';
-import { PlayerData } from 'src/entity/PlayerData';
+import { AvailableStoreItems, CommandDispatch, CommandReturn } from '../types';
+import { PlayerData } from '../entity/PlayerData';
 import { Guild } from 'discord.js';
-import { ArgTypes } from 'src/enums';
+import { ArgTypes } from '../enums';
 
 /*
  * Attempt to destroy a person's income roles
@@ -108,7 +108,7 @@ const arson = async({ args, playerData, playerRoles, guild }: { args: string[], 
           replyTemplate,
           {
             amount: penalty,
-            target_mention: `<@${playerMentionUser}>`,
+            targetMention: `<@${playerMentionUser}>`,
             roleToArson: targetRoleName
           }
         );
@@ -257,8 +257,8 @@ const pirate = async({ args, playerData }: { args: any[], playerData: PlayerData
           reward,
           myLost: playerLose,
           enemyLost: mentionLose,
-          target_mention: `<@${playerMention.user}>`,
-          e_Warship: assets.emojis.Warship
+          targetMention: `<@${playerMention.user}>`,
+          eWarship: assets.emojis.Warship
         }
       );
       commandReturn.success = true;
@@ -356,8 +356,8 @@ const raid = async({ args, playerData }: { args: any[], playerData: PlayerData }
           reward,
           myLost: playerLose,
           enemyLost: mentionLose,
-          target_mention: `<@${playerMention.user}>`,
-          e_MenAtArms: assets.emojis.MenAtArms
+          targetMention: `<@${playerMention.user}>`,
+          eMenAtArms: assets.emojis.MenAtArms
         }
       );
       commandReturn.success = true;
@@ -473,8 +473,8 @@ const scandal = async({ args, playerData, guild }: { args: any[], playerData: Pl
         replyTemplate,
         {
           amount: penalty,
-          target_mention: `<@${playerMention.user}>`,
-          role_to_scandal: highestRole
+          targetMention: `<@${playerMention.user}>`,
+          roleToScandal: highestRole
         }
       );
       (commandReturn.update?.playerData as PlayerData).money -= scandalCost;
@@ -601,8 +601,8 @@ const thief = async({ args, playerData }: { args: any[], playerData: PlayerData 
         usedTemplate,
         {
           amount: moneyChange,
-          target_mention: `<@${playerMention.user}>`,
-          e_MenAtArms: assets.emojis.MenAtArms
+          targetMention: `<@${playerMention.user}>`,
+          eMenAtArms: assets.emojis.MenAtArms
         }
       );
       commandReturn.success = true;

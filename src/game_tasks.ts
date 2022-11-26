@@ -3,7 +3,8 @@ import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { Siege } from './entity/Siege';
-import { Buildings, Rank } from './types';
+import { TileOwner } from './entity/TileOwner';
+import { Buildings, CommandReturn, Rank } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async(guild: Guild, currentTime: number): Promise<void> => {
@@ -684,6 +685,8 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
     ]
   };
 
+  console.log(embed);
+
   const channel = guild?.channels.cache.get(assets.replyChannels.overworld);
   const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
 
@@ -705,10 +708,11 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
   });
 };
 
-export const resetEverything = async({ guild, playerRoles, currentTime }: { guild: Guild, playerRoles: string[], currentTime: number }): Promise<{ reply: string, enableGame: boolean }> => {
-  const commandReturn = {
+export const resetEverything = async({ guild, playerRoles, currentTime }: { guild: Guild, playerRoles: string[], currentTime: number }): Promise<CommandReturn> => {
+  const commandReturn: CommandReturn = {
     reply: '',
-    enableGame: false
+    enableGame: false,
+    success: true
   };
 
   if(playerRoles.includes('developer')) {
@@ -721,13 +725,76 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
       }
     }
 
-    // Reset everyone's data
-    await Database.playerData.resetAllPlayers();
+    // Reset database data and map
+    await Database.playerData.resetAllPlayers()
+      .then(async() => await Database.pledge.deleteAll())
+      .then(async() => await Database.siege.deleteAll())
+      .then(async() => await Database.vote.deleteAll())
+      .then(async() => await Database.war.deleteAll())
+      .then(async() => {
+        const defaultWars: Array<[string, string]> = [
+          ['572290551357898781', '572288816652484608'],
+          ['572290551357898781', '572291484288548929'],
+          ['572290551357898781', '572288999843168266'],
+          ['572290551357898781', '572288151419355136'],
+          ['572290551357898781', '572289104742580254'],
+          ['572290551357898781', '572288492101435408'],
+          ['572288816652484608', '572291484288548929'],
+          ['572288816652484608', '572288999843168266'],
+          ['572288816652484608', '572288151419355136'],
+          ['572288816652484608', '572289104742580254'],
+          ['572288816652484608', '572288492101435408'],
+          ['572291484288548929', '572288999843168266'],
+          ['572291484288548929', '572288151419355136'],
+          ['572291484288548929', '572289104742580254'],
+          ['572291484288548929', '572288492101435408'],
+          ['572288999843168266', '572288151419355136'],
+          ['572288999843168266', '572289104742580254'],
+          ['572288999843168266', '572288492101435408'],
+          ['572288151419355136', '572289104742580254'],
+          ['572288151419355136', '572288492101435408'],
+          ['572289104742580254', '572288492101435408'],
+          ['572290551357898781', '625905668263510017'],
+          ['572288816652484608', '625905668263510017'],
+          ['572288816652484608', '625905668263510017'],
+          ['572291484288548929', '625905668263510017'],
+          ['572288999843168266', '625905668263510017'],
+          ['572288151419355136', '625905668263510017'],
+          ['572289104742580254', '625905668263510017']
+        ];
 
-    // TODO: reimpl reset_everything
-    // db.reset_everything();
+      await Database.war.createMultipleWars(defaultWars);
+    })
+    .then(async() => await Database.tileOwner.deleteAll())
+    .then(async() => {
+      const defaultTileOwners: Array<Partial<TileOwner>> = [
+        { tile: 'c2', house: '572288999843168266', type: 'castle' },
+        { tile: 'b3', house: '572288816652484608', type: 'castle' },
+        { tile: 'g3', house: '572288151419355136', type: 'castle' },
+        { tile: 'd4', house: '572290551357898781', type: 'castle' },
+        { tile: 'f5', house: '572289104742580254', type: 'castle' },
+        { tile: 'g5', house: '572288999843168266', type: 'castle' },
+        { tile: 'b6', house: '572288492101435408', type: 'castle' },
+        { tile: 'd6', house: '572288492101435408', type: 'castle' },
+        { tile: 'e6', house: '572290551357898781', type: 'castle' },
+        { tile: 'd7', house: '572289104742580254', type: 'castle' },
+        { tile: 'g9', house: '572288816652484608', type: 'castle' },
+        { tile: 'b10', house: '572291484288548929', type: 'castle' },
+        { tile: 'c10', house: '572288151419355136', type: 'castle' },
+        { tile: 'd10', house: '572291484288548929', type: 'castle' },
+        { tile: 'h1', house: '625905668263510017', type: 'port' },
+        { tile: 'a12', house: '625905668263510017', type: 'port' },
+        { tile: 'h12', house: '625905668263510017', type: 'port' }
+      ];
 
-    await postUpdatedMap({ guild });
+      await Database.tileOwner.createMultipleTileOwner(defaultTileOwners);
+    })
+    .then(async() => await Database.loan.deleteAll())
+    .then(async() => await Database.pact.deleteAll())
+    .then(async() => await Database.tracker.updateTrackerByName('payout_time', 0))
+    .then(async() => await Database.tracker.updateTrackerByName('game_active', 1))
+    .then(async() => await Database.tracker.updateTrackerByName('game_start', 0))
+    .then(async() => await postUpdatedMap({ guild }));
 
     const remakeChannels = [
       'house-bear',

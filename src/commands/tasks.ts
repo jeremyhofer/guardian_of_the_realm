@@ -106,7 +106,7 @@ const train = async({ playerData }: { playerData: PlayerData }): Promise<Command
       replyTemplate,
       {
         amount: payout,
-        e_MenAtArms: assets.emojis.MenAtArms
+        eMenAtArms: assets.emojis.MenAtArms
       }
     );
   } else {

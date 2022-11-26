@@ -63,6 +63,6 @@ export class PlayerData {
   @OneToMany(() => Vote, (vote) => vote.user)
   votes!: Vote[];
 
-  @OneToMany(() => Pledge, (pledge) => pledge.siege)
+  @OneToMany(() => Pledge, (pledge) => pledge.user)
   pledges!: Pledge[];
 }
