@@ -1,4 +1,4 @@
-import { Guild, RoleManager } from 'discord.js';
+import { CategoryChannel, Guild, RoleManager, TextChannel } from 'discord.js';
 import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
@@ -56,11 +56,9 @@ export const collectLoans = async(guild: Guild, currentTime: number): Promise<vo
     loan.user.money -= loan.amount_due;
     await Database.playerData.setPlayer(loan.user);
     await Database.loan.removeLoan(loan);
-
-    // TODO: determine how we now send messages to channels
-    guild.channels.cache.get(assets.replyChannels.command_tent)?.send("<@" +
-      `${loan.user.user}> your loan has expired. The remaining balance ` +
-      `of ${loan.amount_due} has been deducted from your account`);
+    await (guild.channels.cache.get(assets.replyChannels.command_tent) as TextChannel)?.send(
+      `<@${loan.user.user}> your loan has expired. The remaining balance of ${loan.amount_due} has been deducted from your account`
+    );
   };
 };
 
@@ -116,7 +114,7 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
 
     // Send the reply
     // TODO: figure out how to send
-    guild.channels.cache.get(assets.replyChannels.battle_reports)?.send(voteReply);
+    await (guild.channels.cache.get(assets.replyChannels.battle_reports) as TextChannel)?.send(voteReply);
 
     // Remove all associated votes
     await Database.vote.removeMultiple(pHouseVoteResults.map((r) => r.vote_id));
@@ -224,7 +222,7 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
 
     // Send the reply
     // TODO: figure out how to send messages to channels
-    guild.channels.cache.get(assets.replyChannels.battle_reports)?.send(voteReply);
+    await (guild.channels.cache.get(assets.replyChannels.battle_reports) as TextChannel)?.send(voteReply);
 
     // Remove all associated votes
     await Database.vote.removeMultiple([
@@ -433,8 +431,8 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
 
     const channel = guild.channels.cache.get(assets.replyChannels.battle_reports);
     // TODO: figure out how to edit message
-    channel?.messages.fetch(expiredSiege.message).then(message => {
-      message.edit({ embed });
+    await (channel as TextChannel)?.messages.fetch(expiredSiege.message).then(async(message) => {
+      await message.edit({ embeds: [embed] });
     });
 
     // Remove the siege
@@ -450,7 +448,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
 };
 
 // TODO: give proper return
-export const generateSiegeEmbed = (guildRoles: RoleManager, siege: Siege): any => {
+export const generateSiegeEmbed = (guildRoles: RoleManager | null, siege: Siege): any => {
   /*
   * Embed will consist of the following:
   * Title: Siege on <tile>
@@ -495,8 +493,8 @@ export const generateSiegeEmbed = (guildRoles: RoleManager, siege: Siege): any =
     }
   });
 
-  const attackerName = guildRoles.cache.get(siege.attacker)?.name ?? 'ATTACKER NAME ISSUE';
-  const defenderName = guildRoles.cache.get(tileOwner.house)?.name ?? 'DEFENDER NAME ISSUE';
+  const attackerName = guildRoles?.cache.get(siege.attacker)?.name ?? 'ATTACKER NAME ISSUE';
+  const defenderName = guildRoles?.cache.get(tileOwner.house)?.name ?? 'DEFENDER NAME ISSUE';
 
   let attackerWinChance = 0;
   let defenderWinChance = 0;
@@ -567,7 +565,7 @@ export const generateSiegeEmbed = (guildRoles: RoleManager, siege: Siege): any =
   return embed;
 };
 
-export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> => {
+export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise<void> => {
   /*
   * Generates a map. 8x12 (tiles are emojis). top row and left column are
   * positions (A1, etc.) outer edge all sea. inner random. 14 castles on
@@ -686,25 +684,21 @@ export const postUpdatedMap = async({ guild }: { guild: Guild }): Promise<void> 
     ]
   };
 
-  const channel = guild.channels.cache.get(assets.replyChannels.overworld);
+  const channel = guild?.channels.cache.get(assets.replyChannels.overworld);
   const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
 
   for(const toDelete of existingMapMessages) {
     // TODO: figure out how to delete message
-    channel?.messages.fetch(toDelete.text).then(message => {
-      message.delete();
-    });
-    await Database.tracker.removeTracker(toDelete);
+    await (channel as TextChannel)?.messages.fetch(toDelete.text)
+      .then(async(message) => await message.delete())
+      .then(async() => await Database.tracker.removeTracker(toDelete));
   };
 
   // TODO: figure out how to send message
-  channel?.send(
-    mapTiles,
-    {
-      embed,
-      split: true
-    }
-  ).then(async(messages) => {
+  await (channel as TextChannel)?.send({
+    content: mapTiles,
+    embeds: [embed]
+  }).then(async(messages) => {
     if(Array.isArray(messages)) {
       await Database.tracker.createMapTrackers(messages.map((m) => m.id));
     }
@@ -745,15 +739,14 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
       'house-wolf'
     ];
 
-    const houseCategory = guild.channels.cache.find(channel => channel.name === 'The Great Houses');
+    const houseCategory: CategoryChannel = guild.channels.cache.find(channel => channel.name === 'The Great Houses') as CategoryChannel;
 
     if(houseCategory !== undefined) {
       for(let inc = 0; inc < remakeChannels.length; inc += 1) {
         const channelToRemake = guild.channels.cache.find(channel => channel.name === remakeChannels[inc]);
 
         if(channelToRemake !== undefined) {
-          // TODO: determine how to clone channel
-          channelToRemake.clone().then(clone => {
+          (channelToRemake as TextChannel).clone().then(clone => {
             clone.setParent(houseCategory).catch(console.error);
             channelToRemake.delete().catch(console.error);
           }).catch(console.error);

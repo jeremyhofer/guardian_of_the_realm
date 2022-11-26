@@ -1,4 +1,4 @@
-import { Client, Guild } from 'discord.js';
+import { Client, Guild, TextChannel } from 'discord.js';
 import { Database } from './data-source';
 import * as auth from './auth.json';
 import * as args from './args';
@@ -53,27 +53,30 @@ client.on('ready', async() => {
   gameActive = await game_tasks.isGameActive();
 });
 
-await client.login(auth.token);
+client.login(auth.token).catch((err) => {
+  console.error('issue logging in to discord api');
+  console.error(err);
+});
 
-client.on('message', async(msg) => {
+client.on('messageCreate', async(msg) => {
   const tokens: string[] = msg.content.split(' ');
 
-  if (tokens[0].startsWith(PREFIX)) {
+  if (tokens[0].startsWith(PREFIX) && msg.member !== null) {
     const command = tokens[0].substring(1);
 
     if(command in commandDispatch) {
       if(!gameActive && command !== 'reset') {
-        msg.reply('The game is over! A new round will begin soon!');
+        await msg.reply('The game is over! A new round will begin soon!');
 
         return;
       }
 
       if(assets.blockedChannels.includes(msg.channel.id) &&
-        msg.member.roles.cache.has(assets.developerRole) !== true) {
-        msg.reply('commands are not allowed in this channel');
+        msg.member.roles.cache.has(assets.developerRole)) {
+        await msg.reply('commands are not allowed in this channel');
       } else if(!('allowed_channels' in commandDispatch[command]) ||
         commandDispatch[command].allowed_channels?.includes(msg.channel.id) === true ||
-        msg.member.roles.cache.has(assets.developerRole) === true) {
+        msg.member.roles.cache.has(assets.developerRole)) {
         const callFunction = commandDispatch[command].function;
         const callArgs: {
           args?: any[]
@@ -81,7 +84,7 @@ client.on('message', async(msg) => {
           loans?: Loan[]
           playerRoles?: string[]
           commandDispatch?: CommandDispatch
-          guild?: Guild
+          guild?: Guild | null
           currentTime?: number
         } = {
         };
@@ -186,7 +189,7 @@ client.on('message', async(msg) => {
                   if('player' in commandReturn.update.roles && commandReturn.update.roles.player !== undefined) {
                     if('add' in commandReturn.update.roles.player) {
                       // Adjust player roles as necessary
-                      commandReturn.update.roles.player.add.forEach(addRole => {
+                      for(const addRole of commandReturn.update.roles.player.add) {
                         // See if this is an ID. If so, use it, otherwise get ID
                         const serverRole = addRole in assets.gameRoles
                           ? addRole
@@ -196,19 +199,16 @@ client.on('message', async(msg) => {
                             );
                         if(serverRole !== '') {
                           // Add role to player
-                          msg.member.roles.add(serverRole)
-                            .catch(console.error);
+                          msg.member.roles.add(serverRole).catch(console.error);
                         } else {
-                          msg
-                            .reply(`${addRole} is not defined. Contact a dev`);
+                          await msg.reply(`${addRole} is not defined. Contact a dev`);
                         }
-                      });
+                      };
                     }
 
                     if('remove' in commandReturn.update.roles.player) {
                       // Adjust the player's roles
-                      commandReturn
-                        .update.roles.player.remove.forEach(removeRole => {
+                      for(const removeRole of commandReturn.update.roles.player.remove) {
                         const serverRole = removeRole in assets.gameRoles
                           ? removeRole
                           : utils.findRoleIdGivenName(
@@ -217,10 +217,9 @@ client.on('message', async(msg) => {
                             );
                         if(serverRole !== '') {
                           // Add role to player
-                          msg.member.roles.remove(serverRole)
-                            .catch(console.error);
+                          msg.member.roles.remove(serverRole).catch(console.error);
                         }
-                      });
+                      };
                     }
                   }
 
@@ -228,7 +227,7 @@ client.on('message', async(msg) => {
                     const otherId = commandReturn.update.roles.other_player.id;
                     if('add' in commandReturn.update.roles.other_player) {
                       // Adjust other_player roles as necessary
-                      commandReturn.update.roles.other_player.add.forEach(addRole => {
+                      for(const addRole of commandReturn.update.roles.other_player.add) {
                         // See if this is an ID. If so, use it, otherwise get ID
                         const serverRole = addRole in assets.gameRoles
                           ? addRole
@@ -238,14 +237,11 @@ client.on('message', async(msg) => {
                             );
                         if(serverRole !== '') {
                           // Add role to other_player
-                          msg.guild.members.cache.get(otherId)
-                            .roles.add(serverRole)
-                            .catch(console.error);
+                          msg.guild?.members.cache.get(otherId)?.roles.add(serverRole).catch(console.error);
                         } else {
-                          msg
-                            .reply(`${addRole} is not defined. Contact a dev`);
+                          await msg.reply(`${addRole} is not defined. Contact a dev`);
                         }
-                      });
+                      };
                     }
 
                     if('remove' in commandReturn.update.roles.other_player) {
@@ -261,9 +257,7 @@ client.on('message', async(msg) => {
                             );
                         if(serverRole !== '') {
                           // Add role to other_player
-                          msg.guild.members.cache.get(otherId)
-                            .roles.remove(serverRole)
-                              .catch(console.error);
+                          msg.guild?.members.cache.get(otherId)?.roles.remove(serverRole).catch(console.error);
                         }
                       });
                     }
@@ -285,34 +279,28 @@ client.on('message', async(msg) => {
                 const embed = {
                   description: commandReturn.reply
                 };
-                msg.channel.send({ embed });
+                await msg.channel.send({
+                  embeds: [embed]
+                });
               }
 
               if('send' in commandReturn && commandReturn.send !== undefined) {
-                if('message' in commandReturn.send) {
-                  if('channel' in commandReturn.send) {
-                    msg.guild.channels.cache.get(commandReturn.send.channel)
-                      .send(
-                        commandReturn.send.message,
-                        { split: true }
-                      );
+                if('message' in commandReturn.send && commandReturn.send.message !== undefined) {
+                  if('channel' in commandReturn.send && commandReturn.send.channel !== undefined) {
+                    await (msg.guild?.channels.cache.get(commandReturn.send.channel) as TextChannel)?.send({
+                      content: commandReturn.send.message
+                    });
                   } else {
-                    msg.channel.send(
-                      commandReturn.send.message,
-                      { split: true }
-                    );
+                    await msg.channel.send(commandReturn.send.message);
                   }
                 }
               }
 
               if('map' in commandReturn && commandReturn.map !== undefined) {
-                msg.channel.send(
-                  commandReturn.map.message,
-                  {
-                    embed: commandReturn.map.embed,
-                    split: true
-                  }
-                );
+                await msg.channel.send({
+                  content: commandReturn.map.message,
+                  embeds: [commandReturn.map.embed]
+                });
               }
 
               if('loans' in commandReturn && commandReturn.loans !== undefined) {
@@ -352,13 +340,14 @@ client.on('message', async(msg) => {
                   // Add the siege to the database
                   // TODO: fix new siege typing
                   const info = await Database.siege.saveSiege(commandReturn.sieges.add as Siege);
+                  // TODO: better handle guild being null
                   const siegeEmbed = game_tasks.generateSiegeEmbed(
-                    msg.guild.roles,
+                    msg.guild?.roles ?? null,
                     info
                   );
                   const brChannel = assets.replyChannels.battle_reports;
-                  const channel = msg.guild.channels.cache.get(brChannel);
-                  channel.send({ embed: siegeEmbed }).then(async(message) => {
+                  const channel = msg.guild?.channels.cache.get(brChannel);
+                  await (channel as TextChannel)?.send({ embeds: [siegeEmbed] }).then(async(message) => {
                     await Database.siege.updateSiegeMessage(
                       info.siege_id,
                       message.id
@@ -367,17 +356,17 @@ client.on('message', async(msg) => {
 
                   await game_tasks.postUpdatedMap({ guild: msg.guild });
                 }
-                if('update' in commandReturn.sieges) {
+                if('update' in commandReturn.sieges && commandReturn.sieges.update !== undefined) {
                   const siege = commandReturn.sieges.update;
                   // TODO: type fixing
                   const siegeEmbed = game_tasks.generateSiegeEmbed(
-                    msg.guild.roles,
-                    siege as Siege
+                    msg.guild?.roles ?? null,
+                    siege
                   );
                   const brChannel = assets.replyChannels.battle_reports;
-                  const channel = msg.guild.channels.cache.get(brChannel);
-                  channel.messages.fetch(siege?.message).then(message => {
-                    message.edit({ embed: siegeEmbed });
+                  const channel = msg.guild?.channels.cache.get(brChannel);
+                  await (channel as TextChannel)?.messages.fetch(siege.message).then(async(message) => {
+                    await message.edit({ embeds: [siegeEmbed] });
                   });
                 }
               }
@@ -387,7 +376,7 @@ client.on('message', async(msg) => {
                 gameActive = true;
               }
             } else {
-              msg.reply(command + ' is not yet implemented');
+              await msg.reply(command + ' is not yet implemented');
             }
           } else {
             // Incorrect arguments supplied. Print usage information
@@ -400,17 +389,17 @@ client.on('message', async(msg) => {
             } else {
               usageInfo.push(`${PREFIX}${command}`);
             }
-            msg.reply(usageInfo.join('\n'));
+            await msg.reply(usageInfo.join('\n'));
           }
         } else {
           // Cooldown failed. Reply.
-          msg.reply(cooldownFailMessage);
+          await msg.reply(cooldownFailMessage ?? 'Cooldown in effect.');
         }
       } else {
-        msg.reply(command + ' may not be used in this channel');
+        await msg.reply(command + ' may not be used in this channel');
       }
     } else{
-      msg.reply(command + ' is not a recognized command');
+      await msg.reply(command + ' is not a recognized command');
     }
   }
 });
