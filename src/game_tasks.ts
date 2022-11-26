@@ -566,7 +566,7 @@ export const generateSiegeEmbed = (guildRoles: RoleManager | null, siege: Siege)
   return embed;
 };
 
-export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise<void> => {
+export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise<CommandReturn> => {
   /*
   * Generates a map. 8x12 (tiles are emojis). top row and left column are
   * positions (A1, etc.) outer edge all sea. inner random. 14 castles on
@@ -625,13 +625,14 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
     }
   });
 
-  let mapTiles = '';
+  const mapTiles: string[] = [];
 
   mapData.forEach(row => {
+    let rowMapTiles = '';
     row.forEach(column => {
-      mapTiles += column;
+      rowMapTiles += column;
     });
-    mapTiles += '\n';
+    mapTiles.push(rowMapTiles);
   });
 
   let activePacts = '';
@@ -685,8 +686,6 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
     ]
   };
 
-  console.log(embed);
-
   const channel = guild?.channels.cache.get(assets.replyChannels.overworld);
   const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
 
@@ -697,15 +696,14 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
       .then(async() => await Database.tracker.removeTracker(toDelete));
   };
 
-  // TODO: figure out how to send message
-  await (channel as TextChannel)?.send({
-    content: mapTiles,
-    embeds: [embed]
-  }).then(async(messages) => {
-    if(Array.isArray(messages)) {
-      await Database.tracker.createMapTrackers(messages.map((m) => m.id));
-    }
-  });
+  await (channel as TextChannel)?.send(mapTiles.slice(0, 7).join('\n'))
+    .then(async(message) => await Database.tracker.createMapTracker(message.id))
+    .then(async() => await (channel as TextChannel)?.send(mapTiles.slice(7).join('\n')))
+    .then(async(message) => await Database.tracker.createMapTracker(message.id))
+    .then(async() => await (channel as TextChannel)?.send({ embeds: [embed] }))
+    .then(async(message) => await Database.tracker.createMapTracker(message.id));
+
+  return { reply: 'Map Posted', success: true };
 };
 
 export const resetEverything = async({ guild, playerRoles, currentTime }: { guild: Guild, playerRoles: string[], currentTime: number }): Promise<CommandReturn> => {
