@@ -1,7 +1,7 @@
-import { ArmyUnits, AvailableStoreItems, Buildings, Houses, Rank, GameRoles, StoreItems } from './types';
+import { ArmyUnits, AvailableStoreItems, Buildings, Houses, Rank, GameRoles, StoreItems, EmojiNames } from './types';
 
-// TODO: strongly type this
-export const emojis: { [key: string]: string } = {
+// custom emojis require the name:guild_emoji_id to be sent
+export const emojis: Record<EmojiNames, string> = {
   ColumnA: '<:ColumnA:627721965116981251>',
   ColumnB: '<:ColumnB:627721989876088863>',
   ColumnC: '<:ColumnC:627722014664163358>',
@@ -126,7 +126,7 @@ export const storeItems: Record<AvailableStoreItems, StoreItems> = {
   }
 };
 
-// TODO: strongly type array values
+// TODO: consider changing up mappings and referencing of roleId in guild <-> name <-> troop
 export const gameRoles: GameRoles = {
   '625905668263510017': [
     'guardian',
@@ -225,6 +225,7 @@ export const dailyCosts: Record<ArmyUnits, number> = {
   ships: 20
 };
 
+// TODO: change all props to camelCase
 export const replyChannels: { [key: string]: string } = {
   command_tent: '572265598193500160',
   battle_reports: '597614956732612613',
@@ -241,7 +242,7 @@ export const playerInteractChannels: string[] = ['572265598193500160'];
 
 export const developerRole = '572264297883762688';
 
-// TODO: strongly type this
+// TODO: change all props to camelCase
 export const timeoutLengths: { [key: string]: number } = {
   siege_blockade: 24,
   vote_expiration: 8,
@@ -259,6 +260,7 @@ export const timeoutLengths: { [key: string]: number } = {
   work: 6
 };
 
+// TODO: change all props to camelCase
 export const rewardPayoutsPenalties: { [key: string]: number } = {
   port_daily: 3000,
   arson_penalty_min: 200,

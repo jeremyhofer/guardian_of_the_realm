@@ -61,6 +61,10 @@ export class VoteDAO {
       .getRawMany();
   }
 
+  createVote(pVote: Partial<Vote>): Vote {
+    return this._repository.create(pVote);
+  }
+
   async saveVote(loan: Vote): Promise<Vote> {
     return await this._repository.save(loan);
   }

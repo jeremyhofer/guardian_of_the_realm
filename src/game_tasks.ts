@@ -1,10 +1,10 @@
-import { CategoryChannel, Guild, RoleManager, TextChannel } from 'discord.js';
+import { APIEmbed, CategoryChannel, Guild, RoleManager, TextChannel } from 'discord.js';
 import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { Siege } from './entity/Siege';
 import { TileOwner } from './entity/TileOwner';
-import { Buildings, CommandReturn, Rank } from './types';
+import { Buildings, CommandReturn, EmojiNames, Rank } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async(guild: Guild, currentTime: number): Promise<void> => {
@@ -114,7 +114,6 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
     voteReply += `\n<@&${playerData.house}>: ${pYesCount} yays ${pNoCount} nays`;
 
     // Send the reply
-    // TODO: figure out how to send
     await (guild.channels.cache.get(assets.replyChannels.battle_reports) as TextChannel)?.send(voteReply);
 
     // Remove all associated votes
@@ -222,7 +221,6 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
     voteReply += `\n<@&${otherHouse}>: ${oYesCount} yays ${oNoCount} nays`;
 
     // Send the reply
-    // TODO: figure out how to send messages to channels
     await (guild.channels.cache.get(assets.replyChannels.battle_reports) as TextChannel)?.send(voteReply);
 
     // Remove all associated votes
@@ -293,14 +291,6 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       });
 
       // Determine chance to win, the reward pots, and the losses
-      let winChance = Math.round(attackerCount / (attackerCount + defenderCount) * 100);
-
-      if(winChance < 0) {
-        winChance = 0;
-      } else if(winChance > 100) {
-        winChance = 100;
-      }
-
       const numPledgers = attackPledges.length + defendPledges.length;
       const winPot = isPort ? 0 : 0 * numPledgers;
       const losePot = isPort ? 0 : 0 * numPledgers;
@@ -315,11 +305,10 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
         30
       );
 
-      const chance = utils.getRandomValueInRange(1, 100);
       let winMessage = '';
 
       // Determine the outcome
-      if(winChance >= chance) {
+      if(utils.isAWin(attackerCount, defenderCount)) {
         // Attacker wins!
 
         // Handle winnings for all attackers
@@ -412,7 +401,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
           'distributed to the losers.';
       }
 
-      embed.fields.push({
+      embed.fields?.push({
         name: winMessage,
         value: message
       });
@@ -424,14 +413,13 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       await Database.pledge.removePledgesForSiege(expiredSiege);
     } else {
       // No one pledged
-      embed.fields.push({
+      embed.fields?.push({
         name: `${defenderName} has kept their ${tileType}.`,
         value: `No one pledged to the ${type}.`
       });
     }
 
     const channel = guild.channels.cache.get(assets.replyChannels.battle_reports);
-    // TODO: figure out how to edit message
     await (channel as TextChannel)?.messages.fetch(expiredSiege.message).then(async(message) => {
       await message.edit({ embeds: [embed] });
     });
@@ -448,8 +436,7 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
   }
 };
 
-// TODO: give proper return
-export const generateSiegeEmbed = (guildRoles: RoleManager | null, siege: Siege): any => {
+export const generateSiegeEmbed = (guildRoles: RoleManager | null, siege: Siege): APIEmbed => {
   /*
   * Embed will consist of the following:
   * Title: Siege on <tile>
@@ -501,8 +488,7 @@ export const generateSiegeEmbed = (guildRoles: RoleManager | null, siege: Siege)
   let defenderWinChance = 0;
 
   if(attackerTotal !== 0) {
-    // TODO: move win chance to a util method
-    attackerWinChance = Math.round(attackerTotal / (attackerTotal + defenderTotal) * 100);
+    attackerWinChance = utils.winChance(attackerTotal, defenderTotal);
   }
 
   if(defenderTotal !== 0) {
@@ -540,7 +526,7 @@ export const generateSiegeEmbed = (guildRoles: RoleManager | null, siege: Siege)
   */
   const type = isPort ? 'Blockade' : 'Siege';
 
-  const embed = {
+  const embed: APIEmbed = {
     title: `${type} on ${siege.tile.tile.toUpperCase()}`,
     fields: [
       {
@@ -615,7 +601,7 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
     const row = parseInt(coords.slice(1), 10);
     const ownerTile = assets.houseTiles[tile.house];
     const ownerTileType = tile.type === 'port' ? 'Port' + ownerTile : 'Tile' + ownerTile;
-    const tileEmoji = e[ownerTileType];
+    const tileEmoji = e[ownerTileType as EmojiNames];
     mapData[row][column] = tileEmoji;
 
     if(tile.type === 'port') {
@@ -690,7 +676,6 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
   const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
 
   for(const toDelete of existingMapMessages) {
-    // TODO: figure out how to delete message
     await (channel as TextChannel)?.messages.fetch(toDelete.text)
       .then(async(message) => await message.delete())
       .then(async() => await Database.tracker.removeTracker(toDelete));

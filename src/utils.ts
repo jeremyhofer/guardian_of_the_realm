@@ -77,3 +77,46 @@ export function templateReplace(template: string, mappings: { [key: string]: str
 export function randomElement<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
+
+export function winChance(attackerTotal: number, defenderTotal: number): number {
+  return Math.round(attackerTotal / (attackerTotal + defenderTotal) * 100);
+}
+
+export function clamp(value: number, min: number, max: number): number {
+  if(value < min) {
+    return min;
+  }
+
+  if(value > max) {
+    return max;
+  }
+
+  return value;
+}
+
+export function chanceThreshold(instigatorTotal: number, otherTotal: number): { threshold: number, chance: number } {
+  const threshold = clamp(
+    winChance(instigatorTotal, otherTotal),
+    0,
+    100
+  );
+
+  const chance = getRandomValueInRange(1, 100);
+
+  return {
+    threshold,
+    chance
+  };
+}
+
+export function riskSuccess(instigatorTotal: number, otherTotal: number): boolean {
+  const { threshold, chance } = chanceThreshold(instigatorTotal, otherTotal);
+
+  return chance >= threshold;
+}
+
+export function isAWin(instigatorTotal: number, otherTotal: number): boolean {
+  const { threshold, chance } = chanceThreshold(instigatorTotal, otherTotal);
+
+  return threshold >= chance;
+}

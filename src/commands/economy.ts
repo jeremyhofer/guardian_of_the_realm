@@ -4,6 +4,7 @@ import { ArgTypes } from '../enums';
 import { AvailableStoreItems, CommandDispatch, CommandReturn, Rank } from '../types';
 import * as assets from '../assets';
 import * as utils from '../utils';
+import { Database } from 'src/data-source';
 
 /*
  * Buy some item in a quantity. titles only one, cant buy more or same
@@ -148,12 +149,11 @@ const loan = async({ args, playerData, loans }: { args: string[], playerData: Pl
           50
         );
         (commandReturn?.update?.playerData as PlayerData).money += loanAmount;
-        // TODO: cleanup loan creation
-        (commandReturn.loans as any).add = {
-          user: playerData.user,
+        (commandReturn.loans as any).add = Database.loan.createLoan({
+          user: playerData,
           amount_due: loanAmount + interest,
           time_due: Date.now() + utils.hoursToMs(24)
-        };
+        });
         commandReturn.reply = `You successfully received a loan of ${loanAmount}. You have been charged ${interest} in interest. The loan is due in 24 hours`;
       }
     }

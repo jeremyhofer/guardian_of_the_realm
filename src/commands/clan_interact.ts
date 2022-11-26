@@ -239,11 +239,11 @@ const handleAttack = async({ args, playerData }: { args: any[], playerData: Play
             : 'A siege is in progress on that castle';
         } else {
           // Good to go! Add the siege
-          (commandReturn.sieges as any).add = {
-            tile: selectedTile,
+          (commandReturn.sieges as any).add = Database.siege.createSiege({
+            tile: tileOwner,
             attacker: playerData.house,
             time: Date.now() + utils.hoursToMs(8)
-          };
+          });
           commandReturn.reply = type === 'blockade'
             ? 'A blockade has been started on the port'
             : 'A siege has been started on the castle';
@@ -343,12 +343,12 @@ const pact = async({ args, playerData }: { args: any[], playerData: PlayerData }
 
       if(pactType !== '') {
         // Truce vote is good. Add it
-        (commandReturn.votes as any).add = {
+        (commandReturn.votes as any).add = Database.vote.createVote({
           type: pactType,
-          user: playerData.user,
+          user: playerData,
           choice: houseVote,
           time: Date.now()
-        };
+        });
         commandReturn.reply = `Your choice of ${playerChoice} was ` +
           'recorded';
       } else {
@@ -435,12 +435,12 @@ const war = async({ args, playerData }: { args: any[], playerData: PlayerData })
 
       if(warType !== '') {
         // Truce vote is good. Add it
-        (commandReturn.votes as any).add = {
+        (commandReturn.votes as any).add = Database.vote.createVote({
           type: warType,
-          user: playerData.user,
+          user: playerData,
           choice: houseVote,
           time: Date.now()
-        };
+        });
         commandReturn.reply = `Your choice of ${playerChoice} was ` +
           'recorded';
       } else {

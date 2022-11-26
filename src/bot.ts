@@ -288,10 +288,9 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
               }
 
               if('loans' in commandReturn && commandReturn.loans !== undefined) {
-                if('add' in commandReturn.loans) {
+                if('add' in commandReturn.loans && commandReturn.loans.add !== undefined) {
                   // Add the new loan to the database
-                  // TODO: fix new loan typing
-                  await Database.loan.saveLoan(commandReturn.loans.add as unknown as Loan);
+                  await Database.loan.saveLoan(commandReturn.loans.add);
                 } else if ('update' in commandReturn.loans && commandReturn.loans.update !== undefined) {
                   await Database.loan.saveLoan(commandReturn.loans.update);
                 } else if ('remove' in commandReturn.loans && commandReturn.loans.remove !== undefined) {
@@ -300,10 +299,9 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
               }
 
               if('votes' in commandReturn && commandReturn.votes !== undefined) {
-                if('add' in commandReturn.votes) {
+                if('add' in commandReturn.votes && commandReturn.votes.add !== undefined) {
                   // Add the vote to the database
-                  // TODO: fix new vote typing
-                  await Database.vote.saveVote(commandReturn.votes.add as Vote);
+                  await Database.vote.saveVote(commandReturn.votes.add);
                 }
               }
 
@@ -320,10 +318,9 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
               }
 
               if('sieges' in commandReturn && commandReturn.sieges !== undefined) {
-                if('add' in commandReturn.sieges) {
+                if('add' in commandReturn.sieges && commandReturn.sieges.add !== undefined) {
                   // Add the siege to the database
-                  // TODO: fix new siege typing
-                  const info = await Database.siege.saveSiege(commandReturn.sieges.add as Siege);
+                  const info = await Database.siege.saveSiege(commandReturn.sieges.add);
                   // TODO: better handle guild being null
                   const siegeEmbed = game_tasks.generateSiegeEmbed(
                     msg.guild?.roles ?? null,
@@ -342,7 +339,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                 }
                 if('update' in commandReturn.sieges && commandReturn.sieges.update !== undefined) {
                   const siege = commandReturn.sieges.update;
-                  // TODO: type fixing
+                  // TODO: improve handling of guild/roles being undefined/null
                   const siegeEmbed = game_tasks.generateSiegeEmbed(
                     msg.guild?.roles ?? null,
                     siege

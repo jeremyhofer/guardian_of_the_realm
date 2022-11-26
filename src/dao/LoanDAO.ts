@@ -22,6 +22,10 @@ export class LoanDAO {
     });
   }
 
+  createLoan(pLoan: Partial<Loan>): Loan {
+    return this._repository.create(pLoan);
+  }
+
   async saveLoan(loan: Loan): Promise<Loan> {
     return await this._repository.save(loan);
   }

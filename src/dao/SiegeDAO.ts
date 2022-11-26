@@ -83,6 +83,10 @@ export class SiegeDAO {
     });
   }
 
+  createSiege(pSiege: Partial<Siege>): Siege {
+    return this._repository.create(pSiege);
+  }
+
   async saveSiege(loan: Siege): Promise<Siege> {
     return await this._repository.save(loan);
   }

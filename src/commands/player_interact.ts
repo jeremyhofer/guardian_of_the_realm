@@ -29,7 +29,6 @@ const arson = async({ args, playerData, playerRoles, guild }: { args: string[], 
       playerData,
       roles: {
         other_player: {
-          // TODO: fix args typings
           id: playerMentionUser,
           add: [],
           remove: [] as string[]
@@ -77,20 +76,10 @@ const arson = async({ args, playerData, playerRoles, guild }: { args: string[], 
 
       if(playerMoney >= arsonPrice) {
         // Good to arson!
-        let failRisk = Math.round(playerRoles.length / (playerRoles.length + otherPlayerRoleIds.length) * 100);
-
-        // TODO: create clamp util?
-        if(failRisk < 0) {
-          failRisk = 0;
-        } else if(failRisk > 100) {
-          failRisk = 100;
-        }
-
-        const chance = utils.getRandomValueInRange(1, 100);
         let penalty = 0;
         let replyTemplate = '';
 
-        if(chance >= failRisk) {
+        if(utils.riskSuccess(playerRoles.length, otherPlayerRoleIds.length)) {
           // Player wins! Remove the role from the other player
           commandReturn.update?.roles?.other_player?.remove.push(roleToArson);
           replyTemplate = utils.randomElement(flavor.arson_success);
@@ -198,23 +187,12 @@ const pirate = async({ args, playerData }: { args: any[], playerData: PlayerData
   } else if(pShips >= 5) {
     if(mShips >= 5) {
       // Both have at least 5 ship. Figure out who wins!
-      let failRisk = Math.round(pShips /
-        (mShips + pShips) * 100);
-
-      if(failRisk < 0) {
-        failRisk = 0;
-      } else if(failRisk > 100) {
-        failRisk = 100;
-      }
-
-      const chance = utils.getRandomValueInRange(1, 100);
-
       let playerLose = 0;
       let mentionLose = 0;
       let winner = 'player';
       let reward = 0;
 
-      if(chance >= failRisk) {
+      if(utils.riskSuccess(pShips, mShips)) {
         // Player wins! Adjust ships
         reward = utils.getRandomValueInRange(
           assets.rewardPayoutsPenalties.pirate_reward_min,
@@ -297,23 +275,12 @@ const raid = async({ args, playerData }: { args: any[], playerData: PlayerData }
   } else if(pMen >= 50) {
     if(mMen >= 50) {
       // Both have at least 50 men. Figure out who wins!
-      let failRisk = Math.round(pMen /
-        (mMen + pMen) * 100);
-
-      if(failRisk < 0) {
-        failRisk = 0;
-      } else if(failRisk > 100) {
-        failRisk = 100;
-      }
-
-      const chance = utils.getRandomValueInRange(1, 100);
-
       let playerLose = 0;
       let mentionLose = 0;
       let winner = 'player';
       let reward = 0;
 
-      if(chance >= failRisk) {
+      if(utils.riskSuccess(pMen, mMen)) {
         // Player wins! Adjust men
         reward = utils.getRandomValueInRange(
           assets.rewardPayoutsPenalties.raid_reward_min,
@@ -555,21 +522,10 @@ const thief = async({ args, playerData }: { args: any[], playerData: PlayerData 
   } else if(pMoney >= 0) {
     if(mMoney > 0) {
       // Both have at least some money. Figure out who wins!
-      let failRisk = Math.round(pMoney /
-        (mMoney + pMoney) * 100);
-
-      if(failRisk < 0) {
-        failRisk = 0;
-      } else if(failRisk > 100) {
-        failRisk = 100;
-      }
-
-      const chance = utils.getRandomValueInRange(1, 100);
-
       let moneyChange = 0;
       let winner = 'player';
 
-      if(chance >= failRisk) {
+      if(utils.riskSuccess(pMoney, mMoney)) {
         // Player wins! Adjust money
         moneyChange = utils.getPercentOfValueGivenRange(
           mMoney,
