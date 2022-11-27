@@ -1,4 +1,4 @@
-import { APIEmbed, CategoryChannel, Guild, RoleManager, TextChannel } from 'discord.js';
+import { APIEmbed, Guild, RoleManager } from 'discord.js';
 import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
@@ -57,9 +57,15 @@ export const collectLoans = async(guild: Guild, currentTime: number): Promise<vo
     loan.user.money -= loan.amount_due;
     await Database.playerData.setPlayer(loan.user);
     await Database.loan.removeLoan(loan);
-    await (guild.channels.cache.get(assets.replyChannels.command_tent) as TextChannel)?.send(
-      `<@${loan.user.user}> your loan has expired. The remaining balance of ${loan.amount_due} has been deducted from your account`
-    );
+    const channel = utils.getGuildTextChannel(guild, assets.replyChannels.command_tent);
+
+    if(channel !== null) {
+      await channel.send(
+        `<@${loan.user.user}> your loan has expired. The remaining balance of ${loan.amount_due} has been deducted from your account`
+      );
+    } else {
+      console.error('Could not find channel for guild');
+    }
   };
 };
 
@@ -114,7 +120,13 @@ export const resolveWarVotes = async(guild: Guild, expirationTime: number): Prom
     voteReply += `\n<@&${playerData.house}>: ${pYesCount} yays ${pNoCount} nays`;
 
     // Send the reply
-    await (guild.channels.cache.get(assets.replyChannels.battle_reports) as TextChannel)?.send(voteReply);
+    const channel = utils.getGuildTextChannel(guild, assets.replyChannels.battle_reports);
+
+    if(channel !== null) {
+      await channel.send(voteReply);
+    } else {
+      console.error('Could not find text channel for guild');
+    }
 
     // Remove all associated votes
     await Database.vote.removeMultiple(pHouseVoteResults.map((r) => r.vote_id));
@@ -221,7 +233,13 @@ export const resolvePactVotes = async(guild: Guild, expirationTime: number): Pro
     voteReply += `\n<@&${otherHouse}>: ${oYesCount} yays ${oNoCount} nays`;
 
     // Send the reply
-    await (guild.channels.cache.get(assets.replyChannels.battle_reports) as TextChannel)?.send(voteReply);
+    const channel = utils.getGuildTextChannel(guild, assets.replyChannels.battle_reports);
+
+    if(channel !== null) {
+      await channel.send(voteReply);
+    } else {
+      console.error('Could not find channel for guild');
+    }
 
     // Remove all associated votes
     await Database.vote.removeMultiple([
@@ -419,10 +437,15 @@ export const resolveSieges = async(guild: Guild, currentTime: number): Promise<v
       });
     }
 
-    const channel = guild.channels.cache.get(assets.replyChannels.battle_reports);
-    await (channel as TextChannel)?.messages.fetch(expiredSiege.message).then(async(message) => {
-      await message.edit({ embeds: [embed] });
-    });
+    const channel = utils.getGuildTextChannel(guild, assets.replyChannels.battle_reports);
+
+    if(channel !== null) {
+      await channel.messages.fetch(expiredSiege.message).then(async(message) => {
+        await message.edit({ embeds: [embed] });
+      });
+    } else {
+      console.error('Could not find channel for guild');
+    }
 
     // Remove the siege
     await Database.siege.removeSiege(expiredSiege);
@@ -672,23 +695,33 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
     ]
   };
 
-  const channel = guild?.channels.cache.get(assets.replyChannels.overworld);
-  const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
+  const channel = utils.getGuildTextChannel(guild, assets.replyChannels.overworld);
 
-  for(const toDelete of existingMapMessages) {
-    await (channel as TextChannel)?.messages.fetch(toDelete.text)
-      .then(async(message) => await message.delete())
-      .then(async() => await Database.tracker.removeTracker(toDelete));
-  };
+  let reply = 'Updated map posted.';
+  let success = true;
 
-  await (channel as TextChannel)?.send(mapTiles.slice(0, 7).join('\n'))
-    .then(async(message) => await Database.tracker.createMapTracker(message.id))
-    .then(async() => await (channel as TextChannel)?.send(mapTiles.slice(7).join('\n')))
-    .then(async(message) => await Database.tracker.createMapTracker(message.id))
-    .then(async() => await (channel as TextChannel)?.send({ embeds: [embed] }))
-    .then(async(message) => await Database.tracker.createMapTracker(message.id));
+  if(channel !== null) {
+    const existingMapMessages = await Database.tracker.getAllTrackerByName('map');
 
-  return { reply: 'Map Posted', success: true };
+    for(const toDelete of existingMapMessages) {
+      await channel.messages.fetch(toDelete.text)
+        .then(async(message) => await message.delete())
+        .then(async() => await Database.tracker.removeTracker(toDelete));
+    };
+
+    await channel.send(mapTiles.slice(0, 7).join('\n'))
+      .then(async(message) => await Database.tracker.createMapTracker(message.id))
+      .then(async() => await channel.send(mapTiles.slice(7).join('\n')))
+      .then(async(message) => await Database.tracker.createMapTracker(message.id))
+      .then(async() => await channel.send({ embeds: [embed] }))
+      .then(async(message) => await Database.tracker.createMapTracker(message.id));
+  } else {
+    console.error('Could not find overworld channel');
+    success = false;
+    reply = 'Overworld channel not found';
+  }
+
+  return { reply, success };
 };
 
 export const resetEverything = async({ guild, playerRoles, currentTime }: { guild: Guild, playerRoles: string[], currentTime: number }): Promise<CommandReturn> => {
@@ -789,19 +822,21 @@ export const resetEverything = async({ guild, playerRoles, currentTime }: { guil
       'house-wolf'
     ];
 
-    const houseCategory: CategoryChannel = guild.channels.cache.find(channel => channel.name === 'The Great Houses') as CategoryChannel;
+    const houseCategory = utils.findGuildCategoryChannelByName(guild, 'The Great Houses');
 
-    if(houseCategory !== undefined) {
+    if(houseCategory !== null) {
       for(let inc = 0; inc < remakeChannels.length; inc += 1) {
-        const channelToRemake = guild.channels.cache.find(channel => channel.name === remakeChannels[inc]);
+        const channelToRemake = utils.findGuildTextChannelByName(guild, remakeChannels[inc]);
 
-        if(channelToRemake !== undefined) {
-          (channelToRemake as TextChannel).clone().then(clone => {
+        if(channelToRemake !== null) {
+          channelToRemake.clone().then(clone => {
             clone.setParent(houseCategory).catch(console.error);
             channelToRemake.delete().catch(console.error);
           }).catch(console.error);
         }
       }
+    } else {
+      console.error('Could not find category channel');
     }
 
     await Database.tracker.updateTrackerByName('game_start', currentTime);

@@ -1,3 +1,4 @@
+import { CategoryChannel, ChannelType, Guild, GuildBasedChannel, TextChannel } from 'discord.js';
 import { GameRoles } from './types';
 
 /**
@@ -119,4 +120,39 @@ export function isAWin(instigatorTotal: number, otherTotal: number): boolean {
   const { threshold, chance } = chanceThreshold(instigatorTotal, otherTotal);
 
   return threshold >= chance;
+}
+
+function isTextChannel(channel: GuildBasedChannel | undefined): channel is TextChannel {
+  return channel?.isTextBased() === true;
+}
+
+export function getGuildTextChannel(guild: Guild | null, channelId: string): TextChannel | null {
+  if(guild === null) {
+    return null;
+  }
+
+  const channel = guild.channels.cache.get(channelId);
+  return isTextChannel(channel) ? channel : null;
+}
+
+export function findGuildTextChannelByName(guild: Guild | null, channelName: string): TextChannel | null {
+  if(guild === null) {
+    return null;
+  }
+
+  const channel = guild.channels.cache.find((c) => c.name === channelName);
+  return isTextChannel(channel) ? channel : null;
+}
+
+function isCategoryChannel(channel: GuildBasedChannel | undefined): channel is CategoryChannel {
+  return channel?.type === ChannelType.GuildCategory;
+}
+
+export function findGuildCategoryChannelByName(guild: Guild | null, channelName: string): CategoryChannel | null {
+  if(guild === null) {
+    return null;
+  }
+
+  const channel = guild.channels.cache.find((c) => c.name === channelName);
+  return isCategoryChannel(channel) ? channel : null;
 }

@@ -1,4 +1,4 @@
-import { Guild, Message, TextChannel } from 'discord.js';
+import { Guild, Message } from 'discord.js';
 import { Database } from './data-source';
 import * as args from './args';
 import * as admin from './commands/admin';
@@ -146,7 +146,6 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
             });
 
             const commandReturn = await callFunction(callArgs);
-            console.log(commandReturn);
 
             if(commandReturn != null) {
               if('update' in commandReturn && commandReturn.update !== undefined) {
@@ -265,9 +264,15 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
               if('send' in commandReturn && commandReturn.send !== undefined) {
                 if('message' in commandReturn.send && commandReturn.send.message !== undefined) {
                   if('channel' in commandReturn.send && commandReturn.send.channel !== undefined) {
-                    await (msg.guild?.channels.cache.get(commandReturn.send.channel) as TextChannel)?.send({
-                      content: commandReturn.send.message
-                    });
+                    const sendChannel = utils.getGuildTextChannel(msg.guild, commandReturn.send.channel);
+
+                    if(sendChannel !== null) {
+                      await sendChannel.send({
+                        content: commandReturn.send.message
+                      });
+                    } else {
+                      console.error('Channel not found for guild');
+                    }
                   } else {
                     await msg.channel.send(commandReturn.send.message);
                   }
@@ -322,13 +327,18 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                     info
                   );
                   const brChannel = assets.replyChannels.battle_reports;
-                  const channel = msg.guild?.channels.cache.get(brChannel);
-                  await (channel as TextChannel)?.send({ embeds: [siegeEmbed] }).then(async(message) => {
-                    await Database.siege.updateSiegeMessage(
-                      info.siege_id,
-                      message.id
-                    );
-                  });
+                  const channel = utils.getGuildTextChannel(msg.guild, brChannel);
+
+                  if(channel !== null) {
+                    await channel.send({ embeds: [siegeEmbed] }).then(async(message) => {
+                      await Database.siege.updateSiegeMessage(
+                        info.siege_id,
+                        message.id
+                      );
+                    });
+                  } else {
+                    console.error('Cound not find channel for guild');
+                  }
 
                   await game_tasks.postUpdatedMap({ guild: msg.guild });
                 }
@@ -340,10 +350,15 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                     siege
                   );
                   const brChannel = assets.replyChannels.battle_reports;
-                  const channel = msg.guild?.channels.cache.get(brChannel);
-                  await (channel as TextChannel)?.messages.fetch(siege.message).then(async(message) => {
-                    await message.edit({ embeds: [siegeEmbed] });
-                  });
+                  const channel = utils.getGuildTextChannel(msg.guild, brChannel);
+
+                  if(channel !== null) {
+                    await channel.messages.fetch(siege.message).then(async(message) => {
+                      await message.edit({ embeds: [siegeEmbed] });
+                    });
+                  } else {
+                    console.error('Could not find channel for guild');
+                  }
                 }
               }
 
