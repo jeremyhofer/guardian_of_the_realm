@@ -26,7 +26,7 @@ export class TrackerDAO {
   }
 
   async removeTracker(tracker: Tracker): Promise<DeleteResult> {
-    return await this._repository.delete(tracker);
+    return await this._repository.delete(tracker.tracker_id);
   }
 
   async updateTrackerByName(name: string, value: number): Promise<UpdateResult> {

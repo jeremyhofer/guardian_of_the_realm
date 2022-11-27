@@ -13,8 +13,6 @@ import * as utils from './utils';
 import { CommandDispatch } from './types';
 import { PlayerData } from './entity/PlayerData';
 import { Loan } from './entity/Loan';
-import { Vote } from './entity/Vote';
-import { Siege } from './entity/Siege';
 
 const PREFIX = '.';
 const commandDispatch: CommandDispatch = {
@@ -122,8 +120,6 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
               playerRoles.push(value.name.toLowerCase());
             });
 
-            const loans = await Database.loan.getLoansForUser(playerData);
-
             commandDispatch[command].args.forEach(requiredArg => {
               switch(requiredArg) {
                 case 'args':
@@ -131,9 +127,6 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                   break;
                 case 'playerData':
                   callArgs.playerData = playerData;
-                  break;
-                case 'loans':
-                  callArgs.loans = loans;
                   break;
                 case 'playerRoles':
                   callArgs.playerRoles = playerRoles;
@@ -153,6 +146,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
             });
 
             const commandReturn = await callFunction(callArgs);
+            console.log(commandReturn);
 
             if(commandReturn != null) {
               if('update' in commandReturn && commandReturn.update !== undefined) {
@@ -294,6 +288,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                 } else if ('update' in commandReturn.loans && commandReturn.loans.update !== undefined) {
                   await Database.loan.saveLoan(commandReturn.loans.update);
                 } else if ('remove' in commandReturn.loans && commandReturn.loans.remove !== undefined) {
+                  console.log('call to delete');
                   await Database.loan.removeLoan(commandReturn.loans.remove);
                 }
               }

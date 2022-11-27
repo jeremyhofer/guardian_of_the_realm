@@ -1,15 +1,8 @@
 import { DeleteResult, LessThanOrEqual, Repository } from 'typeorm';
-import { PlayerData } from '../entity/PlayerData';
 import { Loan } from '../entity/Loan';
 
 export class LoanDAO {
   constructor(private readonly _repository: Repository<Loan>) {}
-
-  async getLoansForUser(user: PlayerData): Promise<Loan[]> {
-    return await this._repository.findBy({
-      user
-    });
-  }
 
   async getDueLoans(time: number): Promise<Loan[]> {
     return await this._repository.find({
@@ -31,7 +24,7 @@ export class LoanDAO {
   }
 
   async removeLoan(loan: Loan): Promise<DeleteResult> {
-    return await this._repository.delete(loan);
+    return await this._repository.delete(loan.loan_id);
   }
 
   async deleteAll(): Promise<void> {

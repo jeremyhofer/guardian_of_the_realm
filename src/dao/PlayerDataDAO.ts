@@ -34,7 +34,8 @@ export class PlayerDataDAO {
   async getOrCreatePlayer(user: string): Promise<PlayerData> {
     const existing = await this._repository.findOne({
       relations: {
-        pledges: true
+        pledges: true,
+        loans: true
       },
       where: {
         user

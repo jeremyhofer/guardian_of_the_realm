@@ -1,10 +1,9 @@
-import { Loan } from '../entity/Loan';
 import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
 import { AvailableStoreItems, CommandDispatch, CommandReturn, Rank } from '../types';
 import * as assets from '../assets';
 import * as utils from '../utils';
-import { Database } from 'src/data-source';
+import { Database } from '../data-source';
 
 /*
  * Buy some item in a quantity. titles only one, cant buy more or same
@@ -109,7 +108,7 @@ const buy = async({ args, playerData, playerRoles }: { args: string[], playerDat
  * no more than 50% total money. random 5-50% interest. only one at a time.
  * .loan <GET|PAY|SHOW> <amount>
  */
-const loan = async({ args, playerData, loans }: { args: string[], playerData: PlayerData, loans: Loan[] }): Promise<CommandReturn> => {
+const loan = async({ args, playerData }: { args: string[], playerData: PlayerData }): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData
@@ -128,7 +127,7 @@ const loan = async({ args, playerData, loans }: { args: string[], playerData: Pl
 
   if(action === 'get') {
     // See if player has a loan
-    if(Array.isArray(loans) && loans.length > 0) {
+    if(Array.isArray(playerData.loans) && playerData.loans.length > 0) {
       commandReturn.reply = 'You already have an outstanding loan';
     } else {
       // Ensure a value was specified and that it is valid
@@ -159,8 +158,8 @@ const loan = async({ args, playerData, loans }: { args: string[], playerData: Pl
     }
   } else if(action === 'pay') {
     // See if player has a loan
-    if(Array.isArray(loans) && loans.length > 0) {
-      const [loanInfo] = loans;
+    if(Array.isArray(playerData.loans) && playerData.loans.length > 0) {
+      const [loanInfo] = playerData.loans;
       // Ensure a value was specified and that it is valid.
       let payAmount = 0;
 
@@ -200,9 +199,9 @@ const loan = async({ args, playerData, loans }: { args: string[], playerData: Pl
       commandReturn.reply = 'You do not have an outstanding loan';
     }
   } else if(action === 'show') {
-    if(Array.isArray(loans) && loans.length > 0) {
+    if(Array.isArray(playerData.loans) && playerData.loans.length > 0) {
       // Output loan info
-      loans.forEach(thisLoan => {
+      playerData.loans.forEach(thisLoan => {
         const timeUntilDue = thisLoan.time_due - Date.now();
         const dueString = timeUntilDue > 0 ? `due in ${utils.getTimeUntilString(timeUntilDue)}` : 'past due';
         commandReturn.reply = `You owe ${thisLoan.amount_due} on your loan. The loan is ${dueString}`;
@@ -273,8 +272,7 @@ export const dispatch: CommandDispatch = {
     function: loan,
     args: [
       'args',
-      'playerData',
-      'loans'
+      'playerData'
     ],
     command_args: [
       [ArgTypes.string],
