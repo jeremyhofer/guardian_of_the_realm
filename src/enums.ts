@@ -5,5 +5,5 @@ export enum ArgTypes {
   role_mention = 4,
   channel_mention = 5,
   number = 6,
-  string = 7
+  string = 7,
 }

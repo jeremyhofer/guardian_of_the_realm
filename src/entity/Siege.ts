@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryColumn, OneToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  OneToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Pledge } from './Pledge';
 import { TileOwner } from './TileOwner';
 

@@ -7,11 +7,11 @@ export class LoanDAO {
   async getDueLoans(time: number): Promise<Loan[]> {
     return await this._repository.find({
       relations: {
-        user: true
+        user: true,
       },
       where: {
-        time_due: LessThanOrEqual(time)
-      }
+        time_due: LessThanOrEqual(time),
+      },
     });
   }
 

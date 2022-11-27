@@ -1,7 +1,7 @@
 # Seven Thrones - Guardian of the Realm!
 
-***Seven Houses vie to control the Land. You have joined a House, and now you must begin the journey.***
-***The first House to control 7 Castles shall be declared the winner.***
+**_Seven Houses vie to control the Land. You have joined a House, and now you must begin the journey._**
+**_The first House to control 7 Castles shall be declared the winner._**
 
 ## Background
 
@@ -27,6 +27,7 @@ You may join the Discord here: [Seven Thrones](https://discord.gg/6c52Kv4)
 
 This repo contains the source code for the bot we have developed to manage and run Seven Thrones on our
 Discord server. We're quite proud of the work we have put in and wanted to share the repo to:
+
 1. market the game and ourselves
 2. provide the open source community with an example of a game that can be made and ran in Discord and
    managed by a Discord bot

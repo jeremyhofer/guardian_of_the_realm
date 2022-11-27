@@ -6,13 +6,13 @@ export class TrackerDAO {
 
   async getTrackerByName(name: string): Promise<Tracker | null> {
     return await this._repository.findOneBy({
-      name
+      name,
     });
   }
 
   async getAllTrackerByName(name: string): Promise<Tracker[]> {
     return await this._repository.findBy({
-      name
+      name,
     });
   }
 
@@ -21,7 +21,11 @@ export class TrackerDAO {
   }
 
   async createMapTracker(messageId: string): Promise<Tracker> {
-    const newTracker = this._repository.create({ text: messageId, value: 0, name: 'map' });
+    const newTracker = this._repository.create({
+      text: messageId,
+      value: 0,
+      name: 'map',
+    });
     return await this._repository.save(newTracker);
   }
 
@@ -29,7 +33,10 @@ export class TrackerDAO {
     return await this._repository.delete(tracker.tracker_id);
   }
 
-  async updateTrackerByName(name: string, value: number): Promise<UpdateResult> {
+  async updateTrackerByName(
+    name: string,
+    value: number
+  ): Promise<UpdateResult> {
     return await this._repository.update(name, { value });
   }
 }

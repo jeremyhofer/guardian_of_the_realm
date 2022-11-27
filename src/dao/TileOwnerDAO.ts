@@ -10,13 +10,13 @@ export class TileOwnerDAO {
 
   async getTileOwner(tile: string): Promise<TileOwner | null> {
     return await this._repository.findOneBy({
-      tile
+      tile,
     });
   }
 
   async getPorts(): Promise<TileOwner[]> {
     return await this._repository.findBy({
-      type: 'port'
+      type: 'port',
     });
   }
 
@@ -24,8 +24,12 @@ export class TileOwnerDAO {
     return await this._repository.update(tile, { house });
   }
 
-  async createMultipleTileOwner(ownerMap: Array<Partial<TileOwner>>): Promise<TileOwner[]> {
-    return await this._repository.save(ownerMap.map((tileOwner) => this._repository.create(tileOwner)));
+  async createMultipleTileOwner(
+    ownerMap: Array<Partial<TileOwner>>
+  ): Promise<TileOwner[]> {
+    return await this._repository.save(
+      ownerMap.map((tileOwner) => this._repository.create(tileOwner))
+    );
   }
 
   async deleteAll(): Promise<void> {

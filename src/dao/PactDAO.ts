@@ -8,16 +8,19 @@ export class PactDAO {
     return await this._repository.find();
   }
 
-  async getPactBetweenHouses(house1: string, house2: string): Promise<Pact | null> {
+  async getPactBetweenHouses(
+    house1: string,
+    house2: string
+  ): Promise<Pact | null> {
     return await this._repository.findOneBy([
       {
         house_a: house1,
-        house_b: house2
+        house_b: house2,
       },
       {
         house_a: house2,
-        house_b: house1
-      }
+        house_b: house1,
+      },
     ]);
   }
 
@@ -29,10 +32,17 @@ export class PactDAO {
     return await this._repository.save(this._repository.create(pPact));
   }
 
-  async removePactBetweenHouses(house1: string, house2: string): Promise<DeleteResult> {
-    return await this._repository.createQueryBuilder()
+  async removePactBetweenHouses(
+    house1: string,
+    house2: string
+  ): Promise<DeleteResult> {
+    return await this._repository
+      .createQueryBuilder()
       .delete()
-      .where('(pact.house_a = :house1 AND pact.house_b = :house2) OR (pact.house_a = :house2 AND pact.house_b = :house1)', { house1, house2 })
+      .where(
+        '(pact.house_a = :house1 AND pact.house_b = :house2) OR (pact.house_a = :house2 AND pact.house_b = :house1)',
+        { house1, house2 }
+      )
       .execute();
   }
 

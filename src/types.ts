@@ -8,7 +8,16 @@ import { ArgTypes } from './enums';
 export const rank = ['baron', 'earl', 'duke', 'unsworn'] as const;
 export type Rank = typeof rank[number];
 
-export const buildings = ['apothecary', 'armory', 'barrack', 'blacksmith', 'bordello', 'monastery', 'haunt', 'weavery'];
+export const buildings = [
+  'apothecary',
+  'armory',
+  'barrack',
+  'blacksmith',
+  'bordello',
+  'monastery',
+  'haunt',
+  'weavery',
+];
 export type Buildings = typeof buildings[number];
 
 export const armyUnits = ['men', 'ships'];
@@ -17,10 +26,22 @@ export type ArmyUnits = typeof armyUnits[number];
 export const storeItemTypes = ['income', 'title', ...armyUnits];
 export type StoreItemTypes = typeof storeItemTypes[number];
 
-export const availableStoreItems = [...rank.filter((r) => r !== 'unsworn'), ...buildings, ...armyUnits];
+export const availableStoreItems = [
+  ...rank.filter((r) => r !== 'unsworn'),
+  ...buildings,
+  ...armyUnits,
+];
 export type AvailableStoreItems = typeof availableStoreItems[number];
 
-export type Houses = 'Unsworn' | 'Scorpion' | 'Falcon' | 'Wolf' | 'Lion' | 'Bear' | 'Hydra' | 'Dragon';
+export type Houses =
+  | 'Unsworn'
+  | 'Scorpion'
+  | 'Falcon'
+  | 'Wolf'
+  | 'Lion'
+  | 'Bear'
+  | 'Hydra'
+  | 'Dragon';
 
 export type AttackTypes = 'siege' | 'blockade';
 
@@ -35,7 +56,7 @@ export const CooldownCommands = [
   'thief',
   'train',
   'trade',
-  'work'
+  'work',
 ] as const;
 
 export type CooldownCommandNames = typeof CooldownCommands[number];
@@ -94,88 +115,88 @@ export const Emojis = [
   'PortUnsworn',
   'PortWolf',
   'Unsworn',
-  'Warship'
+  'Warship',
 ];
 
 export type EmojiNames = typeof Emojis[number];
 
 export interface StoreItems {
-  type: StoreItemTypes
-  flavor: string
-  cost: number
-  requires?: Rank
+  type: StoreItemTypes;
+  flavor: string;
+  cost: number;
+  requires?: Rank;
 }
 
 export interface GameRoles {
-  [key: string]: string[]
+  [key: string]: string[];
 }
 
 export type CommandArgs = ArgTypes[][];
 
 export interface ParsedArgs {
-  values: any[]
-  types: ArgTypes[]
-};
+  values: any[];
+  types: ArgTypes[];
+}
 
 export interface CooldownConfig {
-  time: number
-  field: CooldownCommandFields
-  reply: string
+  time: number;
+  field: CooldownCommandFields;
+  reply: string;
 }
 
 export interface CommandConfig {
-  function: (...all: any) => Promise<CommandReturn | null> | Promise<void>
-  args: string[]
-  command_args: CommandArgs
-  usage: string[]
-  cooldown?: CooldownConfig
-  allowed_channels?: string[]
-  cooldown_from_start?: number
+  function: (...all: any) => Promise<CommandReturn | null> | Promise<void>;
+  args: string[];
+  command_args: CommandArgs;
+  usage: string[];
+  cooldown?: CooldownConfig;
+  allowed_channels?: string[];
+  cooldown_from_start?: number;
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;
 
 export interface CommandReturn {
-  enableGame?: boolean
-  reply: string
+  enableGame?: boolean;
+  reply: string;
   update?: {
-    playerData?: PlayerData
-    playerMention?: PlayerData
+    playerData?: PlayerData;
+    playerMention?: PlayerData;
     roles?: {
       player?: {
-        add: string[]
-        remove: string[]
-      }
+        add: string[];
+        remove: string[];
+      };
       other_player?: {
-        id: string
-        add: string[]
-        remove: string[]
-      }
-    }
-  }
+        id: string;
+        add: string[];
+        remove: string[];
+      };
+    };
+  };
   loans?: {
-    add?: Loan
-    remove?: Loan
-    update?: Loan
-  }
+    add?: Loan;
+    remove?: Loan;
+    update?: Loan;
+  };
   sieges?: {
-    add?: Siege
-    update?: Siege
-  }
+    add?: Siege;
+    update?: Siege;
+  };
   pledges?: {
-    add?: Pledge
-    remove?: Pledge
-  }
+    add?: Pledge;
+    remove?: Pledge;
+  };
   votes?: {
-    add?: Vote
-  }
+    add?: Vote;
+  };
   send?: {
-    message?: string
-    channel?: string
-  }
+    message?: string;
+    channel?: string;
+  };
   map?: {
-    message: string
-    embed: any
-  }
-  success: boolean
+    message: string;
+    embed: any;
+  };
+  success: boolean;
 }

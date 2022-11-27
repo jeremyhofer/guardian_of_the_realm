@@ -10,40 +10,45 @@ import * as utils from '../utils';
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+const join = async ({
+  playerData,
+}: {
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     update: {
       playerData,
       roles: {
         player: {
           add: [],
-          remove: []
-        }
-      }
+          remove: [],
+        },
+      },
     },
     reply: '',
-    success: true
+    success: true,
   };
 
   // See if the player is in a house. If they are they cannot join another one
-  if(playerData.house !== '') {
+  if (playerData.house !== '') {
     commandReturn.reply = 'You are already part of a house';
   } else {
     // Add the player to a house with an opening
-    const houseCounts: { [key: string]: number } = await Database.playerData.getPlayerCountsInAllHouses();
+    const houseCounts: { [key: string]: number } =
+      await Database.playerData.getPlayerCountsInAllHouses();
 
-    assets.houses.forEach(house => {
-      if(house !== '625905668263510017' && !(house in houseCounts)) {
+    assets.houses.forEach((house) => {
+      if (house !== '625905668263510017' && !(house in houseCounts)) {
         houseCounts[house] = 0;
       }
     });
 
     const sortedHouses = [];
 
-    for(const key in houseCounts) {
+    for (const key in houseCounts) {
       sortedHouses.push({
         id: key,
-        count: houseCounts[key]
+        count: houseCounts[key],
       });
     }
 
@@ -65,15 +70,23 @@ const join = async({ playerData }: { playerData: PlayerData }): Promise<CommandR
  *
  * deduct the units from the player's count when the pledge is made
  */
-const pledge = async({ args, playerData, playerRoles }: { args: any[], playerData: PlayerData, playerRoles: string[] }): Promise<CommandReturn> => {
+const pledge = async ({
+  args,
+  playerData,
+  playerRoles,
+}: {
+  args: any[];
+  playerData: PlayerData;
+  playerRoles: string[];
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     sieges: {},
     update: {
-      playerData
+      playerData,
     },
     pledges: {},
     reply: '',
-    success: true
+    success: true,
   };
 
   // Validate args
@@ -83,7 +96,7 @@ const pledge = async({ args, playerData, playerRoles }: { args: any[], playerDat
 
   const tileOwner = await Database.tileOwner.getTileOwner(selectedTile);
 
-  if(tileOwner !== null) {
+  if (tileOwner !== null) {
     const isPort = tileOwner.type === 'port';
     const pUnits: number = isPort ? playerData.ships : playerData.men;
 
@@ -91,7 +104,7 @@ const pledge = async({ args, playerData, playerRoles }: { args: any[], playerDat
       ? assets.roleShipLimits.unsworn
       : assets.roleTroopLimits.unsworn;
 
-    if(playerRoles.includes('duke')) {
+    if (playerRoles.includes('duke')) {
       roleLimit = isPort
         ? assets.roleShipLimits.duke
         : assets.roleTroopLimits.duke;
@@ -105,17 +118,17 @@ const pledge = async({ args, playerData, playerRoles }: { args: any[], playerDat
         : assets.roleTroopLimits.baron;
     }
 
-    if(isNaN(numUnits) || numUnits < 1) {
+    if (isNaN(numUnits) || numUnits < 1) {
       commandReturn.reply = 'The number of units must be a positive number';
     } else if (numUnits > roleLimit) {
       commandReturn.reply = `You may only send at most ${roleLimit} units`;
-    } else if(action !== 'attack' && action !== 'defend') {
+    } else if (action !== 'attack' && action !== 'defend') {
       commandReturn.reply = 'The action must be ATTACK or DEFEND';
     } else {
       // Ensure a siege exists on the tile
       const existingSiege = await Database.siege.getSiegeOnTile(selectedTile);
 
-      if(existingSiege !== null) {
+      if (existingSiege !== null) {
         // See if the player already has a pledge on the siege.
         const existingPledge = await Database.pledge.getPlayerPledgeForSiege(
           playerData,
@@ -125,33 +138,35 @@ const pledge = async({ args, playerData, playerRoles }: { args: any[], playerDat
         let valid = false;
         let unitsToDeduct = 0;
 
-        if(existingPledge !== null) {
-          if(numUnits > pUnits + existingPledge.units) {
+        if (existingPledge !== null) {
+          if (numUnits > pUnits + existingPledge.units) {
             commandReturn.reply = `You do not have ${numUnits} units`;
           } else {
             unitsToDeduct = existingPledge.units;
             (commandReturn.pledges as any).remove = existingPledge;
             valid = true;
           }
-        } else if(numUnits > pUnits) {
+        } else if (numUnits > pUnits) {
           commandReturn.reply = `You do not have ${numUnits} units`;
         } else {
           valid = true;
         }
 
-        if(valid) {
+        if (valid) {
           // Add the pledge
           (commandReturn.pledges as any).add = {
             siege: existingSiege.siege_id,
             user: playerData.user,
             units: numUnits,
-            choice: action
+            choice: action,
           };
 
-          if(isPort) {
-            (commandReturn.update?.playerData as PlayerData).ships -= numUnits - unitsToDeduct;
+          if (isPort) {
+            (commandReturn.update?.playerData as PlayerData).ships -=
+              numUnits - unitsToDeduct;
           } else {
-            (commandReturn.update?.playerData as PlayerData).men -= numUnits - unitsToDeduct;
+            (commandReturn.update?.playerData as PlayerData).men -=
+              numUnits - unitsToDeduct;
           }
 
           commandReturn.reply = `You successfully pledged ${numUnits} to ${action} ${selectedTile.toUpperCase()}`;
@@ -162,8 +177,7 @@ const pledge = async({ args, playerData, playerRoles }: { args: any[], playerDat
       }
     }
   } else {
-    commandReturn.reply =
-      `${selectedTile.toUpperCase()} is not a castle or port`;
+    commandReturn.reply = `${selectedTile.toUpperCase()} is not a castle or port`;
   }
 
   return commandReturn;
@@ -199,27 +213,33 @@ const pledge = async({ args, playerData, playerRoles }: { args: any[], playerDat
  * the losers by pledge amount.
  *
  */
-const handleAttack = async({ args, playerData }: { args: any[], playerData: PlayerData }, type: AttackTypes): Promise<CommandReturn> => {
+const handleAttack = async (
+  { args, playerData }: { args: any[]; playerData: PlayerData },
+  type: AttackTypes
+): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     sieges: {},
     reply: '',
-    success: true
+    success: true,
   };
 
   // Check tile
   const selectedTile: string = args[0].toLowerCase();
   const tileOwner = await Database.tileOwner.getTileOwner(selectedTile);
   const houseSieges = await Database.siege.countHouseSieges(playerData.house);
-  const validBlockade: boolean = tileOwner !== null && tileOwner.type === 'port' && type === 'blockade';
-  const validSiege: boolean = tileOwner !== null && tileOwner.type === 'castle' && type === 'siege';
+  const validBlockade: boolean =
+    tileOwner !== null && tileOwner.type === 'port' && type === 'blockade';
+  const validSiege: boolean =
+    tileOwner !== null && tileOwner.type === 'castle' && type === 'siege';
 
-  if(tileOwner !== null && (validBlockade || validSiege)) {
+  if (tileOwner !== null && (validBlockade || validSiege)) {
     // Tile is good. Make sure it is owned by a house at war with
-    if(playerData.house === tileOwner.house) {
-      commandReturn.reply = type === 'blockade'
-        ? 'Your house owns this port'
-        : 'Your house owns this castle';
-    } else if(houseSieges >= 3) {
+    if (playerData.house === tileOwner.house) {
+      commandReturn.reply =
+        type === 'blockade'
+          ? 'Your house owns this port'
+          : 'Your house owns this castle';
+    } else if (houseSieges >= 3) {
       commandReturn.reply = 'Your house already has 3 declared attacks';
     } else {
       const war = await Database.war.getWarBetweenHouses(
@@ -227,54 +247,71 @@ const handleAttack = async({ args, playerData }: { args: any[], playerData: Play
         tileOwner.house
       );
 
-      if(war !== null) {
+      if (war !== null) {
         // Make sure a siege does not already exist on this tile
         const existingSiege = await Database.siege.getSiegeOnTile(selectedTile);
 
-        if(existingSiege !== null) {
-          commandReturn.reply = type === 'blockade'
-            ? 'A blockade is in progress on that port'
-            : 'A siege is in progress on that castle';
+        if (existingSiege !== null) {
+          commandReturn.reply =
+            type === 'blockade'
+              ? 'A blockade is in progress on that port'
+              : 'A siege is in progress on that castle';
         } else {
           // Good to go! Add the siege
           (commandReturn.sieges as any).add = Database.siege.createSiege({
             tile: tileOwner,
             attacker: playerData.house,
-            time: Date.now() + utils.hoursToMs(8)
+            time: Date.now() + utils.hoursToMs(8),
           });
-          commandReturn.reply = type === 'blockade'
-            ? 'A blockade has been started on the port'
-            : 'A siege has been started on the castle';
+          commandReturn.reply =
+            type === 'blockade'
+              ? 'A blockade has been started on the port'
+              : 'A siege has been started on the castle';
         }
       } else {
-        commandReturn.reply = 'Your house is not at war with ' +
-          `<@&${tileOwner.house}>`;
+        commandReturn.reply =
+          'Your house is not at war with ' + `<@&${tileOwner.house}>`;
       }
     }
   } else {
-    commandReturn.reply = type === 'blockade'
-      ? `${selectedTile} is not a port`
-      : `${selectedTile} is not a castle`;
+    commandReturn.reply =
+      type === 'blockade'
+        ? `${selectedTile} is not a port`
+        : `${selectedTile} is not a castle`;
   }
 
   return commandReturn;
 };
 
-const siege = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => await handleAttack(
-  {
-    args,
-    playerData
-  },
-  'siege'
-);
+const siege = async ({
+  args,
+  playerData,
+}: {
+  args: any[];
+  playerData: PlayerData;
+}): Promise<CommandReturn> =>
+  await handleAttack(
+    {
+      args,
+      playerData,
+    },
+    'siege'
+  );
 
-const blockade = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => await handleAttack(
-  {
-    args,
-    playerData
-  },
-  'blockade'
-);
+const blockade = async ({
+  args,
+  playerData,
+}: {
+  args: any[];
+  playerData: PlayerData;
+}): Promise<CommandReturn> =>
+  await handleAttack(
+    {
+      args,
+      playerData,
+    },
+    'blockade'
+  );
 
 /*
  * Open a vote between two waring houses to stop the war. majority of each
@@ -299,11 +336,17 @@ const blockade = async({ args, playerData }: { args: any[], playerData: PlayerDa
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const pact = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => {
+const pact = async ({
+  args,
+  playerData,
+}: {
+  args: any[];
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     votes: {},
     reply: '',
-    success: true
+    success: true,
   };
 
   // Figure it out
@@ -311,17 +354,19 @@ const pact = async({ args, playerData }: { args: any[], playerData: PlayerData }
   const playerChoice: string = args[1].toLowerCase();
 
   // See if the player has already voted for this
-  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(playerData, houseVote, ['pact_yes', 'pact_no']);
+  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(
+    playerData,
+    houseVote,
+    ['pact_yes', 'pact_no']
+  );
 
-  if(existingVote.length > 0) {
+  if (existingVote.length > 0) {
     // Already voted in this pact vote
     const [vote] = existingVote;
-    const choice = vote.type === 'pact_yes'
-      ? 'YES'
-      : 'NO';
+    const choice = vote.type === 'pact_yes' ? 'YES' : 'NO';
 
-    commandReturn.reply = `You have already voted ${choice} to a pact ` +
-      `with <@&${vote.choice}>`;
+    commandReturn.reply =
+      `You have already voted ${choice} to a pact ` + `with <@&${vote.choice}>`;
   } else {
     // Ensure a war exists between the houses
     const existingWar = await Database.war.getWarBetweenHouses(
@@ -329,32 +374,32 @@ const pact = async({ args, playerData }: { args: any[], playerData: PlayerData }
       houseVote
     );
 
-    if(existingWar !== null) {
+    if (existingWar !== null) {
       // Check yes/no choice
       let pactType = '';
 
-      if(playerChoice === 'yes') {
+      if (playerChoice === 'yes') {
         pactType = 'pact_yes';
-      } else if(playerChoice === 'no') {
+      } else if (playerChoice === 'no') {
         pactType = 'pact_no';
       }
 
-      if(pactType !== '') {
+      if (pactType !== '') {
         // Truce vote is good. Add it
         (commandReturn.votes as any).add = Database.vote.createVote({
           type: pactType,
           user: playerData,
           choice: houseVote,
-          time: Date.now()
+          time: Date.now(),
         });
-        commandReturn.reply = `Your choice of ${playerChoice} was ` +
-          'recorded';
+        commandReturn.reply =
+          `Your choice of ${playerChoice} was ` + 'recorded';
       } else {
         commandReturn.reply = 'You must vote YES or NO';
       }
     } else {
-      commandReturn.reply = 'Your house is not at war with ' +
-        `<@&${houseVote}>`;
+      commandReturn.reply =
+        'Your house is not at war with ' + `<@&${houseVote}>`;
     }
   }
 
@@ -391,11 +436,17 @@ const pact = async({ args, playerData }: { args: any[], playerData: PlayerData }
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const war = async({ args, playerData }: { args: any[], playerData: PlayerData }): Promise<CommandReturn> => {
+const war = async ({
+  args,
+  playerData,
+}: {
+  args: any[];
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     votes: {},
     reply: '',
-    success: true
+    success: true,
   };
 
   // Figure it out
@@ -403,17 +454,19 @@ const war = async({ args, playerData }: { args: any[], playerData: PlayerData })
   const playerChoice: string = args[1].toLowerCase();
 
   // See if the player has already voted for this
-  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(playerData, houseVote, ['war_yes', 'war_no']);
+  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(
+    playerData,
+    houseVote,
+    ['war_yes', 'war_no']
+  );
 
-  if(existingVote.length > 0) {
+  if (existingVote.length > 0) {
     // Already voted in this war vote
     const [vote] = existingVote;
-    const choice = vote.type === 'war_yes'
-      ? 'YES'
-      : 'NO';
+    const choice = vote.type === 'war_yes' ? 'YES' : 'NO';
 
-    commandReturn.reply = `You have already voted ${choice} to a war ` +
-      `with <@&${vote.choice}>`;
+    commandReturn.reply =
+      `You have already voted ${choice} to a war ` + `with <@&${vote.choice}>`;
   } else {
     // Ensure a war exists between the houses
     const existingPact = await Database.pact.getPactBetweenHouses(
@@ -421,32 +474,32 @@ const war = async({ args, playerData }: { args: any[], playerData: PlayerData })
       houseVote
     );
 
-    if(existingPact !== null) {
+    if (existingPact !== null) {
       // Check yes/no choice
       let warType = '';
 
-      if(playerChoice === 'yes') {
+      if (playerChoice === 'yes') {
         warType = 'war_yes';
-      } else if(playerChoice === 'no') {
+      } else if (playerChoice === 'no') {
         warType = 'war_no';
       }
 
-      if(warType !== '') {
+      if (warType !== '') {
         // Truce vote is good. Add it
         (commandReturn.votes as any).add = Database.vote.createVote({
           type: warType,
           user: playerData,
           choice: houseVote,
-          time: Date.now()
+          time: Date.now(),
         });
-        commandReturn.reply = `Your choice of ${playerChoice} was ` +
-          'recorded';
+        commandReturn.reply =
+          `Your choice of ${playerChoice} was ` + 'recorded';
       } else {
         commandReturn.reply = 'You must vote YES or NO';
       }
     } else {
-      commandReturn.reply = 'Your house does not have a pact with ' +
-        `<@&${houseVote}>`;
+      commandReturn.reply =
+        'Your house does not have a pact with ' + `<@&${houseVote}>`;
     }
   }
 
@@ -458,70 +511,38 @@ export const dispatch: CommandDispatch = {
     function: join,
     args: ['playerData'],
     command_args: [[]],
-    usage: []
+    usage: [],
   },
   pledge: {
     function: pledge,
-    args: [
-      'args',
-      'playerData',
-      'playerRoles'
-    ],
-    command_args: [
-      [
-        ArgTypes.string,
-        ArgTypes.number,
-        ArgTypes.string
-      ]
-    ],
-    usage: ['TILE NUMBER attack|defend']
+    args: ['args', 'playerData', 'playerRoles'],
+    command_args: [[ArgTypes.string, ArgTypes.number, ArgTypes.string]],
+    usage: ['TILE NUMBER attack|defend'],
   },
   siege: {
     function: siege,
-    args: [
-      'args',
-      'playerData'
-    ],
+    args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
     usage: ['TILE'],
-    cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade)
+    cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
   },
   blockade: {
     function: blockade,
-    args: [
-      'args',
-      'playerData'
-    ],
+    args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
     usage: ['TILE'],
-    cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade)
+    cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
   },
   pact: {
     function: pact,
-    args: [
-      'args',
-      'playerData'
-    ],
-    command_args: [
-      [
-        ArgTypes.house,
-        ArgTypes.string
-      ]
-    ],
-    usage: ['HOUSE yes|no']
+    args: ['args', 'playerData'],
+    command_args: [[ArgTypes.house, ArgTypes.string]],
+    usage: ['HOUSE yes|no'],
   },
   war: {
     function: war,
-    args: [
-      'args',
-      'playerData'
-    ],
-    command_args: [
-      [
-        ArgTypes.house,
-        ArgTypes.string
-      ]
-    ],
-    usage: ['HOUSE yes|no']
-  }
+    args: ['args', 'playerData'],
+    command_args: [[ArgTypes.house, ArgTypes.string]],
+    usage: ['HOUSE yes|no'],
+  },
 };

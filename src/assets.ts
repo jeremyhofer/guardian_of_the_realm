@@ -1,4 +1,13 @@
-import { ArmyUnits, AvailableStoreItems, Buildings, Houses, Rank, GameRoles, StoreItems, EmojiNames } from './types';
+import {
+  ArmyUnits,
+  AvailableStoreItems,
+  Buildings,
+  Houses,
+  Rank,
+  GameRoles,
+  StoreItems,
+  EmojiNames,
+} from './types';
 
 // custom emojis require the name:guild_emoji_id to be sent
 export const emojis: Record<EmojiNames, string> = {
@@ -53,113 +62,102 @@ export const emojis: Record<EmojiNames, string> = {
   PortUnsworn: '<:PortUnsworn:656628479160483922>',
   PortWolf: '<:PortWolf:656628138536599557>',
   Unsworn: '<:Unsworn:575488619389779979>',
-  Warship: '<:Warship:627639570565038140>'
+  Warship: '<:Warship:627639570565038140>',
 };
 
 export const storeItems: Record<AvailableStoreItems, StoreItems> = {
   apothecary: {
     type: 'income',
-    flavor: 'Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.',
-    cost: 500
+    flavor:
+      'Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.',
+    cost: 500,
   },
   armory: {
     type: 'income',
-    flavor: 'Craftsmen must be brought in to make armor for your Men-at-Arms, plus you can sell the extras.',
-    cost: 500
+    flavor:
+      'Craftsmen must be brought in to make armor for your Men-at-Arms, plus you can sell the extras.',
+    cost: 500,
   },
   baron: {
     type: 'title',
-    flavor: 'You\'ve scraped together a sizeable pile of coins. Now it\'s time to pitch tents for up to 300 men, and docks for 30 ships.',
-    cost: 3000
+    flavor:
+      "You've scraped together a sizeable pile of coins. Now it's time to pitch tents for up to 300 men, and docks for 30 ships.",
+    cost: 3000,
   },
   barrack: {
     type: 'income',
-    flavor: 'A warm hearth, and stout walls reassure your people that they are protected by a strong lord, which increases tax revenues.',
-    cost: 1500
+    flavor:
+      'A warm hearth, and stout walls reassure your people that they are protected by a strong lord, which increases tax revenues.',
+    cost: 1500,
   },
   blacksmith: {
     type: 'income',
-    flavor: 'Nobles continually make war, but wars require weapons, something a blacksmith provides.',
-    cost: 1500
+    flavor:
+      'Nobles continually make war, but wars require weapons, something a blacksmith provides.',
+    cost: 1500,
   },
   bordello: {
     type: 'income',
-    flavor: 'The Matriarchy seek the finer things of life, and most especially during war, their caring touch is need.',
-    cost: 1000
+    flavor:
+      'The Matriarchy seek the finer things of life, and most especially during war, their caring touch is need.',
+    cost: 1000,
   },
   duke: {
     type: 'title',
-    flavor: 'You are without peer in the land, best watch your back. Good thing you\'ve got barracks for 1000 men, and captains for 100 ships.',
+    flavor:
+      "You are without peer in the land, best watch your back. Good thing you've got barracks for 1000 men, and captains for 100 ships.",
     cost: 10000,
-    requires: 'earl'
+    requires: 'earl',
   },
   earl: {
     type: 'title',
-    flavor: 'People around these lands grow envious. You expand your castle with rooms for up to 600 men, and supplies for 60 ships.',
+    flavor:
+      'People around these lands grow envious. You expand your castle with rooms for up to 600 men, and supplies for 60 ships.',
     cost: 6000,
-    requires: 'baron'
+    requires: 'baron',
   },
   men: {
     type: 'men',
-    flavor: 'Ugly, smelly and likely to rip off your head, they\'re exactly what you need to win battles.',
-    cost: 100
+    flavor:
+      "Ugly, smelly and likely to rip off your head, they're exactly what you need to win battles.",
+    cost: 100,
   },
   monastery: {
     type: 'income',
-    flavor: 'The Patriarchy reject common indulgences and vices. Their Inquisitions into Tainted matters are swift and violent.',
-    cost: 1000
+    flavor:
+      'The Patriarchy reject common indulgences and vices. Their Inquisitions into Tainted matters are swift and violent.',
+    cost: 1000,
   },
   haunt: {
     type: 'income',
-    flavor: 'A haunt for the Tainted elements of your court, in an old mine away from prying eyes, is a cunning investment.',
-    cost: 1000
+    flavor:
+      'A haunt for the Tainted elements of your court, in an old mine away from prying eyes, is a cunning investment.',
+    cost: 1000,
   },
   ships: {
     type: 'ships',
-    flavor: 'These fine vessels are build by the fairly reliable craftsmen of the shipwrights guild.',
-    cost: 1000
+    flavor:
+      'These fine vessels are build by the fairly reliable craftsmen of the shipwrights guild.',
+    cost: 1000,
   },
   weavery: {
     type: 'income',
-    flavor: 'Every noble should have a weavery to spin linens for sale and cloath for the peasants.',
-    cost: 500
-  }
+    flavor:
+      'Every noble should have a weavery to spin linens for sale and cloath for the peasants.',
+    cost: 500,
+  },
 };
 
 // TODO: consider changing up mappings and referencing of roleId in guild <-> name <-> troop
 export const gameRoles: GameRoles = {
-  '625905668263510017': [
-    'guardian',
-    'realm'
-  ],
-  '572290551357898781': [
-    'assassins',
-    'scorpion'
-  ],
-  '572288816652484608': [
-    'bannermen',
-    'falcon'
-  ],
-  '572291484288548929': [
-    'berserkers',
-    'wolf'
-  ],
-  '572288999843168266': [
-    'freelancers',
-    'lion'
-  ],
-  '572288151419355136': [
-    'knights',
-    'bear'
-  ],
-  '572289104742580254': [
-    'shinobi',
-    'hydra'
-  ],
-  '572288492101435408': [
-    'ronin',
-    'dragon'
-  ],
+  '625905668263510017': ['guardian', 'realm'],
+  '572290551357898781': ['assassins', 'scorpion'],
+  '572288816652484608': ['bannermen', 'falcon'],
+  '572291484288548929': ['berserkers', 'wolf'],
+  '572288999843168266': ['freelancers', 'lion'],
+  '572288151419355136': ['knights', 'bear'],
+  '572289104742580254': ['shinobi', 'hydra'],
+  '572288492101435408': ['ronin', 'dragon'],
   '575048350915756050': ['barrack'],
   '575048286059102209': ['armory'],
   '629752243440058388': ['monastery'],
@@ -170,7 +168,7 @@ export const gameRoles: GameRoles = {
   '584864539259043912': ['duke'],
   '575048205234995225': ['blacksmith'],
   '587764622296219651': ['baron'],
-  '629752308011630605': ['apothecary']
+  '629752308011630605': ['apothecary'],
 };
 
 export const houses: string[] = [
@@ -181,7 +179,7 @@ export const houses: string[] = [
   '572288999843168266',
   '572288151419355136',
   '572289104742580254',
-  '572288492101435408'
+  '572288492101435408',
 ];
 
 export const houseTiles: { [key: string]: Houses } = {
@@ -192,7 +190,7 @@ export const houseTiles: { [key: string]: Houses } = {
   '572288999843168266': 'Lion',
   '572288151419355136': 'Bear',
   '572289104742580254': 'Hydra',
-  '572288492101435408': 'Dragon'
+  '572288492101435408': 'Dragon',
 };
 
 export const dailyPayouts: Record<Buildings, number> = {
@@ -203,39 +201,39 @@ export const dailyPayouts: Record<Buildings, number> = {
   bordello: 1000,
   haunt: 1000,
   monastery: 1000,
-  weavery: 500
+  weavery: 500,
 };
 
 export const roleTroopLimits: Record<Rank, number> = {
   baron: 300,
   earl: 600,
   duke: 1000,
-  unsworn: 100
+  unsworn: 100,
 };
 
 export const roleShipLimits: Record<Rank, number> = {
   baron: 30,
   earl: 60,
   duke: 100,
-  unsworn: 10
+  unsworn: 10,
 };
 
 export const dailyCosts: Record<ArmyUnits, number> = {
   men: 2,
-  ships: 20
+  ships: 20,
 };
 
 // TODO: change all props to camelCase
 export const replyChannels: { [key: string]: string } = {
   command_tent: '572265598193500160',
   battle_reports: '597614956732612613',
-  overworld: '629077475745595402'
+  overworld: '629077475745595402',
 };
 
 export const blockedChannels: string[] = [
   '592985410536210433',
   '572265535828393999',
-  '628759338579918856'
+  '628759338579918856',
 ];
 
 export const playerInteractChannels: string[] = ['572265598193500160'];
@@ -257,7 +255,7 @@ export const timeoutLengths: { [key: string]: number } = {
   pray: 1,
   subvert: 12,
   train: 12,
-  work: 6
+  work: 6,
 };
 
 // TODO: change all props to camelCase
@@ -307,5 +305,5 @@ export const rewardPayoutsPenalties: { [key: string]: number } = {
   train_penalty_min: 10,
   train_penalty_max: 100,
   work_reward_min: 500,
-  work_reward_max: 2000
+  work_reward_max: 2000,
 };

@@ -24,9 +24,19 @@ export const AppDataSource = new DataSource({
   database: 'database.sqlite',
   synchronize: true,
   logging: false,
-  entities: [PlayerData, Loan, War, Pact, Vote, TileOwner, Siege, Pledge, Tracker],
+  entities: [
+    PlayerData,
+    Loan,
+    War,
+    Pact,
+    Vote,
+    TileOwner,
+    Siege,
+    Pledge,
+    Tracker,
+  ],
   migrations: [],
-  subscribers: []
+  subscribers: [],
 });
 
 export const Database = {
@@ -38,5 +48,5 @@ export const Database = {
   tileOwner: new TileOwnerDAO(AppDataSource.getRepository(TileOwner)),
   siege: new SiegeDAO(AppDataSource.getRepository(Siege)),
   pledge: new PledgeDAO(AppDataSource.getRepository(Pledge)),
-  tracker: new TrackerDAO(AppDataSource.getRepository(Tracker))
+  tracker: new TrackerDAO(AppDataSource.getRepository(Tracker)),
 };

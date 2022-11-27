@@ -13,7 +13,8 @@ export class PlayerDataDAO {
   TODO: test this query
   */
   async getPlayerCountsInAllHouses(): Promise<{ [key: string]: number }> {
-    const queryResult = await this._repository.createQueryBuilder()
+    const queryResult = await this._repository
+      .createQueryBuilder()
       .select('house')
       .addSelect('count(*) as numMembers')
       .where('playerData.house != ""')
@@ -35,38 +36,49 @@ export class PlayerDataDAO {
     const existing = await this._repository.findOne({
       relations: {
         pledges: true,
-        loans: true
+        loans: true,
       },
       where: {
-        user
-      }
+        user,
+      },
     });
     return existing !== null
       ? existing
       : this._repository.create({
-      ...defaultPlayer,
-      user
-    });
+          ...defaultPlayer,
+          user,
+        });
   }
 
   // TODO: determine how to filter keys of PlayerData for only those with a number type
-  async increment(playerData: PlayerData, property: keyof PlayerData, value: number): Promise<UpdateResult> {
+  async increment(
+    playerData: PlayerData,
+    property: keyof PlayerData,
+    value: number
+  ): Promise<UpdateResult> {
     return await this._repository.increment(playerData, property, value);
   }
 
   // TODO: test this query
-  async grantRolePayoutToAllPlayers(playerIds: string[], value: number): Promise<UpdateResult> {
+  async grantRolePayoutToAllPlayers(
+    playerIds: string[],
+    value: number
+  ): Promise<UpdateResult> {
     return await this._repository.update(playerIds, {
-      money: () => `money + ${value}`
+      money: () => `money + ${value}`,
     });
   }
 
   // TODO: test this query
-  async deductTroopCosts(menCost: number, shipCost: number): Promise<UpdateResult> {
-    return await this._repository.createQueryBuilder()
+  async deductTroopCosts(
+    menCost: number,
+    shipCost: number
+  ): Promise<UpdateResult> {
+    return await this._repository
+      .createQueryBuilder()
       .update()
       .set({
-        money: () => `money - (men * ${menCost}) - (ships * ${shipCost})`
+        money: () => `money - (men * ${menCost}) - (ships * ${shipCost})`,
       })
       .execute();
   }
@@ -80,10 +92,11 @@ export class PlayerDataDAO {
   }
 
   async resetAllPlayers(): Promise<UpdateResult> {
-    return await this._repository.createQueryBuilder()
+    return await this._repository
+      .createQueryBuilder()
       .update()
       .set({
-        ...defaultPlayer
+        ...defaultPlayer,
       })
       .execute();
   }

@@ -6,32 +6,40 @@ import * as botHandlers from './bot';
 import * as utils from './utils';
 import * as assets from './assets';
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 let clientReady = false;
 let gameActive = false;
 let tickProcessing = false;
 
-AppDataSource.initialize().then(async() => {
-  await client.login(auth.token).catch((err) => {
-    console.error('issue logging in to discord api');
-    console.error(err);
-  });
+AppDataSource.initialize()
+  .then(async () => {
+    await client.login(auth.token).catch((err) => {
+      console.error('issue logging in to discord api');
+      console.error(err);
+    });
 
-  client.on('ready', async() => {
-    console.log(`Logged in as ${client.user?.tag ?? 'BOT NAME ISSUE'}!`);
-    clientReady = true;
-    gameActive = await game_tasks.isGameActive();
-  });
+    client.on('ready', async () => {
+      console.log(`Logged in as ${client.user?.tag ?? 'BOT NAME ISSUE'}!`);
+      clientReady = true;
+      gameActive = await game_tasks.isGameActive();
+    });
 
-  client.on('messageCreate', async(message) => {
-    await botHandlers.messageHandler(message, gameActive);
+    client.on('messageCreate', async (message) => {
+      await botHandlers.messageHandler(message, gameActive);
+    });
+  })
+  .catch((error) => {
+    console.error('app init error');
+    console.error(error);
+    process.exit(1);
   });
-}).catch(error => {
-  console.error('app init error');
-  console.error(error);
-  process.exit(1);
-});
 
 setInterval(() => {
   /*
@@ -43,20 +51,25 @@ setInterval(() => {
    * Check to see if a siege should be resolved
    * ST guild ID: 572263893729017893
    */
-  if(clientReady && gameActive && !tickProcessing) {
+  if (clientReady && gameActive && !tickProcessing) {
     const guild = client.guilds.cache.get('572263893729017893');
-    if(guild !== undefined) {
+    if (guild !== undefined) {
       tickProcessing = true;
       const now = Date.now();
       const expirationTime =
         now - utils.hoursToMs(assets.timeoutLengths.vote_expiration);
       // TODO: determine how to better loop game tick to avoid conflicts
-      game_tasks.rolePayouts(guild, now)
-        .then(async() => await game_tasks.collectLoans(guild, now))
-        .then(async() => await game_tasks.resolveWarVotes(guild, expirationTime))
-        .then(async() => await game_tasks.resolvePactVotes(guild, expirationTime))
-        .then(async() => await game_tasks.resolveSieges(guild, now))
-        .then(async() => {
+      game_tasks
+        .rolePayouts(guild, now)
+        .then(async () => await game_tasks.collectLoans(guild, now))
+        .then(
+          async () => await game_tasks.resolveWarVotes(guild, expirationTime)
+        )
+        .then(
+          async () => await game_tasks.resolvePactVotes(guild, expirationTime)
+        )
+        .then(async () => await game_tasks.resolveSieges(guild, now))
+        .then(async () => {
           gameActive = await game_tasks.isGameActive();
           tickProcessing = false;
         })

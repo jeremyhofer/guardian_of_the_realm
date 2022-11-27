@@ -16,31 +16,43 @@ export class WarDAO {
     return await this._repository.save(this._repository.create(pWar));
   }
 
-  async createMultipleWars(houseMapping: Array<[string, string]>): Promise<War[]> {
+  async createMultipleWars(
+    houseMapping: Array<[string, string]>
+  ): Promise<War[]> {
     return await this._repository.save(
-      houseMapping.map(
-        ([house1, house2]) => this._repository.create({ house_a: house1, house_b: house2 })
+      houseMapping.map(([house1, house2]) =>
+        this._repository.create({ house_a: house1, house_b: house2 })
       )
     );
   }
 
-  async getWarBetweenHouses(house1: string, house2: string): Promise<War | null> {
+  async getWarBetweenHouses(
+    house1: string,
+    house2: string
+  ): Promise<War | null> {
     return await this._repository.findOneBy([
       {
         house_a: house1,
-        house_b: house2
+        house_b: house2,
       },
       {
         house_a: house2,
-        house_b: house1
-      }
+        house_b: house1,
+      },
     ]);
   }
 
-  async removeWarBetweenHouses(house1: string, house2: string): Promise<DeleteResult> {
-    return await this._repository.createQueryBuilder()
+  async removeWarBetweenHouses(
+    house1: string,
+    house2: string
+  ): Promise<DeleteResult> {
+    return await this._repository
+      .createQueryBuilder()
       .delete()
-      .where('(war.house_a = :house1 AND war.house_b = :house2) OR (war.house_a = :house2 AND war.house_b = :house1)', { house1, house2 })
+      .where(
+        '(war.house_a = :house1 AND war.house_b = :house2) OR (war.house_a = :house2 AND war.house_b = :house1)',
+        { house1, house2 }
+      )
       .execute();
   }
 

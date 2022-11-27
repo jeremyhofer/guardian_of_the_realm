@@ -1,4 +1,9 @@
-import { DeleteResult, LessThanOrEqual, Repository, UpdateResult } from 'typeorm';
+import {
+  DeleteResult,
+  LessThanOrEqual,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { PlayerData } from '../entity/PlayerData';
 import { Siege } from '../entity/Siege';
 import { TileOwner } from '../entity/TileOwner';
@@ -13,47 +18,50 @@ export class SiegeDAO {
   async getAllSieges(): Promise<Siege[]> {
     return await this._repository.find({
       relations: {
-        tile: true
-      }
+        tile: true,
+      },
     });
   }
 
   async getSiegeById(siegeId: number): Promise<Siege | null> {
     return await this._repository.findOneBy({
-      siege_id: siegeId
+      siege_id: siegeId,
     });
   }
 
   async getSiegeOnTile(qTile: string): Promise<Siege | null> {
     return await this._repository.findOneBy({
       tile: {
-        tile: qTile
-      }
+        tile: qTile,
+      },
     });
   }
 
-  async getAllSiegeIdBetweenTwoHouses(houseA: string, houseB: string): Promise<Siege[]> {
+  async getAllSiegeIdBetweenTwoHouses(
+    houseA: string,
+    houseB: string
+  ): Promise<Siege[]> {
     return await this._repository.find({
       relations: {
         tile: true,
         pledges: {
-          user: true
-        }
+          user: true,
+        },
       },
       where: [
         {
           attacker: houseA,
           tile: {
-            house: houseB
-          }
+            house: houseB,
+          },
         },
         {
           attacker: houseB,
           tile: {
-            house: houseA
-          }
-        }
-      ]
+            house: houseA,
+          },
+        },
+      ],
     });
   }
 
@@ -61,11 +69,11 @@ export class SiegeDAO {
     return await this._repository.findOne({
       relations: {
         pledges: true,
-        tile: true
+        tile: true,
       },
       where: {
-        time: LessThanOrEqual(expireTime)
-      }
+        time: LessThanOrEqual(expireTime),
+      },
     });
   }
 
@@ -73,13 +81,13 @@ export class SiegeDAO {
     return await this._repository.find({
       relations: {
         pledges: true,
-        tile: true
+        tile: true,
       },
       where: {
         pledges: {
-          user
-        }
-      }
+          user,
+        },
+      },
     });
   }
 
@@ -91,7 +99,10 @@ export class SiegeDAO {
     return await this._repository.save(loan);
   }
 
-  async updateSiegeMessage(siegeId: number, message: string): Promise<UpdateResult> {
+  async updateSiegeMessage(
+    siegeId: number,
+    message: string
+  ): Promise<UpdateResult> {
     return await this._repository.update(siegeId, { message });
   }
 

@@ -8,13 +8,17 @@ import { PlayerData } from '../entity/PlayerData';
  * Possibly earn money. 1h cooldown
  * min: 0, max: 200
  */
-const pray = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+const pray = async ({
+  playerData,
+}: {
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     reply: '',
     update: {
-      playerData
+      playerData,
     },
-    success: true
+    success: true,
   };
 
   /*
@@ -27,10 +31,9 @@ const pray = async({ playerData }: { playerData: PlayerData }): Promise<CommandR
   );
   (commandReturn.update?.playerData as PlayerData).money += payout;
   const replyTemplate = utils.randomElement(flavor.pray);
-  commandReturn.reply = utils.templateReplace(
-    replyTemplate,
-    { amount: payout }
-  );
+  commandReturn.reply = utils.templateReplace(replyTemplate, {
+    amount: payout,
+  });
 
   return commandReturn;
 };
@@ -39,18 +42,22 @@ const pray = async({ playerData }: { playerData: PlayerData }): Promise<CommandR
  * Possible earn money. 12h cooldown
  * min: 1000, max: 4000. 50/50. fine 200-1000
  */
-const subvert = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+const subvert = async ({
+  playerData,
+}: {
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     reply: '',
     update: {
-      playerData
+      playerData,
     },
-    success: true
+    success: true,
   };
 
   // Determine if this is a successful attempt
   const chance = utils.getRandomValueInRange(1, 100);
-  if(chance >= 50) {
+  if (chance >= 50) {
     // Success! Pay reward
     const payout = utils.getRandomValueInRange(
       assets.rewardPayoutsPenalties.subvert_reward_min,
@@ -58,10 +65,9 @@ const subvert = async({ playerData }: { playerData: PlayerData }): Promise<Comma
     );
     (commandReturn.update?.playerData as PlayerData).money += payout;
     const replyTemplate = utils.randomElement(flavor.subvert_success);
-    commandReturn.reply = utils.templateReplace(
-      replyTemplate,
-      { amount: payout }
-    );
+    commandReturn.reply = utils.templateReplace(replyTemplate, {
+      amount: payout,
+    });
   } else {
     // Failure. Take penalty.
     const penalty = utils.getRandomValueInRange(
@@ -70,10 +76,9 @@ const subvert = async({ playerData }: { playerData: PlayerData }): Promise<Comma
     );
     (commandReturn.update?.playerData as PlayerData).money -= penalty;
     const replyTemplate = utils.randomElement(flavor.subvert_fail);
-    commandReturn.reply = utils.templateReplace(
-      replyTemplate,
-      { amount: penalty }
-    );
+    commandReturn.reply = utils.templateReplace(replyTemplate, {
+      amount: penalty,
+    });
   }
 
   return commandReturn;
@@ -83,18 +88,22 @@ const subvert = async({ playerData }: { playerData: PlayerData }): Promise<Comma
  * Possible earn men. 12h cooldown. 20% fail risk - fine 10-100
  * min: 1, max : 20
  */
-const train = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+const train = async ({
+  playerData,
+}: {
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     reply: '',
     update: {
-      playerData
+      playerData,
     },
-    success: true
+    success: true,
   };
 
   // Determine if this is a successful attempt
   const chance = utils.getRandomValueInRange(1, 100);
-  if(chance >= 20) {
+  if (chance >= 20) {
     // Success! Pay reward
     const payout = utils.getRandomValueInRange(
       assets.rewardPayoutsPenalties.train_reward_min,
@@ -102,13 +111,10 @@ const train = async({ playerData }: { playerData: PlayerData }): Promise<Command
     );
     (commandReturn.update?.playerData as PlayerData).men += payout;
     const replyTemplate = utils.randomElement(flavor.train_success);
-    commandReturn.reply = utils.templateReplace(
-      replyTemplate,
-      {
-        amount: payout,
-        eMenAtArms: assets.emojis.MenAtArms
-      }
-    );
+    commandReturn.reply = utils.templateReplace(replyTemplate, {
+      amount: payout,
+      eMenAtArms: assets.emojis.MenAtArms,
+    });
   } else {
     // Failure. Take penalty.
     const penalty = utils.getRandomValueInRange(
@@ -117,10 +123,9 @@ const train = async({ playerData }: { playerData: PlayerData }): Promise<Command
     );
     (commandReturn.update?.playerData as PlayerData).money -= penalty;
     const replyTemplate = utils.randomElement(flavor.train_fail);
-    commandReturn.reply = utils.templateReplace(
-      replyTemplate,
-      { amount: penalty }
-    );
+    commandReturn.reply = utils.templateReplace(replyTemplate, {
+      amount: penalty,
+    });
   }
 
   return commandReturn;
@@ -130,13 +135,17 @@ const train = async({ playerData }: { playerData: PlayerData }): Promise<Command
  * Gain money. 6h cooldown
  * min: 500, max: 2000
  */
-const work = async({ playerData }: { playerData: PlayerData }): Promise<CommandReturn> => {
+const work = async ({
+  playerData,
+}: {
+  playerData: PlayerData;
+}): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     reply: '',
     update: {
-      playerData
+      playerData,
     },
-    success: true
+    success: true,
   };
 
   /*
@@ -149,10 +158,9 @@ const work = async({ playerData }: { playerData: PlayerData }): Promise<CommandR
   );
   (commandReturn.update?.playerData as PlayerData).money += payout;
   const replyTemplate = utils.randomElement(flavor.work);
-  commandReturn.reply = utils.templateReplace(
-    replyTemplate,
-    { amount: payout }
-  );
+  commandReturn.reply = utils.templateReplace(replyTemplate, {
+    amount: payout,
+  });
 
   return commandReturn;
 };
@@ -163,43 +171,44 @@ export const dispatch: CommandDispatch = {
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pray),
       field: 'pray_last_time',
-      reply: 'No one is around to hear your prayers for another'
+      reply: 'No one is around to hear your prayers for another',
     },
     args: ['playerData'],
     command_args: [[]],
-    usage: ['']
+    usage: [''],
   },
   subvert: {
     function: subvert,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.subvert),
       field: 'subvert_last_time',
-      reply: 'The watch is in high presence right now. You should try again in another'
+      reply:
+        'The watch is in high presence right now. You should try again in another',
     },
     args: ['playerData'],
     command_args: [[]],
-    usage: ['']
+    usage: [''],
   },
   train: {
     function: train,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.train),
       field: 'train_last_time',
-      reply: 'You have been training tirelessly. You should rest for '
+      reply: 'You have been training tirelessly. You should rest for ',
     },
     args: ['playerData'],
     command_args: [[]],
-    usage: ['']
+    usage: [''],
   },
   work: {
     function: work,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.work),
       field: 'work_last_time',
-      reply: 'You continue to slave away, but you will not be paid for another'
+      reply: 'You continue to slave away, but you will not be paid for another',
     },
     args: ['playerData'],
     command_args: [[]],
-    usage: ['']
-  }
+    usage: [''],
+  },
 };
