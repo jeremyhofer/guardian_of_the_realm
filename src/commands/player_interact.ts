@@ -3,7 +3,7 @@ import { Database } from '../data-source';
 import * as game_tasks from '../game_tasks';
 import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
-import { AvailableStoreItems, CommandDispatch, CommandReturn } from '../types';
+import { CommandDispatch, CommandReturn } from '../types';
 import { PlayerData } from '../entity/PlayerData';
 import { Guild } from 'discord.js';
 import { ArgTypes } from '../enums';

@@ -6,7 +6,6 @@ import {
 } from 'typeorm';
 import { PlayerData } from '../entity/PlayerData';
 import { Siege } from '../entity/Siege';
-import { TileOwner } from '../entity/TileOwner';
 
 export class SiegeDAO {
   constructor(private readonly _repository: Repository<Siege>) {}

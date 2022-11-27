@@ -1,7 +1,6 @@
 import {
   CategoryChannel,
   ChannelType,
-  Emoji,
   Guild,
   GuildBasedChannel,
   TextChannel,

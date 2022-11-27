@@ -12,7 +12,8 @@
     "start": "npx ts-node src/index.ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "prettier-check": "npx prettier --check .",
-    "prettier-write": "npx prettier --write ."
+    "prettier-write": "npx prettier --write .",
+    "lint": "npx eslint ."
   },
   "dependencies": {
     "better-sqlite3": "^7.6.2",
