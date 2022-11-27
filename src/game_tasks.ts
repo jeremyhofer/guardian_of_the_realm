@@ -4,7 +4,7 @@ import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { Siege } from './entity/Siege';
 import { TileOwner } from './entity/TileOwner';
-import { Buildings, CommandReturn, Rank } from './types';
+import { buildings, Buildings, CommandReturn, Rank } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async (
@@ -1121,22 +1121,11 @@ export const generateRolesReply = ({
 }: {
   playerRoles: string[];
 }): string => {
-  const moneyRoles: Buildings[] = [
-    'apothecary',
-    'armory',
-    'barrack',
-    'blacksmith',
-    'bordello',
-    'haunt',
-    'monastery',
-    'weavery',
-  ];
-
   const troopRoles: Rank[] = ['duke', 'earl', 'baron', 'unsworn'];
 
   let reply = 'Income Roles:\n';
 
-  moneyRoles.forEach((role) => {
+  buildings.forEach((role) => {
     const roleCap = role[0].toUpperCase() + role.slice(1);
     const symbol = playerRoles.includes(role) ? ':white_check_mark:' : ':x:';
     reply += `${symbol} ${roleCap}: ${assets.dailyPayouts[role]} :moneybag: per Day\n`;

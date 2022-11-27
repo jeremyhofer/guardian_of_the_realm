@@ -72,10 +72,10 @@ export const storeItems: Record<AvailableStoreItems, StoreItems> = {
       'Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.',
     cost: 500,
   },
-  armory: {
+  mine: {
     type: 'income',
     flavor:
-      'Craftsmen must be brought in to make armor for your Men-at-Arms, plus you can sell the extras.',
+      'Ores are key to crafting the tools, armors, and weapons needed by your townsfolk and armies.',
     cost: 500,
   },
   baron: {
@@ -128,10 +128,10 @@ export const storeItems: Record<AvailableStoreItems, StoreItems> = {
       'The Patriarchy reject common indulgences and vices. Their Inquisitions into Tainted matters are swift and violent.',
     cost: 1000,
   },
-  haunt: {
+  lumber: {
     type: 'income',
     flavor:
-      'A haunt for the Tainted elements of your court, in an old mine away from prying eyes, is a cunning investment.',
+      'A bountiful forest and a productive lumber mill are key to building the infrastructure of a successful kingdom.',
     cost: 1000,
   },
   ships: {
@@ -140,10 +140,9 @@ export const storeItems: Record<AvailableStoreItems, StoreItems> = {
       'These fine vessels are build by the fairly reliable craftsmen of the shipwrights guild.',
     cost: 1000,
   },
-  weavery: {
+  farm: {
     type: 'income',
-    flavor:
-      'Every noble should have a weavery to spin linens for sale and cloath for the peasants.',
+    flavor: 'Every noble should have a fertile farm to supply their family.',
     cost: 500,
   },
 };
@@ -159,11 +158,11 @@ export const gameRoles: GameRoles = {
   '572289104742580254': ['shinobi', 'hydra'],
   '572288492101435408': ['ronin', 'dragon'],
   '575048350915756050': ['barrack'],
-  '575048286059102209': ['armory'],
+  '575048286059102209': ['mine'],
   '629752243440058388': ['monastery'],
   '596111896633933860': ['bordello'],
-  '596192462582710272': ['haunt'],
-  '593580957324279808': ['weavery'],
+  '596192462582710272': ['lumber'],
+  '593580957324279808': ['farm'],
   '587764855067377674': ['earl'],
   '584864539259043912': ['duke'],
   '575048205234995225': ['blacksmith'],
@@ -195,13 +194,13 @@ export const houseTiles: { [key: string]: Houses } = {
 
 export const dailyPayouts: Record<Buildings, number> = {
   apothecary: 500,
-  armory: 500,
+  mine: 500,
   barrack: 1500,
   blacksmith: 1500,
   bordello: 1000,
-  haunt: 1000,
+  lumber: 1000,
   monastery: 1000,
-  weavery: 500,
+  farm: 500,
 };
 
 export const roleTroopLimits: Record<Rank, number> = {

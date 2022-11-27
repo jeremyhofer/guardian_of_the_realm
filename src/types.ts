@@ -10,13 +10,13 @@ export type Rank = typeof rank[number];
 
 export const buildings = [
   'apothecary',
-  'armory',
+  'mine',
   'barrack',
   'blacksmith',
   'bordello',
   'monastery',
-  'haunt',
-  'weavery',
+  'lumber',
+  'farm',
 ];
 export type Buildings = typeof buildings[number];
 
