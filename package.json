@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "start": "npx ts-node src/index.ts",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "prettier-check": "npx prettier --check .",
+    "prettier-write": "npx prettier --write ."
   },
   "dependencies": {
     "better-sqlite3": "^7.6.2",
