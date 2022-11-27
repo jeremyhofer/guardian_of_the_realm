@@ -224,19 +224,17 @@ const market = async(): Promise<CommandReturn> => {
 
   Object.keys(assets.storeItems).forEach((value) => {
     const key = value as AvailableStoreItems;
-    if(key in assets.storeItems && 'cost' in assets.storeItems[key] && 'flavor' in assets.storeItems[key] && 'type' in assets.storeItems[key]) {
-      const itemCost = assets.storeItems[key].cost;
-      const itemFlavor = assets.storeItems[key].flavor;
-      const itemType = assets.storeItems[key].type;
-      const keyCap = key[0].toUpperCase() + key.slice(1);
-      const itemReplyText = `${keyCap}, ${itemCost} - ${itemFlavor}\n`;
-      if(itemType === 'income') {
-        titlesReply += itemReplyText;
-      } else if(itemType === 'title') {
-        nobilityReply += itemReplyText;
-      } else {
-        warriorReply += itemReplyText;
-      }
+    const itemCost = assets.storeItems[key].cost;
+    const itemFlavor = assets.storeItems[key].flavor;
+    const itemType = assets.storeItems[key].type;
+    const keyCap = key[0].toUpperCase() + key.slice(1);
+    const itemReplyText = `${keyCap}, ${itemCost} - ${itemFlavor}\n`;
+    if(itemType === 'income') {
+      titlesReply += itemReplyText;
+    } else if(itemType === 'title') {
+      nobilityReply += itemReplyText;
+    } else {
+      warriorReply += itemReplyText;
     }
   });
 

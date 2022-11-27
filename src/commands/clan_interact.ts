@@ -41,12 +41,10 @@ const join = async({ playerData }: { playerData: PlayerData }): Promise<CommandR
     const sortedHouses = [];
 
     for(const key in houseCounts) {
-      if(key in houseCounts) {
-        sortedHouses.push({
-          id: key,
-          count: houseCounts[key]
-        });
-      }
+      sortedHouses.push({
+        id: key,
+        count: houseCounts[key]
+      });
     }
 
     sortedHouses.sort((first, second) => first.count - second.count);

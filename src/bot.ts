@@ -148,8 +148,8 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
             const commandReturn = await callFunction(callArgs);
 
             if(commandReturn != null) {
-              if('update' in commandReturn && commandReturn.update !== undefined) {
-                if('playerData' in commandReturn.update && commandReturn.update.playerData !== undefined) {
+              if(commandReturn.update !== undefined) {
+                if(commandReturn.update.playerData !== undefined) {
                   // If there was a cooldown, update the last time
                   if(cooldown && 'success' in
                     commandReturn && commandReturn.success) {
@@ -158,13 +158,13 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                   await Database.playerData.setPlayer(commandReturn.update.playerData);
                 }
 
-                if('playerMention' in commandReturn.update && commandReturn.update.playerMention !== undefined) {
+                if(commandReturn.update.playerMention !== undefined) {
                   await Database.playerData.setPlayer(commandReturn.update.playerMention);
                 }
 
-                if('roles' in commandReturn.update && commandReturn.update.roles !== undefined) {
-                  if('player' in commandReturn.update.roles && commandReturn.update.roles.player !== undefined) {
-                    if('add' in commandReturn.update.roles.player) {
+                if(commandReturn.update.roles !== undefined) {
+                  if(commandReturn.update.roles.player !== undefined) {
+                    if(commandReturn.update.roles.player.add !== undefined) {
                       // Adjust player roles as necessary
                       for(const addRole of commandReturn.update.roles.player.add) {
                         // See if this is an ID. If so, use it, otherwise get ID
@@ -183,7 +183,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                       };
                     }
 
-                    if('remove' in commandReturn.update.roles.player) {
+                    if(commandReturn.update.roles.player.remove !== undefined) {
                       // Adjust the player's roles
                       for(const removeRole of commandReturn.update.roles.player.remove) {
                         const serverRole = removeRole in assets.gameRoles
@@ -200,9 +200,9 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                     }
                   }
 
-                  if('other_player' in commandReturn.update.roles && commandReturn.update.roles.other_player !== undefined) {
+                  if(commandReturn.update.roles.other_player !== undefined) {
                     const otherId = commandReturn.update.roles.other_player.id;
-                    if('add' in commandReturn.update.roles.other_player) {
+                    if(commandReturn.update.roles.other_player.add !== undefined) {
                       // Adjust other_player roles as necessary
                       for(const addRole of commandReturn.update.roles.other_player.add) {
                         // See if this is an ID. If so, use it, otherwise get ID
@@ -221,7 +221,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                       };
                     }
 
-                    if('remove' in commandReturn.update.roles.other_player) {
+                    if(commandReturn.update.roles.other_player.remove !== undefined) {
                       // Adjust the other_player's roles
                       commandReturn
                         .update
@@ -261,9 +261,9 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                 });
               }
 
-              if('send' in commandReturn && commandReturn.send !== undefined) {
-                if('message' in commandReturn.send && commandReturn.send.message !== undefined) {
-                  if('channel' in commandReturn.send && commandReturn.send.channel !== undefined) {
+              if(commandReturn.send !== undefined) {
+                if(commandReturn.send.message !== undefined) {
+                  if(commandReturn.send.channel !== undefined) {
                     const sendChannel = utils.getGuildTextChannel(msg.guild, commandReturn.send.channel);
 
                     if(sendChannel !== null) {
@@ -279,46 +279,46 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                 }
               }
 
-              if('map' in commandReturn && commandReturn.map !== undefined) {
+              if(commandReturn.map !== undefined) {
                 await msg.channel.send({
                   content: commandReturn.map.message,
                   embeds: [commandReturn.map.embed]
                 });
               }
 
-              if('loans' in commandReturn && commandReturn.loans !== undefined) {
-                if('add' in commandReturn.loans && commandReturn.loans.add !== undefined) {
+              if(commandReturn.loans !== undefined) {
+                if(commandReturn.loans.add !== undefined) {
                   // Add the new loan to the database
                   await Database.loan.saveLoan(commandReturn.loans.add);
-                } else if ('update' in commandReturn.loans && commandReturn.loans.update !== undefined) {
+                } else if (commandReturn.loans.update !== undefined) {
                   await Database.loan.saveLoan(commandReturn.loans.update);
-                } else if ('remove' in commandReturn.loans && commandReturn.loans.remove !== undefined) {
+                } else if (commandReturn.loans.remove !== undefined) {
                   console.log('call to delete');
                   await Database.loan.removeLoan(commandReturn.loans.remove);
                 }
               }
 
-              if('votes' in commandReturn && commandReturn.votes !== undefined) {
-                if('add' in commandReturn.votes && commandReturn.votes.add !== undefined) {
+              if(commandReturn.votes !== undefined) {
+                if(commandReturn.votes.add !== undefined) {
                   // Add the vote to the database
                   await Database.vote.saveVote(commandReturn.votes.add);
                 }
               }
 
-              if('pledges' in commandReturn && commandReturn.pledges !== undefined) {
-                if('add' in commandReturn.pledges && commandReturn.pledges.add !== undefined) {
+              if(commandReturn.pledges !== undefined) {
+                if(commandReturn.pledges.add !== undefined) {
                   // Add the pledge to the database
                   await Database.pledge.savePledge(commandReturn.pledges.add);
                 }
 
-                if('remove' in commandReturn.pledges && commandReturn.pledges.remove !== undefined) {
+                if(commandReturn.pledges.remove !== undefined) {
                   // Remove the pledge
                   await Database.pledge.removePledge(commandReturn.pledges.remove);
                 }
               }
 
-              if('sieges' in commandReturn && commandReturn.sieges !== undefined) {
-                if('add' in commandReturn.sieges && commandReturn.sieges.add !== undefined) {
+              if(commandReturn.sieges !== undefined) {
+                if(commandReturn.sieges.add !== undefined) {
                   // Add the siege to the database
                   const info = await Database.siege.saveSiege(commandReturn.sieges.add);
                   // TODO: better handle guild being null
@@ -342,7 +342,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
 
                   await game_tasks.postUpdatedMap({ guild: msg.guild });
                 }
-                if('update' in commandReturn.sieges && commandReturn.sieges.update !== undefined) {
+                if(commandReturn.sieges.update !== undefined) {
                   const siege = commandReturn.sieges.update;
                   // TODO: improve handling of guild/roles being undefined/null
                   const siegeEmbed = game_tasks.generateSiegeEmbed(
@@ -362,8 +362,7 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                 }
               }
 
-              if('enable_game' in commandReturn &&
-                 commandReturn.enable_game !== undefined) {
+              if(commandReturn.enableGame !== undefined) {
                 gameActive = true;
               }
             } else {

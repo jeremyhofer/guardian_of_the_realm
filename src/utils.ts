@@ -53,7 +53,7 @@ export function findRoleIdGivenName(name: string, roleObj: GameRoles): string {
 
   if(name !== '') {
     for(const key in roleObj) {
-      if(key in roleObj && roleObj[key].includes(name.toLowerCase())) {
+      if(roleObj[key].includes(name.toLowerCase())) {
         roleId = key;
         break;
       }
