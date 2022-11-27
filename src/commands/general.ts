@@ -1,4 +1,4 @@
-import { CommandDispatch, CommandReturn } from '../types';
+import { CommandDispatch, CommandReturn, CooldownCommandFields, CooldownCommands } from '../types';
 import * as assets from '../assets';
 import * as gameTasks from '../game_tasks';
 import * as utils from '../utils';
@@ -52,28 +52,13 @@ const bal = async({ playerData, playerRoles }: { playerData: PlayerData, playerR
 const cooldown = async({ playerData, commandDispatch }: { playerData: PlayerData, commandDispatch: CommandDispatch }): Promise<CommandReturn> => {
   const now = Date.now();
 
-  const cooldownMap: { [key: string]: string } = {
-    arson_last_time: 'arson',
-    pirate_last_time: 'pirate',
-    pray_last_time: 'pray',
-    raid_last_time: 'raid',
-    scandal_last_time: 'scandal',
-    spy_last_time: 'spy',
-    subvert_last_time: 'subvert',
-    thief_last_time: 'thief',
-    train_last_time: 'train',
-    trade_last_time: 'trade',
-    work_last_time: 'work'
-
-  };
-
   let reply = '';
 
-  for(const key in cooldownMap) {
-    const commandCooldown = commandDispatch[cooldownMap[key]].cooldown?.time ?? 0;
-    // TODO: consider improving things to remove this any cast
-    let timeLeft = (playerData as any)[key] - now + commandCooldown;
-    const keyCap = cooldownMap[key][0].toUpperCase() + cooldownMap[key].slice(1);
+  for(const command of CooldownCommands) {
+    const key: CooldownCommandFields = `${command}_last_time`;
+    const commandCooldown = commandDispatch[command].cooldown?.time ?? 0;
+    let timeLeft = playerData[key] - now + commandCooldown;
+    const keyCap = command[0].toUpperCase() + command.slice(1);
     timeLeft = timeLeft < 0 ? 0 : timeLeft;
     const timeUntilString = utils.getTimeUntilString(timeLeft);
     reply += `${keyCap} ${timeUntilString}\n`;

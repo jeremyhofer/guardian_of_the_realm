@@ -1,5 +1,5 @@
-import { CategoryChannel, ChannelType, Guild, GuildBasedChannel, TextChannel } from 'discord.js';
-import { GameRoles } from './types';
+import { CategoryChannel, ChannelType, Emoji, Guild, GuildBasedChannel, TextChannel } from 'discord.js';
+import { availableStoreItems, AvailableStoreItems, EmojiNames, Emojis, GameRoles } from './types';
 
 /**
 * Convert milliseconds to a countdown-like string.
@@ -155,4 +155,12 @@ export function findGuildCategoryChannelByName(guild: Guild | null, channelName:
 
   const channel = guild.channels.cache.find((c) => c.name === channelName);
   return isCategoryChannel(channel) ? channel : null;
+}
+
+export function isEmojiName(name: string): name is EmojiNames {
+  return Emojis.includes(name);
+}
+
+export function isAvailableStoreItem(name: string): name is AvailableStoreItems {
+  return availableStoreItems.includes(name);
 }

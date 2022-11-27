@@ -1,6 +1,6 @@
 import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
-import { AvailableStoreItems, CommandDispatch, CommandReturn, Rank } from '../types';
+import { CommandDispatch, CommandReturn, Rank } from '../types';
 import * as assets from '../assets';
 import * as utils from '../utils';
 import { Database } from '../data-source';
@@ -36,7 +36,7 @@ const buy = async({ args, playerData, playerRoles }: { args: string[], playerDat
       itemExists = true;
     }
 
-    const item = possibleItem as AvailableStoreItems;
+    const item = possibleItem;
 
     // Ensure the desired item is in the store
     if(itemExists) {
@@ -83,7 +83,7 @@ const buy = async({ args, playerData, playerRoles }: { args: string[], playerDat
               deductCost = true;
               break;
             default:
-              commandReturn.reply = `Item type ${itemType as string} not supported. Please contact a bot dev.`;
+              commandReturn.reply = `Item type ${itemType} not supported. Please contact a bot dev.`;
           }
 
           if(deductCost) {
@@ -223,7 +223,7 @@ const market = async(): Promise<CommandReturn> => {
   let warriorReply = 'WARRIOR:\n';
 
   Object.keys(assets.storeItems).forEach((value) => {
-    const key = value as AvailableStoreItems;
+    const key = value;
     const itemCost = assets.storeItems[key].cost;
     const itemFlavor = assets.storeItems[key].flavor;
     const itemType = assets.storeItems[key].type;

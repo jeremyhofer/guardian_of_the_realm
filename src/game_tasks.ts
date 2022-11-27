@@ -4,7 +4,7 @@ import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { Siege } from './entity/Siege';
 import { TileOwner } from './entity/TileOwner';
-import { Buildings, CommandReturn, EmojiNames, Rank } from './types';
+import { Buildings, CommandReturn, Rank } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async(guild: Guild, currentTime: number): Promise<void> => {
@@ -14,8 +14,8 @@ export const rolePayouts = async(guild: Guild, currentTime: number): Promise<voi
 
   if(lastPayout !== null && lastPayout.value + utils.hoursToMs(hoursBetweenPayout) <= currentTime) {
     // Payout roles
-    for(const title in assets.dailyPayouts) {
-      const payout = Math.round(assets.dailyPayouts[title as Buildings] * payoutPercent);
+    for(const [title, titleDailyPayout] of Object.entries(assets.dailyPayouts)) {
+      const payout = Math.round(titleDailyPayout * payoutPercent);
       const roleId = utils.findRoleIdGivenName(title, assets.gameRoles);
       // TODO: test this out
       await Database.playerData.grantRolePayoutToAllPlayers(
@@ -624,8 +624,13 @@ export const postUpdatedMap = async({ guild }: { guild: Guild | null }): Promise
     const row = parseInt(coords.slice(1), 10);
     const ownerTile = assets.houseTiles[tile.house];
     const ownerTileType = tile.type === 'port' ? 'Port' + ownerTile : 'Tile' + ownerTile;
-    const tileEmoji = e[ownerTileType as EmojiNames];
-    mapData[row][column] = tileEmoji;
+
+    if(utils.isEmojiName(ownerTileType)) {
+      const tileEmoji = e[ownerTileType];
+      mapData[row][column] = tileEmoji;
+    } else {
+      console.error('Error mapping tile name');
+    }
 
     if(tile.type === 'port') {
       portOwners += `${tile.tile.toUpperCase()}: <@&${tile.house}>\n`;

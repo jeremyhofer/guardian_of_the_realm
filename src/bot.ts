@@ -10,7 +10,7 @@ import * as assets from './assets';
 import * as game_tasks from './game_tasks';
 import * as tasks from './commands/tasks';
 import * as utils from './utils';
-import { CommandDispatch } from './types';
+import { CommandDispatch, CooldownCommandFields } from './types';
 import { PlayerData } from './entity/PlayerData';
 import { Loan } from './entity/Loan';
 
@@ -77,22 +77,25 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
 
         let cooldown = false;
         let cooldownPassed = false;
-        let cooldownField: string = '';
+        let cooldownField: CooldownCommandFields | undefined;
         let cooldownFailMessage = null;
         const currentTime = Date.now();
 
         if('cooldown' in commandDispatch[command]) {
           // Check to see if the cooldown for the command has passed
           cooldown = true;
-          cooldownField = commandDispatch[command].cooldown?.field ?? '';
-          // TODO: need to improve data access
-          const lastTime: number = (playerData as any)[cooldownField] ?? 0;
-          const cooldownTime = commandDispatch[command].cooldown?.time ?? 0;
-          const baseReply: string = commandDispatch[command].cooldown?.reply ?? '';
-          const timeUntil = utils.getTimeUntilString(lastTime + cooldownTime - currentTime);
+          cooldownField = commandDispatch[command].cooldown?.field;
+          if(cooldownField !== undefined) {
+            const lastTime: number = playerData[cooldownField] ?? 0;
+            const cooldownTime = commandDispatch[command].cooldown?.time ?? 0;
+            const baseReply: string = commandDispatch[command].cooldown?.reply ?? '';
+            const timeUntil = utils.getTimeUntilString(lastTime + cooldownTime - currentTime);
 
-          cooldownPassed = currentTime - lastTime >= cooldownTime;
-          cooldownFailMessage = cooldownPassed ? '' : baseReply + ' ' + timeUntil;
+            cooldownPassed = currentTime - lastTime >= cooldownTime;
+            cooldownFailMessage = cooldownPassed ? '' : baseReply + ' ' + timeUntil;
+          } else {
+            console.error('Cooldown field not defined');
+          }
         }
 
         if('cooldown_from_start' in commandDispatch[command]) {
@@ -151,9 +154,8 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
               if(commandReturn.update !== undefined) {
                 if(commandReturn.update.playerData !== undefined) {
                   // If there was a cooldown, update the last time
-                  if(cooldown && 'success' in
-                    commandReturn && commandReturn.success) {
-                    (commandReturn.update.playerData as any)[cooldownField] = currentTime;
+                  if(cooldown && cooldownField !== undefined && commandReturn.success) {
+                    commandReturn.update.playerData[cooldownField] = currentTime;
                   }
                   await Database.playerData.setPlayer(commandReturn.update.playerData);
                 }
@@ -240,14 +242,13 @@ export async function messageHandler(msg: Message, gameActive: boolean): Promise
                     }
                   }
                 }
-              } else if(cooldown && 'success' in
-                commandReturn && commandReturn.success) {
+              } else if(cooldown && cooldownField !== undefined && commandReturn.success) {
                 /*
                  * If the command had a cooldown and playerData was not
                  * returned As part of an update for the command, update the
                  * cooldown here
                  */
-                (playerData as any)[cooldownField] = currentTime;
+                playerData[cooldownField] = currentTime;
                 await Database.playerData.setPlayer(playerData);
               }
 

@@ -44,10 +44,9 @@ const arson = async({ args, playerData, playerRoles, guild }: { args: string[], 
   const targetRoleName = guild.roles.cache.get(roleToArson)?.name.toLowerCase() ?? '';
 
   for(const key in assets.storeItems) {
-    const tKey = key as AvailableStoreItems;
-    if(assets.storeItems[tKey].type === 'income') {
+    if(assets.storeItems[key].type === 'income') {
       const roleId = utils.findRoleIdGivenName(
-        tKey,
+        key,
         assets.gameRoles
       );
       incomeRoleIds.push(roleId);
@@ -68,10 +67,10 @@ const arson = async({ args, playerData, playerRoles, guild }: { args: string[], 
    * Ensure that the role mentioned is an income producing role
    * and that the other player has that role
    */
-  if(incomeRoleIds.includes(roleToArson)) {
+  if(utils.isAvailableStoreItem(targetRoleName) && incomeRoleIds.includes(roleToArson)) {
     if(otherPlayerRoleIds.includes(roleToArson)) {
       // Ensure player has enough money to arson this role
-      const arsonPrice = Math.round(assets.storeItems[targetRoleName as AvailableStoreItems].cost / 2);
+      const arsonPrice = Math.round(assets.storeItems[targetRoleName].cost / 2);
       const playerMoney = playerData.money;
 
       if(playerMoney >= arsonPrice) {
@@ -368,7 +367,7 @@ const scandal = async({ args, playerData, guild }: { args: any[], playerData: Pl
   const nobleRoleIds: string[] = [];
 
   for(const key in assets.storeItems) {
-    if(assets.storeItems[key as AvailableStoreItems].type === 'title') {
+    if(assets.storeItems[key].type === 'title') {
       const roleId = utils.findRoleIdGivenName(
         key,
         assets.gameRoles
@@ -409,7 +408,7 @@ const scandal = async({ args, playerData, guild }: { args: any[], playerData: Pl
 
   if(highestRoleId !== '') {
     // We have a highest role to try and scandal. Make sure we have the moola
-    const scandalCost = Math.round(assets.storeItems[highestRole as AvailableStoreItems].cost / 2);
+    const scandalCost = Math.round(assets.storeItems[highestRole].cost / 2);
 
     if(playerData.money >= scandalCost) {
       // Determine if the scandal is a success
