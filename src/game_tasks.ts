@@ -25,11 +25,14 @@ export const rolePayouts = async (
     )) {
       const payout = Math.round(titleDailyPayout * payoutPercent);
       const roleId = utils.findRoleIdGivenName(title, assets.gameRoles);
-      // TODO: test this out
-      await Database.playerData.grantRolePayoutToAllPlayers(
-        guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [],
-        payout
-      );
+      const players = guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [];
+
+      if(players.length > 0) {
+        await Database.playerData.grantRolePayoutToAllPlayers(
+          players,
+          payout
+        );
+      }
     }
 
     // Deduct troop prices
