@@ -73,7 +73,10 @@ setInterval(() => {
           gameActive = await game_tasks.isGameActive();
           tickProcessing = false;
         })
-        .catch(() => console.error('issue processing game tick'));
+        .catch((error) => {
+          console.error('issue processing game tick');
+          console.error(error);
+        });
     }
   }
 }, 1000);

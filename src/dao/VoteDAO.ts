@@ -5,18 +5,17 @@ import { Vote } from '../entity/Vote';
 export class VoteDAO {
   constructor(private readonly _repository: Repository<Vote>) {}
 
-  async getPlayerHasVoteAgainstHouseByTypes(
+  async getPlayerVotesAgainstHouseByTypes(
     player: PlayerData,
     targetHouse: string,
     types: string[]
   ): Promise<Vote[]> {
     return await this._repository
-      .createQueryBuilder()
-      .select('COUNT(*) as voteCount')
+      .createQueryBuilder('vote')
+      .select()
       .leftJoin('vote.user', 'user', 'user.user = :user', { user: player.user })
       .where('vote.type IN(:...types)', { types })
       .andWhere('vote.choice = :targetHouse', { targetHouse })
-      .groupBy('vote.type')
       .getMany();
   }
 
@@ -44,22 +43,20 @@ export class VoteDAO {
     });
   }
 
-  // TODO: test this
   async getVotesForHouseAgainstHouseByTypes(
     sourceHouse: string,
     targetHouse: string,
     types: string[]
   ): Promise<Array<Pick<Vote, 'vote_id' | 'type'>>> {
     return await this._repository
-      .createQueryBuilder()
-      .select('vote.vote_id')
-      .addSelect('vote.type')
+      .createQueryBuilder('vote')
+      .select('vote.vote_id as vote_id')
+      .addSelect('vote.type as type')
       .leftJoin('vote.user', 'user', 'user.house = :sourceHouse', {
         sourceHouse,
       })
       .where('vote.type IN(:...types)', { types })
       .andWhere('vote.choice = :targetHouse', { targetHouse })
-      .groupBy('vote.type')
       .getRawMany();
   }
 

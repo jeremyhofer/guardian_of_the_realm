@@ -29,6 +29,12 @@ export class TrackerDAO {
     return await this._repository.save(newTracker);
   }
 
+  async getOrCreateTrackerByName(name: string): Promise<Tracker> {
+    const tracker = await this._repository.findOneBy({ name });
+
+    return tracker === null ? this._repository.create({ name }) : tracker;
+  }
+
   async removeTracker(tracker: Tracker): Promise<DeleteResult> {
     return await this._repository.delete(tracker.tracker_id);
   }
@@ -37,6 +43,6 @@ export class TrackerDAO {
     name: string,
     value: number
   ): Promise<UpdateResult> {
-    return await this._repository.update(name, { value });
+    return await this._repository.update({name}, { value });
   }
 }
