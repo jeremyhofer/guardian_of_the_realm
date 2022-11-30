@@ -1,4 +1,4 @@
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, InsertResult, Repository, UpdateResult } from 'typeorm';
 import { Tracker } from '../entity/Tracker';
 
 export class TrackerDAO {
@@ -33,6 +33,10 @@ export class TrackerDAO {
     const tracker = await this._repository.findOneBy({ name });
 
     return tracker === null ? this._repository.create({ name }) : tracker;
+  }
+
+  async insertTracker(pTracker: Partial<Tracker>): Promise<InsertResult> {
+    return await this._repository.insert(pTracker);
   }
 
   async removeTracker(tracker: Tracker): Promise<DeleteResult> {

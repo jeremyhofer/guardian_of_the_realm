@@ -965,6 +965,26 @@ export const postUpdatedMap = async ({
   return { reply, success };
 };
 
+export const configureTrackers = async(): Promise<void> => {
+  const gameActiveTracker = await Database.tracker.getTrackerByName('game_active');
+
+  if(gameActiveTracker === null) {
+    await Database.tracker.insertTracker({ name: 'game_active', value: 1 });
+  }
+
+  const gameStartTracker = await Database.tracker.getTrackerByName('game_start');
+
+  if(gameStartTracker === null) {
+    await Database.tracker.insertTracker({ name: 'game_start', value: 0 });
+  }
+
+  const payoutTimeTracker = await Database.tracker.getTrackerByName('payout_time');
+
+  if(payoutTimeTracker === null) {
+    await Database.tracker.insertTracker({ name: 'payout_time', value: 0 });
+  }
+};
+
 export const resetEverything = async ({
   guild,
   playerRoles,

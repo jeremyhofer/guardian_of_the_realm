@@ -354,7 +354,7 @@ const pact = async ({
   const playerChoice: string = args[1].toLowerCase();
 
   // See if the player has already voted for this
-  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(
+  const existingVote = await Database.vote.getPlayerVotesAgainstHouseByTypes(
     playerData,
     houseVote,
     ['pact_yes', 'pact_no']
@@ -454,7 +454,7 @@ const war = async ({
   const playerChoice: string = args[1].toLowerCase();
 
   // See if the player has already voted for this
-  const existingVote = await Database.vote.getPlayerHasVoteAgainstHouseByTypes(
+  const existingVote = await Database.vote.getPlayerVotesAgainstHouseByTypes(
     playerData,
     houseVote,
     ['war_yes', 'war_no']

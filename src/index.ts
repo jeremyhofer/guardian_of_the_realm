@@ -19,6 +19,7 @@ let gameActive = false;
 let tickProcessing = false;
 
 AppDataSource.initialize()
+  .then(async() => await game_tasks.configureTrackers())
   .then(async () => {
     await client.login(auth.token).catch((err) => {
       console.error('issue logging in to discord api');
