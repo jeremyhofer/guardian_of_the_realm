@@ -10,10 +10,32 @@ export class PledgeDAO {
     user: PlayerData,
     siege: Siege
   ): Promise<Pledge | null> {
-    return await this._repository.findOneBy({
-      // TODO: any cast, need I say more?
-      user: user.user as any,
-      siege: siege.siege_id as any,
+    return await this._repository.findOne({
+      relations: {
+        user: true,
+        siege: true
+      },
+      where: {
+        // TODO: any cast, need I say more?
+        user: user.user as any,
+        siege: siege.siege_id as any
+      }
+    });
+  }
+
+  async getPlayerPledges(
+    user: PlayerData,
+  ): Promise<Pledge[]> {
+    return await this._repository.find({
+      relations: {
+        siege: {
+          tile: true
+        }
+      },
+      where: {
+        // TODO: any cast, need I say more?
+        user: user.user as any
+      }
     });
   }
 

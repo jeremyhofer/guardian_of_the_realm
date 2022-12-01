@@ -1,4 +1,4 @@
-import { Siege } from 'src/entity/Siege';
+import { Siege } from '../entity/Siege';
 import { Repository, UpdateResult } from 'typeorm';
 import { TileOwner } from '../entity/TileOwner';
 

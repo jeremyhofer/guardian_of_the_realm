@@ -8,6 +8,7 @@ import * as assets from '../assets';
 import * as gameTasks from '../game_tasks';
 import * as utils from '../utils';
 import { PlayerData } from '../entity/PlayerData';
+import { Database } from '../data-source';
 
 // Show help text. optional specific command
 const help = async (): Promise<CommandReturn> => {
@@ -37,16 +38,16 @@ const bal = async ({
 
   let siegeContributions = '';
   let blockadeContributions = '';
-  const playerPledges = playerData.pledges;
+  const playerPledges = await Database.pledge.getPlayerPledges(playerData);
 
   // TODO: select all siege + tile + pledge by user
-  playerPledges.forEach((pledge) => {
+  for(const pledge of playerPledges) {
     if (pledge.siege.tile.type === 'port') {
       blockadeContributions += `${pledge.siege.tile.tile} ${pledge.units} ${assets.emojis.Warship} ${pledge.choice}\n`;
     } else {
       siegeContributions += `${pledge.siege.tile.tile} ${pledge.units} ${assets.emojis.MenAtArms} ${pledge.choice}\n`;
     }
-  });
+  };
 
   siegeContributions = siegeContributions !== '' ? siegeContributions : 'none';
 
