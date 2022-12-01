@@ -336,7 +336,10 @@ export const resolveSieges = async (
       'ATTACKER NAME ISSUE';
     const defenderName =
       guild.roles.cache.get(tileOwner.house)?.name ?? 'DEFENDER NAME ISSUE';
-    const generatedEmbed = await generateSiegeEmbed(guild.roles, tileOwner.tile);
+    const generatedEmbed = await generateSiegeEmbed(
+      guild.roles,
+      tileOwner.tile
+    );
 
     const embed: APIEmbed = generatedEmbed ?? {};
 
@@ -578,7 +581,6 @@ export const generateSiegeEmbed = async (
   const siege = tileOwner.siege;
 
   const pledges = await Database.pledge.getAllPledgesForSiege(siege);
-
 
   const attackerCounts: Record<string, number> = {};
   const defenderCounts: Record<string, number> = {};

@@ -12,11 +12,11 @@ export class TileOwnerDAO {
   async getTileOwner(tile: string): Promise<TileOwner | null> {
     return await this._repository.findOne({
       relations: {
-        siege: true
+        siege: true,
       },
       where: {
-        tile
-      }
+        tile,
+      },
     });
   }
 

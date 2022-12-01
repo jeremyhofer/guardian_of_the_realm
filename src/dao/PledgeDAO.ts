@@ -13,40 +13,38 @@ export class PledgeDAO {
     return await this._repository.findOne({
       relations: {
         user: true,
-        siege: true
+        siege: true,
       },
       where: {
         // TODO: any cast, need I say more?
         user: user.user as any,
-        siege: siege.siege_id as any
-      }
+        siege: siege.siege_id as any,
+      },
     });
   }
 
-  async getPlayerPledges(
-    user: PlayerData,
-  ): Promise<Pledge[]> {
+  async getPlayerPledges(user: PlayerData): Promise<Pledge[]> {
     return await this._repository.find({
       relations: {
         siege: {
-          tile: true
-        }
+          tile: true,
+        },
       },
       where: {
         // TODO: any cast, need I say more?
-        user: user.user as any
-      }
+        user: user.user as any,
+      },
     });
   }
 
   async getAllPledgesForSiege(siege: Siege): Promise<Pledge[]> {
     return await this._repository.find({
       relations: {
-        user: true
+        user: true,
       },
       where: {
-        siege
-      }
+        siege,
+      },
     });
   }
 

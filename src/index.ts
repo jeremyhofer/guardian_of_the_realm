@@ -5,6 +5,9 @@ import * as auth from './auth.json';
 import * as botHandlers from './bot';
 import * as utils from './utils';
 import * as assets from './assets';
+import * as database from './database';
+
+database.operations.reset_everything();
 
 const client = new Client({
   intents: [

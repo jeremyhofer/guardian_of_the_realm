@@ -41,13 +41,13 @@ const bal = async ({
   const playerPledges = await Database.pledge.getPlayerPledges(playerData);
 
   // TODO: select all siege + tile + pledge by user
-  for(const pledge of playerPledges) {
+  for (const pledge of playerPledges) {
     if (pledge.siege.tile.type === 'port') {
       blockadeContributions += `${pledge.siege.tile.tile} ${pledge.units} ${assets.emojis.Warship} ${pledge.choice}\n`;
     } else {
       siegeContributions += `${pledge.siege.tile.tile} ${pledge.units} ${assets.emojis.MenAtArms} ${pledge.choice}\n`;
     }
-  };
+  }
 
   siegeContributions = siegeContributions !== '' ? siegeContributions : 'none';
 
