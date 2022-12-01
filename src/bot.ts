@@ -389,7 +389,7 @@ export async function messageHandler(
                   // TODO: better handle guild being null
                   const siegeEmbed = await game_tasks.generateSiegeEmbed(
                     msg.guild?.roles ?? null,
-                    info
+                    info.tile.tile
                   );
                   const brChannel = assets.replyChannels.battle_reports;
                   const channel = utils.getGuildTextChannel(
@@ -417,7 +417,7 @@ export async function messageHandler(
                   // TODO: improve handling of guild/roles being undefined/null
                   const siegeEmbed = await game_tasks.generateSiegeEmbed(
                     msg.guild?.roles ?? null,
-                    siege
+                    siege.tile.tile
                   );
                   const brChannel = assets.replyChannels.battle_reports;
                   const channel = utils.getGuildTextChannel(

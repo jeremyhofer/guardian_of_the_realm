@@ -1,4 +1,4 @@
-import { TileOwner } from 'src/entity/TileOwner';
+import { TileOwner } from '../entity/TileOwner';
 import {
   DeleteResult,
   LessThanOrEqual,
@@ -26,14 +26,6 @@ export class SiegeDAO {
   async getSiegeById(siegeId: number): Promise<Siege | null> {
     return await this._repository.findOneBy({
       siege_id: siegeId,
-    });
-  }
-
-  async getSiegeOnTile(qTile: string): Promise<Siege | null> {
-    return await this._repository.findOneBy({
-      tile: {
-        tile: qTile,
-      },
     });
   }
 

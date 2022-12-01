@@ -17,8 +17,13 @@ export class PledgeDAO {
   }
 
   async getAllPledgesForSiege(siege: Siege): Promise<Pledge[]> {
-    return await this._repository.findBy({
-      siege,
+    return await this._repository.find({
+      relations: {
+        user: true
+      },
+      where: {
+        siege
+      }
     });
   }
 

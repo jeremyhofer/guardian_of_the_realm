@@ -126,7 +126,7 @@ const pledge = async ({
       commandReturn.reply = 'The action must be ATTACK or DEFEND';
     } else {
       // Ensure a siege exists on the tile
-      const existingSiege = await Database.siege.getSiegeOnTile(selectedTile);
+      const existingSiege = tileOwner.siege;
 
       if (existingSiege !== null) {
         // See if the player already has a pledge on the siege.
@@ -170,6 +170,8 @@ const pledge = async ({
           }
 
           commandReturn.reply = `You successfully pledged ${numUnits} to ${action} ${selectedTile.toUpperCase()}`;
+          // TODO: this is jank, setting the tileOwner here. need to determine better mappings tile<->siege
+          existingSiege.tile = tileOwner;
           (commandReturn.sieges as any).update = existingSiege;
         }
       } else {
@@ -249,7 +251,7 @@ const handleAttack = async (
 
       if (war !== null) {
         // Make sure a siege does not already exist on this tile
-        const existingSiege = await Database.siege.getSiegeOnTile(selectedTile);
+        const existingSiege = tileOwner.siege;
 
         if (existingSiege !== null) {
           commandReturn.reply =
