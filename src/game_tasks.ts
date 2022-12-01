@@ -336,7 +336,9 @@ export const resolveSieges = async (
       'ATTACKER NAME ISSUE';
     const defenderName =
       guild.roles.cache.get(tileOwner.house)?.name ?? 'DEFENDER NAME ISSUE';
-    const embed = generateSiegeEmbed(guild.roles, expiredSiege);
+    const generatedEmbed = await generateSiegeEmbed(guild.roles, expiredSiege);
+
+    const embed: APIEmbed = generatedEmbed ?? {};
 
     const type = isPort ? 'blockade' : 'siege';
     const tileType = isPort ? 'port' : 'castle';
@@ -549,10 +551,10 @@ export const resolveSieges = async (
   }
 };
 
-export const generateSiegeEmbed = (
+export const generateSiegeEmbed = async (
   guildRoles: RoleManager | null,
   siege: Siege
-): APIEmbed => {
+): Promise<APIEmbed | null> => {
   /*
    * Embed will consist of the following:
    * Title: Siege on <tile>
@@ -566,8 +568,13 @@ export const generateSiegeEmbed = (
    *  Name: Rewards
    *  Value: Winner: money\nLoser: men
    */
-  const tileOwner = siege.tile;
-  const pledges = siege.pledges;
+  const tileOwner = await Database.tileOwner.getTileForSiege(siege);
+  const pledges = await Database.pledge.getAllPledgesForSiege(siege);
+
+  if (tileOwner === null) {
+    console.error('did not find tile_owner to generate siege embed');
+    return null;
+  }
 
   const attackerCounts: Record<string, number> = {};
   const defenderCounts: Record<string, number> = {};

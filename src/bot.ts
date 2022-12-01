@@ -387,7 +387,7 @@ export async function messageHandler(
                     commandReturn.sieges.add
                   );
                   // TODO: better handle guild being null
-                  const siegeEmbed = game_tasks.generateSiegeEmbed(
+                  const siegeEmbed = await game_tasks.generateSiegeEmbed(
                     msg.guild?.roles ?? null,
                     info
                   );
@@ -397,12 +397,12 @@ export async function messageHandler(
                     brChannel
                   );
 
-                  if (channel !== null) {
+                  if (channel !== null && siegeEmbed !== null) {
                     await channel
                       .send({ embeds: [siegeEmbed] })
                       .then(async (message) => {
-                        await Database.siege.updateSiegeMessage(
-                          info.siege_id,
+                        await Database.siege.updateSiegeMessageForTile(
+                          info.tile,
                           message.id
                         );
                       });
@@ -415,7 +415,7 @@ export async function messageHandler(
                 if (commandReturn.sieges.update !== undefined) {
                   const siege = commandReturn.sieges.update;
                   // TODO: improve handling of guild/roles being undefined/null
-                  const siegeEmbed = game_tasks.generateSiegeEmbed(
+                  const siegeEmbed = await game_tasks.generateSiegeEmbed(
                     msg.guild?.roles ?? null,
                     siege
                   );
@@ -425,7 +425,7 @@ export async function messageHandler(
                     brChannel
                   );
 
-                  if (channel !== null) {
+                  if (channel !== null && siegeEmbed !== null) {
                     await channel.messages
                       .fetch(siege.message)
                       .then(async (message) => {

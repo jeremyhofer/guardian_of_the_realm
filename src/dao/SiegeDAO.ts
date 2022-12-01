@@ -1,3 +1,4 @@
+import { TileOwner } from 'src/entity/TileOwner';
 import {
   DeleteResult,
   LessThanOrEqual,
@@ -103,6 +104,13 @@ export class SiegeDAO {
     message: string
   ): Promise<UpdateResult> {
     return await this._repository.update(siegeId, { message });
+  }
+
+  async updateSiegeMessageForTile(
+    tile: TileOwner,
+    message: string
+  ): Promise<UpdateResult> {
+    return await this._repository.update({ tile }, { message });
   }
 
   async removeSiege(siege: Siege): Promise<DeleteResult> {

@@ -1,3 +1,4 @@
+import { Siege } from 'src/entity/Siege';
 import { Repository, UpdateResult } from 'typeorm';
 import { TileOwner } from '../entity/TileOwner';
 
@@ -11,6 +12,17 @@ export class TileOwnerDAO {
   async getTileOwner(tile: string): Promise<TileOwner | null> {
     return await this._repository.findOneBy({
       tile,
+    });
+  }
+
+  async getTileForSiege(siege: Siege): Promise<TileOwner | null> {
+    return await this._repository.findOne({
+      relations: {
+        siege: true,
+      },
+      where: {
+        tile: siege.tile.tile,
+      },
     });
   }
 

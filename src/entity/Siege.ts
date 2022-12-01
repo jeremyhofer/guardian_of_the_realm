@@ -25,7 +25,7 @@ export class Siege {
   @Column()
   time!: number; // INTEGER,
 
-  @Column()
+  @Column({ nullable: true })
   message!: string; // TEXT,
 
   @OneToMany(() => Pledge, (pledge) => pledge.siege)
