@@ -11,8 +11,9 @@ export class PledgeDAO {
     siege: Siege
   ): Promise<Pledge | null> {
     return await this._repository.findOneBy({
-      user,
-      siege,
+      // TODO: any cast, need I say more?
+      user: user.user as any,
+      siege: siege.siege_id as any,
     });
   }
 
