@@ -47,6 +47,6 @@ export class TrackerDAO {
     name: string,
     value: number
   ): Promise<UpdateResult> {
-    return await this._repository.update({name}, { value });
+    return await this._repository.update({ name }, { value });
   }
 }

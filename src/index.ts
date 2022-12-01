@@ -9,6 +9,7 @@ import * as assets from './assets';
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
   ],
@@ -19,7 +20,7 @@ let gameActive = false;
 let tickProcessing = false;
 
 AppDataSource.initialize()
-  .then(async() => await game_tasks.configureTrackers())
+  .then(async () => await game_tasks.configureTrackers())
   .then(async () => {
     await client.login(auth.token).catch((err) => {
       console.error('issue logging in to discord api');

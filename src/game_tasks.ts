@@ -1,10 +1,17 @@
-import { APIEmbed, Guild, RoleManager } from 'discord.js';
+import {
+  APIEmbed,
+  Collection,
+  Guild,
+  GuildMember,
+  RoleManager,
+  Snowflake,
+} from 'discord.js';
 import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { Siege } from './entity/Siege';
 import { TileOwner } from './entity/TileOwner';
-import { buildings, Buildings, CommandReturn, Rank } from './types';
+import { buildings, CommandReturn, Rank } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async (
@@ -25,13 +32,11 @@ export const rolePayouts = async (
     )) {
       const payout = Math.round(titleDailyPayout * payoutPercent);
       const roleId = utils.findRoleIdGivenName(title, assets.gameRoles);
-      const players = guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [];
+      const players =
+        guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [];
 
-      if(players.length > 0) {
-        await Database.playerData.grantRolePayoutToAllPlayers(
-          players,
-          payout
-        );
+      if (players.length > 0) {
+        await Database.playerData.grantRolePayoutToAllPlayers(players, payout);
       }
     }
 
@@ -968,22 +973,28 @@ export const postUpdatedMap = async ({
   return { reply, success };
 };
 
-export const configureTrackers = async(): Promise<void> => {
-  const gameActiveTracker = await Database.tracker.getTrackerByName('game_active');
+export const configureTrackers = async (): Promise<void> => {
+  const gameActiveTracker = await Database.tracker.getTrackerByName(
+    'game_active'
+  );
 
-  if(gameActiveTracker === null) {
+  if (gameActiveTracker === null) {
     await Database.tracker.insertTracker({ name: 'game_active', value: 1 });
   }
 
-  const gameStartTracker = await Database.tracker.getTrackerByName('game_start');
+  const gameStartTracker = await Database.tracker.getTrackerByName(
+    'game_start'
+  );
 
-  if(gameStartTracker === null) {
+  if (gameStartTracker === null) {
     await Database.tracker.insertTracker({ name: 'game_start', value: 0 });
   }
 
-  const payoutTimeTracker = await Database.tracker.getTrackerByName('payout_time');
+  const payoutTimeTracker = await Database.tracker.getTrackerByName(
+    'payout_time'
+  );
 
-  if(payoutTimeTracker === null) {
+  if (payoutTimeTracker === null) {
     await Database.tracker.insertTracker({ name: 'payout_time', value: 0 });
   }
 };
@@ -1005,11 +1016,23 @@ export const resetEverything = async ({
 
   if (playerRoles.includes('developer')) {
     // Remove everyone from game roles
-    for (const roleId in assets.gameRoles) {
-      if (roleId !== '625905668263510017') {
-        guild.roles.cache.get(roleId)?.members.forEach((member) => {
-          member.roles.remove(roleId).catch(console.error);
-        });
+    await guild.members.fetch();
+    const gameRoleMembersCollection = guild.roles.cache.filter(
+      (role) => role.id in assets.gameRoles && role.id !== '625905668263510017'
+    );
+
+    const firstRole = gameRoleMembersCollection.first();
+
+    if (firstRole !== undefined) {
+      const memberCollection: Collection<Snowflake, GuildMember> =
+        firstRole.members.concat(
+          ...gameRoleMembersCollection.map((role) => role.members)
+        );
+
+      if (memberCollection !== null) {
+        for (const member of memberCollection.values()) {
+          await member.roles.remove(gameRoleMembersCollection);
+        }
       }
     }
 
