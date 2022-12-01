@@ -60,7 +60,9 @@ export class SiegeDAO {
   async getExpiredSiege(expireTime: number): Promise<Siege | null> {
     return await this._repository.findOne({
       relations: {
-        pledges: true,
+        pledges: {
+          user: true
+        },
         tile: true,
       },
       where: {

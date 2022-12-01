@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
   type: 'sqlite',
   database: 'database.sqlite',
   synchronize: true,
-  logging: true,
+  logging: false,
   entities: [
     PlayerData,
     Loan,
