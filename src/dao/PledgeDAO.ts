@@ -10,17 +10,11 @@ export class PledgeDAO {
     user: PlayerData,
     siege: Siege
   ): Promise<Pledge | null> {
-    return await this._repository.findOne({
-      relations: {
-        user: true,
-        siege: true,
-      },
-      where: {
-        // TODO: any cast, need I say more?
-        user: user.user as any,
-        siege: siege.siege_id as any,
-      },
-    });
+    return await this._repository.createQueryBuilder('pledge')
+      .select()
+      .where('pledge.user = :user', { user: user.user})
+      .andWhere('pledge.siege = :siege', { siege: siege.siege_id })
+      .getOne();
   }
 
   async getPlayerPledges(user: PlayerData): Promise<Pledge[]> {
