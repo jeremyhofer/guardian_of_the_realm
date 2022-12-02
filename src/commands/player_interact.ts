@@ -133,51 +133,65 @@ const arson = async ({
  * Give another player money
  * @player <VALUE>
  */
-const gift = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData: { ...playerData },
-    },
-    reply: '',
-    success: true,
+const gift = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User; amount: number }> = (
+    options
+  ) => {
+    const player = options.getUser('player');
+    const amount = options.getNumber('amount');
+
+    if (player === null || amount === null) {
+      return null;
+    }
+
+    return { player, amount };
   };
 
-  const playerMention = args[0] as unknown as PlayerData;
-  const amountToGive = parseInt(args[1]);
+  const parsedArgs = argParser(interaction.options);
 
-  (commandReturn.update as any).playerMention = playerMention;
-  // Make sure the player has enough money
-  const pMoney = playerData.money;
-  if (playerData.user === playerMention.user) {
-    commandReturn.reply = 'You cannot gift yourself!';
-  } else if (pMoney > 0) {
-    // Ensure the args are valid
-    if (Array.isArray(args) && args.length === 2) {
-      if (isNaN(amountToGive) || amountToGive < 1) {
-        commandReturn.reply = 'Amount to give must be a positive number';
-      } else if (pMoney >= amountToGive) {
-        // All good! Grant the cash
-        (commandReturn.update?.playerData as PlayerData).money -= amountToGive;
-        (commandReturn.update?.playerMention as PlayerData).money +=
-          amountToGive;
-        commandReturn.reply = `You successfully gave <@${playerMention.user}> ${amountToGive} :moneybag:`;
-      } else {
-        commandReturn.reply = `You only have ${pMoney} available`;
-      }
-    } else {
-      commandReturn.reply = 'gift usage: .gift @player <money amount>';
-    }
-  } else {
-    commandReturn.reply = 'You do not have any money to gift';
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
   }
 
-  return commandReturn;
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+
+  const amountToGive = parsedArgs.amount;
+
+  // Make sure the player has enough money
+  const pMoney = playerData.money;
+
+  if (playerData.user === playerMention.user) {
+    return { reply: 'You cannot gift yourself!', success: true };
+  }
+
+  if (pMoney <= 0) {
+    return { reply: 'You do not have any money to gift', success: true };
+  }
+
+  if (pMoney < amountToGive) {
+    return { reply: `You only have ${pMoney} available`, success: true };
+  }
+
+  // All good! Grant the cash
+  playerData.money -= amountToGive;
+  playerMention.money += amountToGive;
+
+  await Database.playerData.saveMultiple([playerData, playerMention]);
+
+  return {
+    reply: `You successfully gave <@${playerMention.user}> ${amountToGive} :moneybag:`,
+    success: true,
+  };
 };
 
 /*
@@ -767,7 +781,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   gift: {
-    type: 'message',
+    type: 'slash',
     function: gift,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.player_mention, ArgTypes.number]],
