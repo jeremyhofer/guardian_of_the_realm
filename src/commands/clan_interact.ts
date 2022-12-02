@@ -244,17 +244,34 @@ const pledge = async (
  *
  */
 const handleAttack = async (
-  { args, playerData }: { args: any[]; playerData: PlayerData },
+  interaction: ChatInputCommandInteraction,
   type: AttackTypes
 ): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    sieges: {},
-    reply: '',
-    success: true,
+  const argParser: ArgParserFn<{ tile: string }> = (options) => {
+    const tile = options.getString('tile');
+
+    if (tile === null) {
+      return null;
+    }
+
+    return { tile };
   };
 
+  const parsedArgs = argParser(interaction.options);
+
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+
   // Check tile
-  const selectedTile: string = args[0].toLowerCase();
+  const selectedTile: string = parsedArgs.tile.toLowerCase();
   const tileOwner = await Database.tileOwner.getTileOwner(selectedTile);
   const houseSieges = await Database.siege.countHouseSieges(playerData.house);
   const validBlockade: boolean =
@@ -262,86 +279,69 @@ const handleAttack = async (
   const validSiege: boolean =
     tileOwner !== null && tileOwner.type === 'castle' && type === 'siege';
 
-  if (tileOwner !== null && (validBlockade || validSiege)) {
-    // Tile is good. Make sure it is owned by a house at war with
-    if (playerData.house === tileOwner.house) {
-      commandReturn.reply =
-        type === 'blockade'
-          ? 'Your house owns this port'
-          : 'Your house owns this castle';
-    } else if (houseSieges >= 3) {
-      commandReturn.reply = 'Your house already has 3 declared attacks';
-    } else {
-      const war = await Database.war.getWarBetweenHouses(
-        playerData.house,
-        tileOwner.house
-      );
-
-      if (war !== null) {
-        // Make sure a siege does not already exist on this tile
-        const existingSiege = tileOwner.siege;
-
-        if (existingSiege !== null) {
-          commandReturn.reply =
-            type === 'blockade'
-              ? 'A blockade is in progress on that port'
-              : 'A siege is in progress on that castle';
-        } else {
-          // Good to go! Add the siege
-          (commandReturn.sieges as any).add = Database.siege.createSiege({
-            tile: tileOwner,
-            attacker: playerData.house,
-            time: Date.now() + utils.hoursToMs(8),
-          });
-          commandReturn.reply =
-            type === 'blockade'
-              ? 'A blockade has been started on the port'
-              : 'A siege has been started on the castle';
-        }
-      } else {
-        commandReturn.reply =
-          'Your house is not at war with ' + `<@&${tileOwner.house}>`;
-      }
-    }
-  } else {
-    commandReturn.reply =
+  if (tileOwner === null || !(validBlockade || validSiege)) {
+    const reply =
       type === 'blockade'
         ? `${selectedTile} is not a port`
         : `${selectedTile} is not a castle`;
+    return { reply, success: true };
   }
+  // Tile is good. Make sure it is owned by a house at war with
+  if (playerData.house === tileOwner.house) {
+    const reply =
+      type === 'blockade'
+        ? 'Your house owns this port'
+        : 'Your house owns this castle';
+    return { reply, success: true };
+  } else if (houseSieges >= 3) {
+    return {
+      reply: 'Your house already has 3 declared attacks',
+      success: true,
+    };
+  }
+  const war = await Database.war.getWarBetweenHouses(
+    playerData.house,
+    tileOwner.house
+  );
 
-  return commandReturn;
+  if (war === null) {
+    return {
+      reply: 'Your house is not at war with ' + `<@&${tileOwner.house}>`,
+      success: true,
+    };
+  }
+  // Make sure a siege does not already exist on this tile
+  const existingSiege = tileOwner.siege;
+
+  if (existingSiege !== null) {
+    const reply =
+      type === 'blockade'
+        ? 'A blockade is in progress on that port'
+        : 'A siege is in progress on that castle';
+    return { reply, success: true };
+  }
+  // Good to go! Add the siege
+  await Database.siege.insertSiege({
+    tile: tileOwner.tile as any,
+    attacker: playerData.house,
+    time: Date.now() + utils.hoursToMs(8),
+  });
+  // TODO: generate and post siege embed
+  const reply =
+    type === 'blockade'
+      ? 'A blockade has been started on the port'
+      : 'A siege has been started on the castle';
+
+  return { reply, success: true };
 };
 
-const siege = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> =>
-  await handleAttack(
-    {
-      args,
-      playerData,
-    },
-    'siege'
-  );
+const siege = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => await handleAttack(interaction, 'siege');
 
-const blockade = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> =>
-  await handleAttack(
-    {
-      args,
-      playerData,
-    },
-    'blockade'
-  );
+const blockade = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => await handleAttack(interaction, 'blockade');
 
 /*
  * Open a vote between two waring houses to stop the war. majority of each
@@ -581,7 +581,7 @@ export const dispatch: CommandDispatch = {
       ),
   },
   siege: {
-    type: 'message',
+    type: 'slash',
     function: siege,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
@@ -596,18 +596,9 @@ export const dispatch: CommandDispatch = {
           .setDescription('Tile to begin a siege on')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { tile: string } | null => {
-      const tile = options.getString('tile');
-
-      if (tile === null) {
-        return null;
-      }
-
-      return { tile };
-    },
   },
   blockade: {
-    type: 'message',
+    type: 'slash',
     function: blockade,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
@@ -622,15 +613,6 @@ export const dispatch: CommandDispatch = {
           .setDescription('Tile to befin a blockade on')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { tile: string } | null => {
-      const tile = options.getString('tile');
-
-      if (tile === null) {
-        return null;
-      }
-
-      return { tile };
-    },
   },
   pact: {
     type: 'message',

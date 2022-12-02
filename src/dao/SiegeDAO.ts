@@ -1,6 +1,7 @@
 import { TileOwner } from '../entity/TileOwner';
 import {
   DeleteResult,
+  InsertResult,
   LessThanOrEqual,
   Repository,
   UpdateResult,
@@ -87,6 +88,10 @@ export class SiegeDAO {
 
   createSiege(pSiege: Partial<Siege>): Siege {
     return this._repository.create(pSiege);
+  }
+
+  async insertSiege(pSiege: Partial<Siege>): Promise<InsertResult> {
+    return await this._repository.insert(pSiege);
   }
 
   async saveSiege(loan: Siege): Promise<Siege> {
