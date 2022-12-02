@@ -311,91 +311,108 @@ const pirate = async (
  * fail lose 50-150, other 10-90. win lose 10-90, other 100-150
  * <PLAYER>.
  */
-const raid = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-    },
-    reply: '',
-    success: false,
+const raid = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User }> = (options) => {
+    const player = options.getUser('player');
+
+    if (player === null) {
+      return null;
+    }
+
+    return { player };
   };
 
-  const playerMention = args[0] as PlayerData;
+  const parsedArgs = argParser(interaction.options);
 
-  (commandReturn?.update as any).playerMention = playerMention;
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+
   // Make sure both have enough men
   const pMen = playerData.men;
   const mMen = playerMention.men;
   if (playerData.user === playerMention.user) {
-    commandReturn.reply = 'You cannot raid yourself!';
-  } else if (pMen >= 50) {
-    if (mMen >= 50) {
-      // Both have at least 50 men. Figure out who wins!
-      let playerLose = 0;
-      let mentionLose = 0;
-      let winner = 'player';
-      let reward = 0;
-
-      if (utils.riskSuccess(pMen, mMen)) {
-        // Player wins! Adjust men
-        reward = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.raid_reward_min,
-          assets.rewardPayoutsPenalties.raid_reward_max
-        );
-        (commandReturn.update?.playerData as PlayerData).money += reward;
-        playerLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.raid_success_attacker_loss_min,
-          assets.rewardPayoutsPenalties.raid_success_attacker_loss_max
-        );
-        mentionLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.raid_success_defender_loss_min,
-          assets.rewardPayoutsPenalties.raid_success_defender_loss_max
-        );
-      } else {
-        // Mention wins! Adjust men
-        playerLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.raid_fail_attacker_loss_min,
-          assets.rewardPayoutsPenalties.raid_fail_attacker_loss_max
-        );
-        mentionLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.raid_fail_defender_loss_min,
-          assets.rewardPayoutsPenalties.raid_fail_defender_loss_max
-        );
-        winner = 'mention';
-      }
-
-      playerLose = playerLose > pMen ? pMen : playerLose;
-
-      mentionLose = mentionLose > mMen ? mMen : mentionLose;
-
-      (commandReturn.update?.playerData as PlayerData).men -= playerLose;
-      (commandReturn.update?.playerMention as PlayerData).men -= mentionLose;
-      const successReplyTemplate = utils.randomElement(flavor.raid_success);
-      const failReplyTemplate = utils.randomElement(flavor.raid_fail);
-      const usedTemplate =
-        winner === 'player' ? successReplyTemplate : failReplyTemplate;
-      commandReturn.reply = utils.templateReplace(usedTemplate, {
-        reward,
-        myLost: playerLose,
-        enemyLost: mentionLose,
-        targetMention: `<@${playerMention.user}>`,
-        eMenAtArms: assets.emojis.MenAtArms,
-      });
-      commandReturn.success = true;
-    } else {
-      commandReturn.reply = 'The other player must have at least 50 men.';
-    }
-  } else {
-    commandReturn.reply = 'You must have at least 50 men to launch a raid.';
+    return { reply: 'You cannot raid yourself!', success: true };
+  }
+  if (pMen < 50) {
+    return {
+      reply: 'You must have at least 50 men to launch a raid.',
+      success: true,
+    };
+  }
+  if (mMen < 50) {
+    return {
+      reply: 'The other player must have at least 50 men.',
+      success: true,
+    };
   }
 
-  return commandReturn;
+  // Both have at least 50 men. Figure out who wins!
+  let playerLose = 0;
+  let mentionLose = 0;
+  let winner = 'player';
+  let reward = 0;
+
+  if (utils.riskSuccess(pMen, mMen)) {
+    // Player wins! Adjust men
+    reward = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.raid_reward_min,
+      assets.rewardPayoutsPenalties.raid_reward_max
+    );
+    playerData.money += reward;
+    playerLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.raid_success_attacker_loss_min,
+      assets.rewardPayoutsPenalties.raid_success_attacker_loss_max
+    );
+    mentionLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.raid_success_defender_loss_min,
+      assets.rewardPayoutsPenalties.raid_success_defender_loss_max
+    );
+  } else {
+    // Mention wins! Adjust men
+    playerLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.raid_fail_attacker_loss_min,
+      assets.rewardPayoutsPenalties.raid_fail_attacker_loss_max
+    );
+    mentionLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.raid_fail_defender_loss_min,
+      assets.rewardPayoutsPenalties.raid_fail_defender_loss_max
+    );
+    winner = 'mention';
+  }
+
+  playerLose = playerLose > pMen ? pMen : playerLose;
+
+  mentionLose = mentionLose > mMen ? mMen : mentionLose;
+
+  playerData.men -= playerLose;
+  playerMention.men -= mentionLose;
+  const successReplyTemplate = utils.randomElement(flavor.raid_success);
+  const failReplyTemplate = utils.randomElement(flavor.raid_fail);
+  const usedTemplate =
+    winner === 'player' ? successReplyTemplate : failReplyTemplate;
+  const reply = utils.templateReplace(usedTemplate, {
+    reward,
+    myLost: playerLose,
+    enemyLost: mentionLose,
+    targetMention: parsedArgs.player.toString(),
+    eMenAtArms: assets.emojis.MenAtArms,
+  });
+  await Database.playerData.saveMultiple([playerData, playerMention]);
+
+  return { reply, success: true };
 };
 
 /*
@@ -890,7 +907,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   raid: {
-    type: 'message',
+    type: 'slash',
     function: raid,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.raid),
