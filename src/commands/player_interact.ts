@@ -189,7 +189,7 @@ const gift = async (
   await Database.playerData.saveMultiple([playerData, playerMention]);
 
   return {
-    reply: `You successfully gave <@${playerMention.user}> ${amountToGive} :moneybag:`,
+    reply: `You successfully gave ${parsedArgs.player.toString()} ${amountToGive} :moneybag:`,
     success: true,
   };
 };
@@ -527,49 +527,63 @@ const scandal = async ({
  * View money, ships, men of a player. costs 400
  * <PLAYER>
  */
-const spy = async ({
-  args,
-  playerData,
-  guild,
-}: {
-  args: any[];
-  playerData: PlayerData;
-  guild: Guild;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-    },
-    reply: '',
-    success: false,
+const spy = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User }> = (options) => {
+    const player = options.getUser('player');
+
+    if (player === null) {
+      return null;
+    }
+
+    return { player };
   };
 
-  const playerMention = args[0] as PlayerData;
+  const parsedArgs = argParser(interaction.options);
 
-  (commandReturn?.update as any).playerMention = playerMention;
-  // Make sure both have enough money
-  const pMoney = playerData.money;
-  if (playerData.user === playerMention.user) {
-    commandReturn.reply = 'You cannot spy yourself!';
-  } else if (pMoney >= assets.rewardPayoutsPenalties.spy_cost) {
-    const playerRoles: string[] = [];
-    guild.members.cache.get(playerMention.user)?.roles.cache.forEach((role) => {
-      playerRoles.push(role.name.toLowerCase());
-    });
-    const roleReply = game_tasks.generateRolesReply({ playerRoles });
-    (commandReturn.update?.playerData as PlayerData).money -=
-      assets.rewardPayoutsPenalties.spy_cost;
-    commandReturn.reply =
-      `<@${playerMention.user}> has ` +
-      `${playerMention.money} :moneybag: ${playerMention.men} ` +
-      `${assets.emojis.MenAtArms} ${playerMention.ships} ` +
-      `${assets.emojis.Warship}\n\n${roleReply}`;
-    commandReturn.success = true;
-  } else {
-    commandReturn.reply = `You do not have enough money. Spy costs ${assets.rewardPayoutsPenalties.spy_cost}.`;
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
   }
 
-  return commandReturn;
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+  // Make sure both have enough money
+  const pMoney = playerData.money;
+
+  if (playerData.user === playerMention.user) {
+    return { reply: 'You cannot spy yourself!', success: true };
+  }
+  if (pMoney < assets.rewardPayoutsPenalties.spy_cost) {
+    return {
+      reply: `You do not have enough money. Spy costs ${assets.rewardPayoutsPenalties.spy_cost}.`,
+      success: true,
+    };
+  }
+
+  const playerRoles: string[] =
+    interaction.guild?.members.cache
+      .get(playerMention.user)
+      ?.roles.cache.map((role) => role.name.toLowerCase()) ?? [];
+
+  const roleReply = game_tasks.generateRolesReply({ playerRoles });
+  playerData.money -= assets.rewardPayoutsPenalties.spy_cost;
+  const reply =
+    `${parsedArgs.player.toString()} has ` +
+    `${playerMention.money} :moneybag: ${playerMention.men} ` +
+    `${assets.emojis.MenAtArms} ${playerMention.ships} ` +
+    `${assets.emojis.Warship}\n\n${roleReply}`;
+
+  await Database.playerData.saveMultiple([playerData]);
+
+  return { reply, success: true };
 };
 
 /*
@@ -658,7 +672,7 @@ const thief = async (
     winner === 'player' ? successReplyTemplate : failReplyTemplate;
   const reply = utils.templateReplace(usedTemplate, {
     amount: moneyChange,
-    targetMention: `<@${playerMention.user}>`,
+    targetMention: parsedArgs.player.toString(),
     eMenAtArms: assets.emojis.MenAtArms,
   });
 
@@ -927,7 +941,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   spy: {
-    type: 'message',
+    type: 'slash',
     function: spy,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.spy),
