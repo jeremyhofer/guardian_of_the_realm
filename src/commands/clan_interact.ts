@@ -366,22 +366,37 @@ const blockade = async (
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const pact = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    votes: {},
-    reply: '',
-    success: true,
+const pact = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ house: Role | APIRole; vote: string }> = (
+    options
+  ) => {
+    const house = options.getRole('house');
+    const vote = options.getString('vote');
+
+    if (house === null || vote === null) {
+      return null;
+    }
+
+    return { house, vote };
   };
 
-  // Figure it out
-  const houseVote: string = args[0];
-  const playerChoice: string = args[1].toLowerCase();
+  const parsedArgs = argParser(interaction.options);
+
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+
+  const houseVote: string = parsedArgs.house.id;
+  const playerChoice: string = parsedArgs.vote.toLowerCase();
 
   // See if the player has already voted for this
   const existingVote = await Database.vote.getPlayerVotesAgainstHouseByTypes(
@@ -395,45 +410,49 @@ const pact = async ({
     const [vote] = existingVote;
     const choice = vote.type === 'pact_yes' ? 'YES' : 'NO';
 
-    commandReturn.reply =
-      `You have already voted ${choice} to a pact ` + `with <@&${vote.choice}>`;
-  } else {
-    // Ensure a war exists between the houses
-    const existingWar = await Database.war.getWarBetweenHouses(
-      playerData.house,
-      houseVote
-    );
+    return {
+      reply:
+        `You have already voted ${choice} to a pact ` +
+        `with <@&${vote.choice}>`,
+      success: true,
+    };
+  }
+  // Ensure a war exists between the houses
+  const existingWar = await Database.war.getWarBetweenHouses(
+    playerData.house,
+    houseVote
+  );
 
-    if (existingWar !== null) {
-      // Check yes/no choice
-      let pactType = '';
-
-      if (playerChoice === 'yes') {
-        pactType = 'pact_yes';
-      } else if (playerChoice === 'no') {
-        pactType = 'pact_no';
-      }
-
-      if (pactType !== '') {
-        // Truce vote is good. Add it
-        (commandReturn.votes as any).add = Database.vote.createVote({
-          type: pactType,
-          user: playerData,
-          choice: houseVote,
-          time: Date.now(),
-        });
-        commandReturn.reply =
-          `Your choice of ${playerChoice} was ` + 'recorded';
-      } else {
-        commandReturn.reply = 'You must vote YES or NO';
-      }
-    } else {
-      commandReturn.reply =
-        'Your house is not at war with ' + `<@&${houseVote}>`;
-    }
+  if (existingWar === null) {
+    return {
+      reply: 'Your house is not at war with ' + `<@&${houseVote}>`,
+      success: true,
+    };
   }
 
-  return commandReturn;
+  // Check yes/no choice
+  let pactType = '';
+
+  if (playerChoice === 'yes') {
+    pactType = 'pact_yes';
+  } else if (playerChoice === 'no') {
+    pactType = 'pact_no';
+  }
+
+  if (pactType === '') {
+    return { reply: 'You must vote YES or NO', success: true };
+  }
+  // Truce vote is good. Add it
+  await Database.vote.insertVote({
+    type: pactType,
+    user: playerData,
+    choice: houseVote,
+    time: Date.now(),
+  });
+  return {
+    reply: `Your choice of ${playerChoice} was ` + 'recorded',
+    success: true,
+  };
 };
 
 /*
@@ -466,22 +485,36 @@ const pact = async ({
  *
  * Vote also ends in a majority after 6 hours time.
  */
-const war = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    votes: {},
-    reply: '',
-    success: true,
+const war = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ house: Role | APIRole; vote: string }> = (
+    options
+  ) => {
+    const house = options.getRole('house');
+    const vote = options.getString('vote');
+
+    if (house === null || vote === null) {
+      return null;
+    }
+
+    return { house, vote };
   };
 
-  // Figure it out
-  const houseVote: string = args[0];
-  const playerChoice: string = args[1].toLowerCase();
+  const parsedArgs = argParser(interaction.options);
+
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const houseVote: string = parsedArgs.house.id;
+  const playerChoice: string = parsedArgs.vote.toLowerCase();
 
   // See if the player has already voted for this
   const existingVote = await Database.vote.getPlayerVotesAgainstHouseByTypes(
@@ -495,45 +528,48 @@ const war = async ({
     const [vote] = existingVote;
     const choice = vote.type === 'war_yes' ? 'YES' : 'NO';
 
-    commandReturn.reply =
-      `You have already voted ${choice} to a war ` + `with <@&${vote.choice}>`;
-  } else {
-    // Ensure a war exists between the houses
-    const existingPact = await Database.pact.getPactBetweenHouses(
-      playerData.house,
-      houseVote
-    );
+    return {
+      reply:
+        `You have already voted ${choice} to a war ` +
+        `with <@&${vote.choice}>`,
+      success: true,
+    };
+  }
+  // Ensure a war exists between the houses
+  const existingPact = await Database.pact.getPactBetweenHouses(
+    playerData.house,
+    houseVote
+  );
 
-    if (existingPact !== null) {
-      // Check yes/no choice
-      let warType = '';
+  if (existingPact === null) {
+    return {
+      reply: 'Your house does not have a pact with ' + `<@&${houseVote}>`,
+      success: true,
+    };
+  }
+  // Check yes/no choice
+  let warType = '';
 
-      if (playerChoice === 'yes') {
-        warType = 'war_yes';
-      } else if (playerChoice === 'no') {
-        warType = 'war_no';
-      }
-
-      if (warType !== '') {
-        // Truce vote is good. Add it
-        (commandReturn.votes as any).add = Database.vote.createVote({
-          type: warType,
-          user: playerData,
-          choice: houseVote,
-          time: Date.now(),
-        });
-        commandReturn.reply =
-          `Your choice of ${playerChoice} was ` + 'recorded';
-      } else {
-        commandReturn.reply = 'You must vote YES or NO';
-      }
-    } else {
-      commandReturn.reply =
-        'Your house does not have a pact with ' + `<@&${houseVote}>`;
-    }
+  if (playerChoice === 'yes') {
+    warType = 'war_yes';
+  } else if (playerChoice === 'no') {
+    warType = 'war_no';
   }
 
-  return commandReturn;
+  if (warType === '') {
+    return { reply: 'You must vote YES or NO', success: true };
+  }
+  // Truce vote is good. Add it
+  await Database.vote.insertVote({
+    type: warType,
+    user: playerData,
+    choice: houseVote,
+    time: Date.now(),
+  });
+  return {
+    reply: `Your choice of ${playerChoice} was recorded`,
+    success: true,
+  };
 };
 
 export const dispatch: CommandDispatch = {
@@ -615,7 +651,7 @@ export const dispatch: CommandDispatch = {
       ),
   },
   pact: {
-    type: 'message',
+    type: 'slash',
     function: pact,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
@@ -639,21 +675,9 @@ export const dispatch: CommandDispatch = {
             { name: 'No', value: 'no' }
           )
       ),
-    slashCommandOptionParser: (
-      options
-    ): { house: Role | APIRole; vote: string } | null => {
-      const house = options.getRole('house');
-      const vote = options.getString('vote');
-
-      if (house === null || vote === null) {
-        return null;
-      }
-
-      return { house, vote };
-    },
   },
   war: {
-    type: 'message',
+    type: 'slash',
     function: war,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
@@ -677,17 +701,5 @@ export const dispatch: CommandDispatch = {
             { name: 'No', value: 'no' }
           )
       ),
-    slashCommandOptionParser: (
-      options
-    ): { house: Role | APIRole; vote: string } | null => {
-      const house = options.getRole('house');
-      const vote = options.getString('vote');
-
-      if (house === null || vote === null) {
-        return null;
-      }
-
-      return { house, vote };
-    },
   },
 };

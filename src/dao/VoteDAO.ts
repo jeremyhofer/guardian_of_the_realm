@@ -1,4 +1,10 @@
-import { DeleteResult, LessThanOrEqual, Like, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  InsertResult,
+  LessThanOrEqual,
+  Like,
+  Repository,
+} from 'typeorm';
 import { PlayerData } from '../entity/PlayerData';
 import { Vote } from '../entity/Vote';
 
@@ -62,6 +68,10 @@ export class VoteDAO {
 
   createVote(pVote: Partial<Vote>): Vote {
     return this._repository.create(pVote);
+  }
+
+  async insertVote(pVote: Partial<Vote>): Promise<InsertResult> {
+    return await this._repository.insert(pVote);
   }
 
   async saveVote(loan: Vote): Promise<Vote> {
