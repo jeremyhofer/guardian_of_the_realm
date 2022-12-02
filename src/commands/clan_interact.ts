@@ -22,58 +22,51 @@ import {
  * need merc role. lose it after
  * <HOUSE>
  */
-const join = async ({
-  playerData,
-}: {
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-      roles: {
-        player: {
-          add: [],
-          remove: [],
-        },
-      },
-    },
-    reply: '',
-    success: true,
-  };
+const join = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
 
   // See if the player is in a house. If they are they cannot join another one
   if (playerData.house !== '') {
-    commandReturn.reply = 'You are already part of a house';
-  } else {
-    // Add the player to a house with an opening
-    const houseCounts: { [key: string]: number } =
-      await Database.playerData.getPlayerCountsInAllHouses();
+    return { reply: 'You are already part of a house', success: true };
+  }
+  // Add the player to a house with an opening
+  const houseCounts: { [key: string]: number } =
+    await Database.playerData.getPlayerCountsInAllHouses();
 
-    assets.houses.forEach((house) => {
-      if (house !== '625905668263510017' && !(house in houseCounts)) {
-        houseCounts[house] = 0;
-      }
-    });
-
-    const sortedHouses = [];
-
-    for (const key in houseCounts) {
-      sortedHouses.push({
-        id: key,
-        count: houseCounts[key],
-      });
+  assets.houses.forEach((house) => {
+    if (house !== '625905668263510017' && !(house in houseCounts)) {
+      houseCounts[house] = 0;
     }
+  });
 
-    sortedHouses.sort((first, second) => first.count - second.count);
+  const sortedHouses = [];
 
-    const selectedHouse = sortedHouses[0].id;
-
-    (commandReturn.update?.playerData as PlayerData).house = selectedHouse;
-    commandReturn.update?.roles?.player?.add.push(selectedHouse);
-    commandReturn.reply = `You successfully joined <@&${selectedHouse}>!`;
+  for (const key in houseCounts) {
+    sortedHouses.push({
+      id: key,
+      count: houseCounts[key],
+    });
   }
 
-  return commandReturn;
+  sortedHouses.sort((first, second) => first.count - second.count);
+
+  const selectedHouse = sortedHouses[0].id;
+
+  playerData.house = selectedHouse;
+  await Database.playerData.setPlayer(playerData);
+  await game_tasks.alterRole(
+    interaction,
+    interaction.user,
+    selectedHouse,
+    'add'
+  );
+  const reply = `You successfully joined <@&${selectedHouse}>!`;
+
+  return { reply, success: true };
 };
 
 /*
@@ -545,7 +538,7 @@ const war = async ({
 
 export const dispatch: CommandDispatch = {
   join: {
-    type: 'message',
+    type: 'slash',
     function: join,
     args: ['playerData'],
     command_args: [[]],
