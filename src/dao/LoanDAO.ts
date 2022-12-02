@@ -1,4 +1,9 @@
-import { DeleteResult, LessThanOrEqual, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  InsertResult,
+  LessThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { Loan } from '../entity/Loan';
 
 export class LoanDAO {
@@ -15,8 +20,8 @@ export class LoanDAO {
     });
   }
 
-  createLoan(pLoan: Partial<Loan>): Loan {
-    return this._repository.create(pLoan);
+  async insertLoan(pLoan: Partial<Loan>): Promise<InsertResult> {
+    return await this._repository.insert(pLoan);
   }
 
   async saveLoan(loan: Loan): Promise<Loan> {
