@@ -1,5 +1,6 @@
 import {
   Guild,
+  Interaction,
   Message,
   PermissionFlagsBits,
   SlashCommandBuilder,
@@ -63,7 +64,7 @@ export async function messageHandler(
     if (command in commandDispatch) {
       if (commandDispatch[command].type === 'slash') {
         await msg.reply(
-          `${command} is now implemented as a slash command. Give it a try!`
+          `${command} is now implemented as a slash command. Give it a try with /${command}!`
         );
 
         return;
@@ -488,5 +489,57 @@ export async function messageHandler(
     } else {
       await msg.reply(command + ' is not a recognized command');
     }
+  }
+}
+
+export async function interactionHandler(
+  interaction: Interaction,
+  gameActive: boolean
+): Promise<void> {
+  if (!interaction.isChatInputCommand()) {
+    return;
+  }
+
+  const commandName = interaction.commandName;
+
+  if (commandName in commandDispatch) {
+    if(!gameActive) {
+      await interaction.reply('The game is over. Please play again soon!');
+      return;
+    }
+
+    const commandConfig = commandDispatch[interaction.commandName];
+
+    if(commandConfig.type === 'message') {
+      await interaction.reply(`${commandName} is not implemented as a slack command yet. Please use .${commandName}`);
+      return;
+    }
+
+    const argParser = commandConfig.slashCommandOptionParser;
+
+    const args =
+      argParser === undefined ? null : argParser(interaction.options);
+
+    if(argParser !== undefined && args === null) {
+      await interaction.reply('Issue with processing command arguments. Contact a Developer.');
+      return;
+    }
+
+    const commandReturn = await commandConfig.function();
+
+    if(commandReturn === null || commandReturn === undefined) {
+      // TODO: figure out more proper response here if needed
+      await interaction.reply('Command is not yet implemented');
+      return;
+    }
+
+    if(!commandReturn.success) {
+      await interaction.reply('The command failed. Please check with a Developer.');
+      return;
+    }
+
+    await interaction.reply({embeds: [{ description: commandReturn.reply }]});
+  } else {
+    await interaction.reply('This slash command is not recognized.');
   }
 }

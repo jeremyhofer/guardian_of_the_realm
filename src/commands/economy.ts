@@ -398,7 +398,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   market: {
-    type: 'message',
+    type: 'slash',
     function: market,
     args: [],
     command_args: [[]],
