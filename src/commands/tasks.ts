@@ -2,25 +2,19 @@ import * as assets from '../assets';
 import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
 import { CommandDispatch, CommandReturn } from '../types';
-import { PlayerData } from '../entity/PlayerData';
-import { SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { Database } from '../data-source';
 
 /*
  * Possibly earn money. 1h cooldown
  * min: 0, max: 200
  */
-const pray = async ({
-  playerData,
-}: {
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    reply: '',
-    update: {
-      playerData,
-    },
-    success: true,
-  };
+const pray = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
 
   /*
    * Determine payout. Set last time and new money amount.
@@ -30,31 +24,29 @@ const pray = async ({
     assets.rewardPayoutsPenalties.pray_reward_min,
     assets.rewardPayoutsPenalties.pray_reward_max
   );
-  (commandReturn.update?.playerData as PlayerData).money += payout;
+  playerData.money += payout;
   const replyTemplate = utils.randomElement(flavor.pray);
-  commandReturn.reply = utils.templateReplace(replyTemplate, {
+  const reply = utils.templateReplace(replyTemplate, {
     amount: payout,
   });
 
-  return commandReturn;
+  await Database.playerData.setPlayer(playerData);
+
+  return { reply, success: true };
 };
 
 /*
  * Possible earn money. 12h cooldown
  * min: 1000, max: 4000. 50/50. fine 200-1000
  */
-const subvert = async ({
-  playerData,
-}: {
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    reply: '',
-    update: {
-      playerData,
-    },
-    success: true,
-  };
+const subvert = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+
+  let reply = '';
 
   // Determine if this is a successful attempt
   const chance = utils.getRandomValueInRange(1, 100);
@@ -64,9 +56,9 @@ const subvert = async ({
       assets.rewardPayoutsPenalties.subvert_reward_min,
       assets.rewardPayoutsPenalties.subvert_reward_max
     );
-    (commandReturn.update?.playerData as PlayerData).money += payout;
+    playerData.money += payout;
     const replyTemplate = utils.randomElement(flavor.subvert_success);
-    commandReturn.reply = utils.templateReplace(replyTemplate, {
+    reply = utils.templateReplace(replyTemplate, {
       amount: payout,
     });
   } else {
@@ -75,32 +67,30 @@ const subvert = async ({
       assets.rewardPayoutsPenalties.subvert_penalty_min,
       assets.rewardPayoutsPenalties.subvert_penalty_max
     );
-    (commandReturn.update?.playerData as PlayerData).money -= penalty;
+    playerData.money -= penalty;
     const replyTemplate = utils.randomElement(flavor.subvert_fail);
-    commandReturn.reply = utils.templateReplace(replyTemplate, {
+    reply = utils.templateReplace(replyTemplate, {
       amount: penalty,
     });
   }
 
-  return commandReturn;
+  await Database.playerData.setPlayer(playerData);
+
+  return { reply, success: true };
 };
 
 /*
  * Possible earn men. 12h cooldown. 20% fail risk - fine 10-100
  * min: 1, max : 20
  */
-const train = async ({
-  playerData,
-}: {
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    reply: '',
-    update: {
-      playerData,
-    },
-    success: true,
-  };
+const train = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+
+  let reply = '';
 
   // Determine if this is a successful attempt
   const chance = utils.getRandomValueInRange(1, 100);
@@ -110,9 +100,9 @@ const train = async ({
       assets.rewardPayoutsPenalties.train_reward_min,
       assets.rewardPayoutsPenalties.train_reward_max
     );
-    (commandReturn.update?.playerData as PlayerData).men += payout;
+    playerData.men += payout;
     const replyTemplate = utils.randomElement(flavor.train_success);
-    commandReturn.reply = utils.templateReplace(replyTemplate, {
+    reply = utils.templateReplace(replyTemplate, {
       amount: payout,
       eMenAtArms: assets.emojis.MenAtArms,
     });
@@ -122,32 +112,28 @@ const train = async ({
       assets.rewardPayoutsPenalties.train_penalty_min,
       assets.rewardPayoutsPenalties.train_penalty_max
     );
-    (commandReturn.update?.playerData as PlayerData).money -= penalty;
+    playerData.money -= penalty;
     const replyTemplate = utils.randomElement(flavor.train_fail);
-    commandReturn.reply = utils.templateReplace(replyTemplate, {
+    reply = utils.templateReplace(replyTemplate, {
       amount: penalty,
     });
   }
 
-  return commandReturn;
+  await Database.playerData.setPlayer(playerData);
+
+  return { reply, success: true };
 };
 
 /*
  * Gain money. 6h cooldown
  * min: 500, max: 2000
  */
-const work = async ({
-  playerData,
-}: {
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    reply: '',
-    update: {
-      playerData,
-    },
-    success: true,
-  };
+const work = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
 
   /*
    * Determine payout. Set last time and new money amount.
@@ -157,18 +143,20 @@ const work = async ({
     assets.rewardPayoutsPenalties.work_reward_min,
     assets.rewardPayoutsPenalties.work_reward_max
   );
-  (commandReturn.update?.playerData as PlayerData).money += payout;
+  playerData.money += payout;
   const replyTemplate = utils.randomElement(flavor.work);
-  commandReturn.reply = utils.templateReplace(replyTemplate, {
+  const reply = utils.templateReplace(replyTemplate, {
     amount: payout,
   });
 
-  return commandReturn;
+  await Database.playerData.setPlayer(playerData);
+
+  return { reply, success: true };
 };
 
 export const dispatch: CommandDispatch = {
   pray: {
-    type: 'message',
+    type: 'slash',
     function: pray,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pray),
@@ -183,7 +171,7 @@ export const dispatch: CommandDispatch = {
       .setDescription('pray the things'),
   },
   subvert: {
-    type: 'message',
+    type: 'slash',
     function: subvert,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.subvert),
@@ -199,7 +187,7 @@ export const dispatch: CommandDispatch = {
       .setDescription('subvert the things'),
   },
   train: {
-    type: 'message',
+    type: 'slash',
     function: train,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.train),
@@ -214,7 +202,7 @@ export const dispatch: CommandDispatch = {
       .setDescription('train the things'),
   },
   work: {
-    type: 'message',
+    type: 'slash',
     function: work,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.work),
