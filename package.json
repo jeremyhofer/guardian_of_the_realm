@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "start": "npx ts-node src/index.ts",
+    "deploy-commands": "npx ts-node src/deploy-commands.ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "prettier-check": "npx prettier --check .",
     "prettier-write": "npx prettier --write .",

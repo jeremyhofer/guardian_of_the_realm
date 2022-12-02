@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { AppDataSource } from './data-source';
 import * as game_tasks from './game_tasks';
 import * as auth from './auth.json';
@@ -27,14 +27,24 @@ AppDataSource.initialize()
       console.error(err);
     });
 
-    client.on('ready', async () => {
+    client.on(Events.ClientReady, async () => {
       console.log(`Logged in as ${client.user?.tag ?? 'BOT NAME ISSUE'}!`);
       clientReady = true;
       gameActive = await game_tasks.isGameActive();
     });
 
-    client.on('messageCreate', async (message) => {
+    client.on(Events.MessageCreate, async (message) => {
       await botHandlers.messageHandler(message, gameActive);
+    });
+
+    client.on(Events.InteractionCreate, async (interaction) => {
+      if (!interaction.isChatInputCommand()) return;
+      console.log(interaction);
+
+      if(interaction.commandName === 'foo') {
+        const subject = interaction.options.getUser('subject');
+        await interaction.reply(`gadzooks! your subject is ${subject?.toString() ?? 'an unknown soul'}`);
+      }
     });
   })
   .catch((error) => {
