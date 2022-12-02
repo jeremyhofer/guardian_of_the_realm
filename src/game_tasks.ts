@@ -1,10 +1,12 @@
 import {
   APIEmbed,
+  ChatInputCommandInteraction,
   Collection,
   Guild,
   GuildMember,
   RoleManager,
   Snowflake,
+  User,
 } from 'discord.js';
 import * as assets from './assets';
 import { Database } from './data-source';
@@ -1245,4 +1247,33 @@ export const isGameActive = async (): Promise<boolean> => {
   }
 
   return gameActive;
+};
+
+export const alterRole = async (
+  interaction: ChatInputCommandInteraction,
+  user: User,
+  roleName: string,
+  action: 'add' | 'remove'
+): Promise<boolean> => {
+  const serverRole =
+    roleName in assets.gameRoles
+      ? roleName
+      : utils.findRoleIdGivenName(roleName, assets.gameRoles);
+  if (serverRole === '') {
+    return false;
+  }
+
+  const guildMember = await interaction.guild?.members.fetch(user);
+
+  if (guildMember === undefined) {
+    return false;
+  }
+
+  // Add role to player
+  if (action === 'add') {
+    await guildMember.roles.add(serverRole).catch(console.error);
+  } else if (action === 'remove') {
+    await guildMember.roles.remove(serverRole).catch(console.error);
+  }
+  return true;
 };

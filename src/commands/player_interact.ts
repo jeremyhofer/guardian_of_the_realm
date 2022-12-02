@@ -407,120 +407,133 @@ const raid = async ({
  * Usage:
  * @player
  */
-const scandal = async ({
-  args,
-  playerData,
-  guild,
-}: {
-  args: any[];
-  playerData: PlayerData;
-  guild: Guild;
-}): Promise<CommandReturn> => {
-  const playerMention = args[0] as PlayerData;
+const scandal = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User }> = (options) => {
+    const player = options.getUser('player');
 
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-      roles: {
-        other_player: {
-          id: playerMention.user,
-          add: [] as string[],
-          remove: [] as string[],
-        },
-      },
-    },
-    reply: '',
-    success: false,
+    if (player === null) {
+      return null;
+    }
+
+    return { player };
   };
 
-  const nobleRoleIds: string[] = [];
+  const parsedArgs = argParser(interaction.options);
 
-  for (const key in assets.storeItems) {
-    if (assets.storeItems[key].type === 'title') {
-      const roleId = utils.findRoleIdGivenName(key, assets.gameRoles);
-      nobleRoleIds.push(roleId);
-    }
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
   }
 
-  const otherPlayerRoleIds: string[] = [];
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+
+  if (playerData.user === playerMention.user) {
+    return { reply: 'You cannot commit a scandal on yourself!', success: true };
+  }
+
+  const nobleRoleIds: string[] = Object.entries(assets.storeItems)
+    .filter(([, value]) => value.type === 'title')
+    .map(([key]) => utils.findRoleIdGivenName(key, assets.gameRoles));
 
   /*
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  guild.members.cache.get(playerMention.user)?.roles.cache.forEach((role) => {
-    if (nobleRoleIds.includes(role.id)) {
-      otherPlayerRoleIds.push(role.id);
-    }
-  });
+  const otherPlayerRoleIds: string[] =
+    interaction.guild?.members.cache
+      .get(playerMention.user)
+      ?.roles.cache.filter((role) => nobleRoleIds.includes(role.id))
+      .map((role) => role.id) ?? [];
 
   const nobleRoles = ['duke', 'earl', 'baron'];
 
   let highestRoleId = '';
   let highestRole = '';
 
-  for (let iter = 0; iter < nobleRoles.length; iter += 1) {
-    const checkRoleId = utils.findRoleIdGivenName(
-      nobleRoles[iter],
-      assets.gameRoles
-    );
+  for (const nobleRole of nobleRoles) {
+    const checkRoleId = utils.findRoleIdGivenName(nobleRole, assets.gameRoles);
     if (otherPlayerRoleIds.includes(checkRoleId)) {
-      highestRole = nobleRoles[iter];
+      highestRole = nobleRole;
       highestRoleId = checkRoleId;
       break;
     }
   }
 
-  if (highestRoleId !== '') {
-    // We have a highest role to try and scandal. Make sure we have the moola
-    const scandalCost = Math.round(assets.storeItems[highestRole].cost / 2);
-
-    if (playerData.money >= scandalCost) {
-      // Determine if the scandal is a success
-      const chance = utils.getRandomValueInRange(1, 100);
-      let replyTemplate = '';
-      let penalty = 0;
-
-      if (chance >= 50) {
-        // The scandal succeeded! Determine what role the other player drops to
-        const currentRoleIndex = nobleRoles.indexOf(highestRole);
-        const newRole =
-          currentRoleIndex < nobleRoles.length - 1
-            ? nobleRoles[currentRoleIndex + 1]
-            : 'unsworn';
-
-        if (newRole !== 'unsworn') {
-          commandReturn.update?.roles?.other_player?.add.push(newRole);
-        }
-        commandReturn.update?.roles?.other_player?.remove.push(highestRole);
-        replyTemplate = utils.randomElement(flavor.scandal_success);
-      } else {
-        penalty = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.scandal_penalty_min,
-          assets.rewardPayoutsPenalties.scandal_penalty_max
-        );
-        (commandReturn.update?.playerData as PlayerData).money -= penalty;
-        replyTemplate = utils.randomElement(flavor.scandal_fail);
-      }
-
-      commandReturn.reply = utils.templateReplace(replyTemplate, {
-        amount: penalty,
-        targetMention: `<@${playerMention.user}>`,
-        roleToScandal: highestRole,
-      });
-      (commandReturn.update?.playerData as PlayerData).money -= scandalCost;
-      commandReturn.success = true;
-    } else {
-      commandReturn.reply =
-        `Instigating a scandal against ${highestRole} ` +
-        `<@${playerMention.user}> costs ${scandalCost} :moneybag:. You do ` +
-        ' not have enough to afford the scandal.';
-    }
-  } else {
-    commandReturn.reply = `<@${playerMention.user}> is unsworn!`;
+  if (highestRoleId === '') {
+    return {
+      reply: `${parsedArgs.player.toString()} is unsworn!`,
+      success: true,
+    };
   }
 
-  return commandReturn;
+  // We have a highest role to try and scandal. Make sure we have the moola
+  const scandalCost = Math.round(assets.storeItems[highestRole].cost / 2);
+
+  if (playerData.money < scandalCost) {
+    return {
+      reply:
+        `Instigating a scandal against ${highestRole} ` +
+        `<@${playerMention.user}> costs ${scandalCost} :moneybag:. You do ` +
+        ' not have enough to afford the scandal.',
+      success: true,
+    };
+  }
+
+  // Determine if the scandal is a success
+  const chance = utils.getRandomValueInRange(1, 100);
+  let replyTemplate = '';
+  let penalty = 0;
+
+  if (chance >= 50) {
+    // The scandal succeeded! Determine what role the other player drops to
+    const currentRoleIndex = nobleRoles.indexOf(highestRole);
+    const newRole =
+      currentRoleIndex < nobleRoles.length - 1
+        ? nobleRoles[currentRoleIndex + 1]
+        : 'unsworn';
+
+    if (newRole !== 'unsworn') {
+      await game_tasks.alterRole(
+        interaction,
+        parsedArgs.player,
+        newRole,
+        'add'
+      );
+    }
+    await game_tasks.alterRole(
+      interaction,
+      parsedArgs.player,
+      highestRole,
+      'remove'
+    );
+    replyTemplate = utils.randomElement(flavor.scandal_success);
+  } else {
+    penalty = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.scandal_penalty_min,
+      assets.rewardPayoutsPenalties.scandal_penalty_max
+    );
+    playerData.money -= penalty;
+    replyTemplate = utils.randomElement(flavor.scandal_fail);
+  }
+
+  const reply = utils.templateReplace(replyTemplate, {
+    amount: penalty,
+    targetMention: `${parsedArgs.player.toString()}`,
+    roleToScandal: highestRole,
+  });
+  playerData.money -= scandalCost;
+  await Database.playerData.saveMultiple([playerData]);
+
+  return { reply, success: true };
 };
 
 /*
@@ -910,7 +923,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   scandal: {
-    type: 'message',
+    type: 'slash',
     function: scandal,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.scandal),
