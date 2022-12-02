@@ -503,15 +503,17 @@ export async function interactionHandler(
   const commandName = interaction.commandName;
 
   if (commandName in commandDispatch) {
-    if(!gameActive) {
+    if (!gameActive) {
       await interaction.reply('The game is over. Please play again soon!');
       return;
     }
 
     const commandConfig = commandDispatch[interaction.commandName];
 
-    if(commandConfig.type === 'message') {
-      await interaction.reply(`${commandName} is not implemented as a slack command yet. Please use .${commandName}`);
+    if (commandConfig.type === 'message') {
+      await interaction.reply(
+        `${commandName} is not implemented as a slack command yet. Please use .${commandName}`
+      );
       return;
     }
 
@@ -520,25 +522,29 @@ export async function interactionHandler(
     const args =
       argParser === undefined ? null : argParser(interaction.options);
 
-    if(argParser !== undefined && args === null) {
-      await interaction.reply('Issue with processing command arguments. Contact a Developer.');
+    if (argParser !== undefined && args === null) {
+      await interaction.reply(
+        'Issue with processing command arguments. Contact a Developer.'
+      );
       return;
     }
 
     const commandReturn = await commandConfig.function();
 
-    if(commandReturn === null || commandReturn === undefined) {
+    if (commandReturn === null || commandReturn === undefined) {
       // TODO: figure out more proper response here if needed
       await interaction.reply('Command is not yet implemented');
       return;
     }
 
-    if(!commandReturn.success) {
-      await interaction.reply('The command failed. Please check with a Developer.');
+    if (!commandReturn.success) {
+      await interaction.reply(
+        'The command failed. Please check with a Developer.'
+      );
       return;
     }
 
-    await interaction.reply({embeds: [{ description: commandReturn.reply }]});
+    await interaction.reply({ embeds: [{ description: commandReturn.reply }] });
   } else {
     await interaction.reply('This slash command is not recognized.');
   }

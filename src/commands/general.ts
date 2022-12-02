@@ -90,7 +90,7 @@ const cooldown = async ({
 
 export const dispatch: CommandDispatch = {
   help: {
-    type: 'message',
+    type: 'slash',
     function: help,
     args: [],
     command_args: [[]],

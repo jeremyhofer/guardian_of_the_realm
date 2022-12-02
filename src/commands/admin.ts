@@ -20,7 +20,7 @@ const view = async (): Promise<null> => null;
 
 export const dispatch: CommandDispatch = {
   edit: {
-    type: 'message',
+    type: 'slash',
     function: edit,
     args: [],
     command_args: [[]],
@@ -31,7 +31,7 @@ export const dispatch: CommandDispatch = {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   },
   take: {
-    type: 'message',
+    type: 'slash',
     function: take,
     args: [],
     command_args: [[]],
@@ -42,7 +42,7 @@ export const dispatch: CommandDispatch = {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   },
   view: {
-    type: 'message',
+    type: 'slash',
     function: view,
     args: [],
     command_args: [[]],

@@ -37,7 +37,11 @@ AppDataSource.initialize()
       await botHandlers.messageHandler(message, gameActive);
     });
 
-    client.on(Events.InteractionCreate, async (interaction) => await botHandlers.interactionHandler(interaction, gameActive));
+    client.on(
+      Events.InteractionCreate,
+      async (interaction) =>
+        await botHandlers.interactionHandler(interaction, gameActive)
+    );
   })
   .catch((error) => {
     console.error('app init error');
