@@ -90,24 +90,33 @@ const cooldown = async ({
 
 export const dispatch: CommandDispatch = {
   help: {
+    type: 'message',
     function: help,
     args: [],
     command_args: [[]],
     usage: [],
-    slashCommandBuilder: new SlashCommandBuilder().setName('help').setDescription('help the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('help')
+      .setDescription('help the things'),
   },
   bal: {
+    type: 'message',
     function: bal,
     args: ['playerData', 'playerRoles'],
     command_args: [[]],
     usage: [],
-    slashCommandBuilder: new SlashCommandBuilder().setName('bal').setDescription('bal the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('bal')
+      .setDescription('bal the things'),
   },
   cooldown: {
+    type: 'message',
     function: cooldown,
     args: ['playerData', 'commandDispatch'],
     command_args: [[]],
     usage: [],
-    slashCommandBuilder: new SlashCommandBuilder().setName('cooldown').setDescription('cooldown the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('cooldown')
+      .setDescription('cooldown the things'),
   },
 };

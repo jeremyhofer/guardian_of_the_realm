@@ -704,6 +704,7 @@ const trade = async ({
 
 export const dispatch: CommandDispatch = {
   arson: {
+    type: 'message',
     function: arson,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.arson),
@@ -715,61 +716,68 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER INCOME_ROLE'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('arson')
-    .setDescription('arson the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to arson')
-      .setRequired(true)
-    )
-    .addRoleOption((option) => option
-      .setName('role')
-      .setDescription('role to arson')
-      .setRequired(true)
-    ),
-    slashCommandOptionParser: (options): { player: User, role: Role | APIRole } | null => {
+      .setName('arson')
+      .setDescription('arson the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to arson')
+          .setRequired(true)
+      )
+      .addRoleOption((option) =>
+        option.setName('role').setDescription('role to arson').setRequired(true)
+      ),
+    slashCommandOptionParser: (
+      options
+    ): { player: User; role: Role | APIRole } | null => {
       const player = options.getUser('player');
       const role = options.getRole('role');
 
-      if(player === null || role === null) {
+      if (player === null || role === null) {
         return null;
       }
 
       return { player, role };
-    }
+    },
   },
   gift: {
+    type: 'message',
     function: gift,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.player_mention, ArgTypes.number]],
     usage: ['@PLAYER MONEY'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('gift')
-    .setDescription('gift the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to gift')
-      .setRequired(true)
-    )
-    .addNumberOption((option) => option
-      .setName('amount')
-      .setDescription('amount to gift')
-      .setRequired(true)
-      .setMinValue(1)
-    ),
-    slashCommandOptionParser: (options): { player: User, amount: number } | null => {
+      .setName('gift')
+      .setDescription('gift the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to gift')
+          .setRequired(true)
+      )
+      .addNumberOption((option) =>
+        option
+          .setName('amount')
+          .setDescription('amount to gift')
+          .setRequired(true)
+          .setMinValue(1)
+      ),
+    slashCommandOptionParser: (
+      options
+    ): { player: User; amount: number } | null => {
       const player = options.getUser('player');
       const amount = options.getNumber('role');
 
-      if(player === null || amount === null) {
+      if (player === null || amount === null) {
         return null;
       }
 
       return { player, amount };
-    }
+    },
   },
   pirate: {
+    type: 'message',
     function: pirate,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pirate),
@@ -783,24 +791,26 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('pirate')
-    .setDescription('pirate the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to pirate')
-      .setRequired(true)
-    ),
+      .setName('pirate')
+      .setDescription('pirate the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to pirate')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { player: User } | null => {
       const player = options.getUser('player');
 
-      if(player === null) {
+      if (player === null) {
         return null;
       }
 
       return { player };
-    }
+    },
   },
   raid: {
+    type: 'message',
     function: raid,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.raid),
@@ -814,24 +824,26 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('raid')
-    .setDescription('raid the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to raid')
-      .setRequired(true)
-    ),
+      .setName('raid')
+      .setDescription('raid the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to raid')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { player: User } | null => {
       const player = options.getUser('player');
 
-      if(player === null) {
+      if (player === null) {
         return null;
       }
 
       return { player };
-    }
+    },
   },
   scandal: {
+    type: 'message',
     function: scandal,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.scandal),
@@ -843,24 +855,26 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('scandal')
-    .setDescription('scandal the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to scandal')
-      .setRequired(true)
-    ),
+      .setName('scandal')
+      .setDescription('scandal the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to scandal')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { player: User } | null => {
       const player = options.getUser('player');
 
-      if(player === null) {
+      if (player === null) {
         return null;
       }
 
       return { player };
-    }
+    },
   },
   spy: {
+    type: 'message',
     function: spy,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.spy),
@@ -872,24 +886,26 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('spy')
-    .setDescription('spy the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to spy')
-      .setRequired(true)
-    ),
+      .setName('spy')
+      .setDescription('spy the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to spy')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { player: User } | null => {
       const player = options.getUser('player');
 
-      if(player === null) {
+      if (player === null) {
         return null;
       }
 
       return { player };
-    }
+    },
   },
   thief: {
+    type: 'message',
     function: thief,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.thief),
@@ -903,24 +919,26 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('thief')
-    .setDescription('thief the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to thief')
-      .setRequired(true)
-    ),
+      .setName('thief')
+      .setDescription('thief the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to thief')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { player: User } | null => {
       const player = options.getUser('player');
 
-      if(player === null) {
+      if (player === null) {
         return null;
       }
 
       return { player };
-    }
+    },
   },
   trade: {
+    type: 'message',
     function: trade,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.trade),
@@ -934,28 +952,32 @@ export const dispatch: CommandDispatch = {
     usage: ['@PLAYER SHIPS'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('trade')
-    .setDescription('trade the things')
-    .addUserOption((option) => option
-      .setName('player')
-      .setDescription('player to trade')
-      .setRequired(true)
-    )
-    .addNumberOption((option) => option
-      .setName('ships')
-      .setDescription('number of ships to use in the trade')
-      .setRequired(true)
-      .setMinValue(1)
-    ),
-    slashCommandOptionParser: (options): { player: User, ships: number } | null => {
+      .setName('trade')
+      .setDescription('trade the things')
+      .addUserOption((option) =>
+        option
+          .setName('player')
+          .setDescription('player to trade')
+          .setRequired(true)
+      )
+      .addNumberOption((option) =>
+        option
+          .setName('ships')
+          .setDescription('number of ships to use in the trade')
+          .setRequired(true)
+          .setMinValue(1)
+      ),
+    slashCommandOptionParser: (
+      options
+    ): { player: User; ships: number } | null => {
       const player = options.getUser('player');
       const ships = options.getNumber('ships');
 
-      if(player === null || ships === null) {
+      if (player === null || ships === null) {
         return null;
       }
 
       return { player, ships };
-    }
+    },
   },
 };

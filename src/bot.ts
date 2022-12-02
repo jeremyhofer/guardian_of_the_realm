@@ -1,4 +1,9 @@
-import { Guild, Message, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import {
+  Guild,
+  Message,
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+} from 'discord.js';
 import { Database } from './data-source';
 import * as args from './args';
 import * as admin from './commands/admin';
@@ -23,24 +28,26 @@ export const commandDispatch: CommandDispatch = {
   ...player_interact.dispatch,
   ...tasks.dispatch,
   map: {
+    type: 'message',
     function: async (cmdArgs) => await game_tasks.postUpdatedMap(cmdArgs),
     args: ['guild'],
     command_args: [[]],
     usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('map')
-    .setDescription('map the things')
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+      .setName('map')
+      .setDescription('map the things')
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   },
   reset: {
+    type: 'message',
     function: async (cmdArgs) => await game_tasks.resetEverything(cmdArgs),
     args: ['guild', 'playerRoles', 'currentTime'],
     command_args: [[]],
     usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('reset')
-    .setDescription('reset the things')
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+      .setName('reset')
+      .setDescription('reset the things')
+      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   },
 };
 
@@ -54,6 +61,13 @@ export async function messageHandler(
     const command = tokens[0].substring(1);
 
     if (command in commandDispatch) {
+      if (commandDispatch[command].type === 'slash') {
+        await msg.reply(
+          `${command} is now implemented as a slash command. Give it a try!`
+        );
+
+        return;
+      }
       if (!gameActive && command !== 'reset') {
         await msg.reply('The game is over! A new round will begin soon!');
 

@@ -10,9 +10,10 @@ export class PledgeDAO {
     user: PlayerData,
     siege: Siege
   ): Promise<Pledge | null> {
-    return await this._repository.createQueryBuilder('pledge')
+    return await this._repository
+      .createQueryBuilder('pledge')
       .select()
-      .where('pledge.user = :user', { user: user.user})
+      .where('pledge.user = :user', { user: user.user })
       .andWhere('pledge.siege = :siege', { siege: siege.siege_id })
       .getOne();
   }

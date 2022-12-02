@@ -511,166 +511,187 @@ const war = async ({
 
 export const dispatch: CommandDispatch = {
   join: {
+    type: 'message',
     function: join,
     args: ['playerData'],
     command_args: [[]],
     usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('join')
-    .setDescription('join the things')
+      .setName('join')
+      .setDescription('join the things'),
   },
   pledge: {
+    type: 'message',
     function: pledge,
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.string, ArgTypes.number, ArgTypes.string]],
     usage: ['TILE NUMBER attack|defend'],
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('pledge')
-    .setDescription('pledge the things')
-    .addStringOption((option) => option
-      .setName('tile')
-      .setDescription('Tile to pledge troops to')
-      .setRequired(true)
-    )
-    .addNumberOption((option) => option
-      .setName('number')
-      .setDescription('Number of troops to pledge')
-      .setRequired(true)
-      .setMinValue(1)
-    )
-    .addStringOption((option) => option
-      .setName('action')
-      .setDescription('Whether to attack or defend')
-      .setRequired(true)
-      .setChoices(
-        { name: 'Attack', value: 'attack' },
-        { name: 'Defend', value: 'defend' },
+      .setName('pledge')
+      .setDescription('pledge the things')
+      .addStringOption((option) =>
+        option
+          .setName('tile')
+          .setDescription('Tile to pledge troops to')
+          .setRequired(true)
       )
-    ),
-    slashCommandOptionParser: (options): { tile: string, number: number, action: string } | null => {
+      .addNumberOption((option) =>
+        option
+          .setName('number')
+          .setDescription('Number of troops to pledge')
+          .setRequired(true)
+          .setMinValue(1)
+      )
+      .addStringOption((option) =>
+        option
+          .setName('action')
+          .setDescription('Whether to attack or defend')
+          .setRequired(true)
+          .setChoices(
+            { name: 'Attack', value: 'attack' },
+            { name: 'Defend', value: 'defend' }
+          )
+      ),
+    slashCommandOptionParser: (
+      options
+    ): { tile: string; number: number; action: string } | null => {
       const tile = options.getString('tile');
       const number = options.getNumber('number');
       const action = options.getString('action');
 
-      if(tile === null || number === null || action === null) {
+      if (tile === null || number === null || action === null) {
         return null;
       }
 
       return { tile, number, action };
-    }
+    },
   },
   siege: {
+    type: 'message',
     function: siege,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
     usage: ['TILE'],
     cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('siege')
-    .setDescription('siege the things')
-    .addStringOption((option) => option
-      .setName('tile')
-      .setDescription('Tile to begin a siege on')
-      .setRequired(true)
-    ),
+      .setName('siege')
+      .setDescription('siege the things')
+      .addStringOption((option) =>
+        option
+          .setName('tile')
+          .setDescription('Tile to begin a siege on')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { tile: string } | null => {
       const tile = options.getString('tile');
 
-      if(tile === null) {
+      if (tile === null) {
         return null;
       }
 
       return { tile };
-    }
+    },
   },
   blockade: {
+    type: 'message',
     function: blockade,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
     usage: ['TILE'],
     cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('blockade')
-    .setDescription('blockade the things')
-    .addStringOption((option) => option
-      .setName('tile')
-      .setDescription('Tile to befin a blockade on')
-      .setRequired(true)
-    ),
+      .setName('blockade')
+      .setDescription('blockade the things')
+      .addStringOption((option) =>
+        option
+          .setName('tile')
+          .setDescription('Tile to befin a blockade on')
+          .setRequired(true)
+      ),
     slashCommandOptionParser: (options): { tile: string } | null => {
       const tile = options.getString('tile');
 
-      if(tile === null) {
+      if (tile === null) {
         return null;
       }
 
       return { tile };
-    }
+    },
   },
   pact: {
+    type: 'message',
     function: pact,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
     usage: ['HOUSE yes|no'],
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('pact')
-    .setDescription('pact the things')
-    .addRoleOption((option) => option
-      .setName('house')
-      .setDescription('house to begin a pact with')
-      .setRequired(true)
-    )
-    .addStringOption((option) => option
-      .setName('vote')
-      .setDescription('yes or no to the pact')
-      .setRequired(true)
-      .setChoices(
-        { name: 'Yes', value: 'yes' },
-        { name: 'No', value: 'no' },
+      .setName('pact')
+      .setDescription('pact the things')
+      .addRoleOption((option) =>
+        option
+          .setName('house')
+          .setDescription('house to begin a pact with')
+          .setRequired(true)
       )
-    ),
-    slashCommandOptionParser: (options): { house: Role | APIRole, vote: string } | null => {
+      .addStringOption((option) =>
+        option
+          .setName('vote')
+          .setDescription('yes or no to the pact')
+          .setRequired(true)
+          .setChoices(
+            { name: 'Yes', value: 'yes' },
+            { name: 'No', value: 'no' }
+          )
+      ),
+    slashCommandOptionParser: (
+      options
+    ): { house: Role | APIRole; vote: string } | null => {
       const house = options.getRole('house');
       const vote = options.getString('vote');
 
-      if(house === null || vote === null) {
+      if (house === null || vote === null) {
         return null;
       }
 
       return { house, vote };
-    }
+    },
   },
   war: {
+    type: 'message',
     function: war,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
     usage: ['HOUSE yes|no'],
     slashCommandBuilder: new SlashCommandBuilder()
-    .setName('war')
-    .setDescription('war the things')
-    .addRoleOption((option) => option
-      .setName('house')
-      .setDescription('house to begin a war with')
-      .setRequired(true)
-    )
-    .addStringOption((option) => option
-      .setName('vote')
-      .setDescription('yes or no to the war')
-      .setRequired(true)
-      .setChoices(
-        { name: 'Yes', value: 'yes' },
-        { name: 'No', value: 'no' },
+      .setName('war')
+      .setDescription('war the things')
+      .addRoleOption((option) =>
+        option
+          .setName('house')
+          .setDescription('house to begin a war with')
+          .setRequired(true)
       )
-    ),
-    slashCommandOptionParser: (options): { house: Role | APIRole, vote: string } | null => {
+      .addStringOption((option) =>
+        option
+          .setName('vote')
+          .setDescription('yes or no to the war')
+          .setRequired(true)
+          .setChoices(
+            { name: 'Yes', value: 'yes' },
+            { name: 'No', value: 'no' }
+          )
+      ),
+    slashCommandOptionParser: (
+      options
+    ): { house: Role | APIRole; vote: string } | null => {
       const house = options.getRole('house');
       const vote = options.getString('vote');
 
-      if(house === null || vote === null) {
+      if (house === null || vote === null) {
         return null;
       }
 
       return { house, vote };
-    }
+    },
   },
 };

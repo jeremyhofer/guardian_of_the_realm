@@ -61,7 +61,7 @@ export class SiegeDAO {
     return await this._repository.findOne({
       relations: {
         pledges: {
-          user: true
+          user: true,
         },
         tile: true,
       },

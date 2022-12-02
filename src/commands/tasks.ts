@@ -168,6 +168,7 @@ const work = async ({
 
 export const dispatch: CommandDispatch = {
   pray: {
+    type: 'message',
     function: pray,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pray),
@@ -177,9 +178,12 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
-    slashCommandBuilder: new SlashCommandBuilder().setName('pray').setDescription('pray the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('pray')
+      .setDescription('pray the things'),
   },
   subvert: {
+    type: 'message',
     function: subvert,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.subvert),
@@ -190,9 +194,12 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
-    slashCommandBuilder: new SlashCommandBuilder().setName('subvert').setDescription('subvert the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('subvert')
+      .setDescription('subvert the things'),
   },
   train: {
+    type: 'message',
     function: train,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.train),
@@ -202,9 +209,12 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
-    slashCommandBuilder: new SlashCommandBuilder().setName('train').setDescription('train the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('train')
+      .setDescription('train the things'),
   },
   work: {
+    type: 'message',
     function: work,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.work),
@@ -214,6 +224,8 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
-    slashCommandBuilder: new SlashCommandBuilder().setName('work').setDescription('work the things')
+    slashCommandBuilder: new SlashCommandBuilder()
+      .setName('work')
+      .setDescription('work the things'),
   },
 };

@@ -40,16 +40,26 @@ AppDataSource.initialize()
     client.on(Events.InteractionCreate, async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
 
-      if(interaction.commandName in botHandlers.commandDispatch) {
-        const commandConfig = botHandlers.commandDispatch[interaction.commandName];
+      if (interaction.commandName in botHandlers.commandDispatch) {
+        const commandConfig =
+          botHandlers.commandDispatch[interaction.commandName];
         const argParser = commandConfig.slashCommandOptionParser;
 
-        const args = argParser === undefined ? null : argParser(interaction.options);
+        const args =
+          argParser === undefined ? null : argParser(interaction.options);
         console.log(args);
-        await interaction.reply(`Success! Args present: ${args === null ? 'no' : 'yes'}`);
-      } else if(interaction.commandName === 'foo') {
+        await interaction.reply(
+          `Success! Args expected: ${
+            argParser === undefined ? 'no' : 'yes'
+          }. Args present: ${args === null ? 'no' : 'yes'}`
+        );
+      } else if (interaction.commandName === 'foo') {
         const subject = interaction.options.getUser('subject');
-        await interaction.reply(`gadzooks! your subject is ${subject?.toString() ?? 'an unknown soul'}`);
+        await interaction.reply(
+          `gadzooks! your subject is ${
+            subject?.toString() ?? 'an unknown soul'
+          }`
+        );
       } else {
         await interaction.reply('this is not implemented yet');
       }
