@@ -864,18 +864,6 @@ export const dispatch: CommandDispatch = {
       .addRoleOption((option) =>
         option.setName('role').setDescription('role to arson').setRequired(true)
       ),
-    slashCommandOptionParser: (
-      options
-    ): { player: User; role: Role | APIRole } | null => {
-      const player = options.getUser('player');
-      const role = options.getRole('role');
-
-      if (player === null || role === null) {
-        return null;
-      }
-
-      return { player, role };
-    },
   },
   gift: {
     type: 'slash',
@@ -900,18 +888,6 @@ export const dispatch: CommandDispatch = {
           .setRequired(true)
           .setMinValue(1)
       ),
-    slashCommandOptionParser: (
-      options
-    ): { player: User; amount: number } | null => {
-      const player = options.getUser('player');
-      const amount = options.getNumber('role');
-
-      if (player === null || amount === null) {
-        return null;
-      }
-
-      return { player, amount };
-    },
   },
   pirate: {
     type: 'slash',
@@ -936,15 +912,6 @@ export const dispatch: CommandDispatch = {
           .setDescription('player to pirate')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { player: User } | null => {
-      const player = options.getUser('player');
-
-      if (player === null) {
-        return null;
-      }
-
-      return { player };
-    },
   },
   raid: {
     type: 'slash',
@@ -969,15 +936,6 @@ export const dispatch: CommandDispatch = {
           .setDescription('player to raid')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { player: User } | null => {
-      const player = options.getUser('player');
-
-      if (player === null) {
-        return null;
-      }
-
-      return { player };
-    },
   },
   scandal: {
     type: 'slash',
@@ -1000,15 +958,6 @@ export const dispatch: CommandDispatch = {
           .setDescription('player to scandal')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { player: User } | null => {
-      const player = options.getUser('player');
-
-      if (player === null) {
-        return null;
-      }
-
-      return { player };
-    },
   },
   spy: {
     type: 'slash',
@@ -1031,15 +980,6 @@ export const dispatch: CommandDispatch = {
           .setDescription('player to spy')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { player: User } | null => {
-      const player = options.getUser('player');
-
-      if (player === null) {
-        return null;
-      }
-
-      return { player };
-    },
   },
   thief: {
     type: 'slash',
@@ -1064,15 +1004,6 @@ export const dispatch: CommandDispatch = {
           .setDescription('player to thief')
           .setRequired(true)
       ),
-    slashCommandOptionParser: (options): { player: User } | null => {
-      const player = options.getUser('player');
-
-      if (player === null) {
-        return null;
-      }
-
-      return { player };
-    },
   },
   trade: {
     type: 'slash',
@@ -1104,17 +1035,5 @@ export const dispatch: CommandDispatch = {
           .setRequired(true)
           .setMinValue(1)
       ),
-    slashCommandOptionParser: (
-      options
-    ): { player: User; ships: number } | null => {
-      const player = options.getUser('player');
-      const ships = options.getNumber('ships');
-
-      if (player === null || ships === null) {
-        return null;
-      }
-
-      return { player, ships };
-    },
   },
 };
