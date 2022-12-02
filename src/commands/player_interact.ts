@@ -8,7 +8,6 @@ import { PlayerData } from '../entity/PlayerData';
 import {
   APIRole,
   ChatInputCommandInteraction,
-  Guild,
   Role,
   SlashCommandBuilder,
   User,
@@ -23,110 +22,131 @@ import { ArgTypes } from '../enums';
  * Usage:
  * @player <ROLE>
  */
-const arson = async ({
-  args,
-  playerData,
-  playerRoles,
-  guild,
-}: {
-  args: string[];
-  playerData: PlayerData;
-  playerRoles: string[];
-  guild: Guild;
-}): Promise<CommandReturn> => {
-  const [playerMention, roleToArson] = args;
+const arson = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User; role: Role | APIRole }> = (
+    options
+  ) => {
+    const player = options.getUser('player');
+    const role = options.getRole('role');
 
-  const playerMentionUser = (playerMention as any).user as string;
+    if (player === null || role === null) {
+      return null;
+    }
 
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-      roles: {
-        other_player: {
-          id: playerMentionUser,
-          add: [],
-          remove: [] as string[],
-        },
-      },
-    },
-    reply: '',
-    success: false,
+    return { player, role };
   };
 
-  const otherPlayerRoleIds: string[] = [];
-  const incomeRoleIds: string[] = [];
-  const targetRoleName =
-    guild.roles.cache.get(roleToArson)?.name.toLowerCase() ?? '';
+  const parsedArgs = argParser(interaction.options);
 
-  for (const key in assets.storeItems) {
-    if (assets.storeItems[key].type === 'income') {
-      const roleId = utils.findRoleIdGivenName(key, assets.gameRoles);
-      incomeRoleIds.push(roleId);
-    }
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
   }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+
+  if (playerData.user === playerMention.user) {
+    return {
+      reply: 'You cannot arson your own infrastructure!',
+      success: true,
+    };
+  }
+
+  const incomeRoleIds: string[] = game_tasks.getStoreRoleIdsGivenType('income');
+  const targetRoleName = parsedArgs.role.name.toLowerCase() ?? '';
 
   /*
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  guild.members.cache.get(playerMentionUser)?.roles.cache.forEach((role) => {
-    if (incomeRoleIds.includes(role.id)) {
-      otherPlayerRoleIds.push(role.id);
-    }
-  });
+  const playerRoles: string[] = game_tasks.getMemberOwnedRoleIds(
+    interaction,
+    interaction.user,
+    incomeRoleIds
+  );
+  const otherPlayerRoleIds: string[] = game_tasks.getMemberOwnedRoleIds(
+    interaction,
+    parsedArgs.player,
+    incomeRoleIds
+  );
 
   /*
    * Ensure that the role mentioned is an income producing role
    * and that the other player has that role
    */
   if (
-    utils.isAvailableStoreItem(targetRoleName) &&
-    incomeRoleIds.includes(roleToArson)
+    !utils.isAvailableStoreItem(targetRoleName) ||
+    !incomeRoleIds.includes(parsedArgs.role.id)
   ) {
-    if (otherPlayerRoleIds.includes(roleToArson)) {
-      // Ensure player has enough money to arson this role
-      const arsonPrice = Math.round(assets.storeItems[targetRoleName].cost / 2);
-      const playerMoney = playerData.money;
-
-      if (playerMoney >= arsonPrice) {
-        // Good to arson!
-        let penalty = 0;
-        let replyTemplate = '';
-
-        if (utils.riskSuccess(playerRoles.length, otherPlayerRoleIds.length)) {
-          // Player wins! Remove the role from the other player
-          commandReturn.update?.roles?.other_player?.remove.push(roleToArson);
-          replyTemplate = utils.randomElement(flavor.arson_success);
-        } else {
-          // Player failed! Assess a fine
-          penalty = utils.getRandomValueInRange(
-            assets.rewardPayoutsPenalties.arson_penalty_min,
-            assets.rewardPayoutsPenalties.arson_penalty_max
-          );
-          (commandReturn.update?.playerData as PlayerData).money -= penalty;
-          replyTemplate = utils.randomElement(flavor.arson_fail);
-        }
-
-        commandReturn.reply = utils.templateReplace(replyTemplate, {
-          amount: penalty,
-          targetMention: `<@${playerMentionUser}>`,
-          roleToArson: targetRoleName,
-        });
-
-        // Deduct price for the arson
-        (commandReturn.update?.playerData as PlayerData).money -= arsonPrice;
-        commandReturn.success = true;
-      } else {
-        commandReturn.reply = `You do not have enough money to arson the <@&${roleToArson}>. The cost is ${arsonPrice}`;
-      }
-    } else {
-      commandReturn.reply = `<@${playerMentionUser}> does not have the <@&${roleToArson}> role`;
-    }
-  } else {
-    commandReturn.reply = `<@&${roleToArson}> is not an income producing role`;
+    return {
+      reply: `<@&${parsedArgs.role.id}> is not an income producing role`,
+      success: true,
+    };
+  }
+  if (!otherPlayerRoleIds.includes(parsedArgs.role.id)) {
+    return {
+      reply: `${parsedArgs.player.toString()} does not have the <@&${
+        parsedArgs.role.id
+      }> role`,
+      success: true,
+    };
   }
 
-  return commandReturn;
+  // Ensure player has enough money to arson this role
+  const arsonPrice = Math.round(assets.storeItems[targetRoleName].cost / 2);
+  const playerMoney = playerData.money;
+
+  if (playerMoney < arsonPrice) {
+    return {
+      reply: `You do not have enough money to arson the <@&${parsedArgs.role.id}>. The cost is ${arsonPrice}`,
+      success: true,
+    };
+  }
+
+  // Good to arson!
+  let penalty = 0;
+  let replyTemplate = '';
+
+  if (utils.riskSuccess(playerRoles.length, otherPlayerRoleIds.length)) {
+    // Player wins! Remove the role from the other player
+    await game_tasks.alterRole(
+      interaction,
+      parsedArgs.player,
+      targetRoleName,
+      'remove'
+    );
+    replyTemplate = utils.randomElement(flavor.arson_success);
+  } else {
+    // Player failed! Assess a fine
+    penalty = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.arson_penalty_min,
+      assets.rewardPayoutsPenalties.arson_penalty_max
+    );
+    playerData.money -= penalty;
+    replyTemplate = utils.randomElement(flavor.arson_fail);
+  }
+
+  const reply = utils.templateReplace(replyTemplate, {
+    amount: penalty,
+    targetMention: parsedArgs.player.toString(),
+    roleToArson: targetRoleName,
+  });
+
+  // Deduct price for the arson
+  playerData.money -= arsonPrice;
+
+  await Database.playerData.saveMultiple([playerData]);
+
+  return { reply, success: true };
 };
 
 /*
@@ -457,19 +477,17 @@ const scandal = async (
     return { reply: 'You cannot commit a scandal on yourself!', success: true };
   }
 
-  const nobleRoleIds: string[] = Object.entries(assets.storeItems)
-    .filter(([, value]) => value.type === 'title')
-    .map(([key]) => utils.findRoleIdGivenName(key, assets.gameRoles));
+  const nobleRoleIds: string[] = game_tasks.getStoreRoleIdsGivenType('title');
 
   /*
    * For this we are just checking the store items. The player may
    * have additional roles but they would not be in the store.
    */
-  const otherPlayerRoleIds: string[] =
-    interaction.guild?.members.cache
-      .get(playerMention.user)
-      ?.roles.cache.filter((role) => nobleRoleIds.includes(role.id))
-      .map((role) => role.id) ?? [];
+  const otherPlayerRoleIds: string[] = game_tasks.getMemberOwnedRoleIds(
+    interaction,
+    parsedArgs.player,
+    nobleRoleIds
+  );
 
   const nobleRoles = ['duke', 'earl', 'baron'];
 
@@ -801,7 +819,7 @@ const trade = async ({
 
 export const dispatch: CommandDispatch = {
   arson: {
-    type: 'message',
+    type: 'slash',
     function: arson,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.arson),

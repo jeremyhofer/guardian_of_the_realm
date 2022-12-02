@@ -12,7 +12,7 @@ import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { TileOwner } from './entity/TileOwner';
-import { buildings, CommandReturn, Rank } from './types';
+import { buildings, CommandReturn, Rank, StoreItemTypes } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async (
@@ -1276,4 +1276,23 @@ export const alterRole = async (
     await guildMember.roles.remove(serverRole).catch(console.error);
   }
   return true;
+};
+
+export const getStoreRoleIdsGivenType = (type: StoreItemTypes): string[] => {
+  return Object.entries(assets.storeItems)
+    .filter(([, value]) => value.type === type)
+    .map(([key]) => utils.findRoleIdGivenName(key, assets.gameRoles));
+};
+
+export const getMemberOwnedRoleIds = (
+  interaction: ChatInputCommandInteraction,
+  user: User,
+  roles: string[]
+): string[] => {
+  return (
+    interaction.guild?.members.cache
+      .get(user.id)
+      ?.roles.cache.filter((role) => roles.includes(role.id))
+      .map((role) => role.id) ?? []
+  );
 };
