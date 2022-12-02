@@ -517,7 +517,11 @@ export async function interactionHandler(
       return;
     }
 
-    const commandReturn = await commandConfig.function(interaction);
+    // commandDispatch supplied as input for cooldown command
+    const commandReturn = await commandConfig.function(
+      interaction,
+      commandDispatch
+    );
 
     if (commandReturn === null || commandReturn === undefined) {
       // TODO: figure out more proper response here if needed

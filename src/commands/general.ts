@@ -71,13 +71,13 @@ const bal = async (
   return { reply, success: true };
 };
 
-const cooldown = async ({
-  playerData,
-  commandDispatch,
-}: {
-  playerData: PlayerData;
-  commandDispatch: CommandDispatch;
-}): Promise<CommandReturn> => {
+const cooldown = async (
+  interaction: ChatInputCommandInteraction,
+  commandDispatch: CommandDispatch
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
   const now = Date.now();
 
   let reply = '';
@@ -117,7 +117,7 @@ export const dispatch: CommandDispatch = {
       .setDescription('bal the things'),
   },
   cooldown: {
-    type: 'message',
+    type: 'slash',
     function: cooldown,
     args: ['playerData', 'commandDispatch'],
     command_args: [[]],
