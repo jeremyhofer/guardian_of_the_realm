@@ -577,81 +577,94 @@ const spy = async ({
  * on succeed, take 2-10%. fail pay 100-1000 to player
  * <PLAYER>
  */
-const thief = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-    },
-    reply: '',
-    success: false,
+const thief = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User }> = (options) => {
+    const player = options.getUser('player');
+
+    if (player === null) {
+      return null;
+    }
+
+    return { player };
   };
 
-  const playerMention = args[0] as unknown as PlayerData;
+  const parsedArgs = argParser(interaction.options);
 
-  (commandReturn.update as any).playerMention = playerMention;
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
   // Make sure both have enough money, and no debt.
   const pMoney = playerData.money;
   const mMoney = playerMention.money;
+
   if (playerData.user === playerMention.user) {
-    commandReturn.reply = 'You cannot thief yourself!';
-  } else if (pMoney >= 0) {
-    if (mMoney > 0) {
-      // Both have at least some money. Figure out who wins!
-      let moneyChange = 0;
-      let winner = 'player';
-
-      if (utils.riskSuccess(pMoney, mMoney)) {
-        // Player wins! Adjust money
-        moneyChange = utils.getPercentOfValueGivenRange(
-          mMoney,
-          assets.rewardPayoutsPenalties.thief_success_percent_min,
-          assets.rewardPayoutsPenalties.thief_success_percent_max
-        );
-      } else {
-        // Mention wins! Adjust money
-        moneyChange = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.thief_penalty_min,
-          assets.rewardPayoutsPenalties.thief_penalty_max
-        );
-        winner = 'mention';
-      }
-
-      if (winner === 'player') {
-        moneyChange = moneyChange > mMoney ? mMoney : moneyChange;
-        (commandReturn.update?.playerData as PlayerData).money += moneyChange;
-        (commandReturn.update?.playerMention as PlayerData).money +=
-          moneyChange;
-      } else {
-        (commandReturn.update?.playerData as PlayerData).money -= moneyChange;
-        (commandReturn.update?.playerMention as PlayerData).money +=
-          moneyChange;
-      }
-
-      const successReplyTemplate = utils.randomElement(flavor.thief_success);
-      const failReplyTemplate = utils.randomElement(flavor.thief_fail);
-      const usedTemplate =
-        winner === 'player' ? successReplyTemplate : failReplyTemplate;
-      commandReturn.reply = utils.templateReplace(usedTemplate, {
-        amount: moneyChange,
-        targetMention: `<@${playerMention.user}>`,
-        eMenAtArms: assets.emojis.MenAtArms,
-      });
-      commandReturn.success = true;
-    } else {
-      commandReturn.reply = 'The other player does not have any money';
-    }
-  } else {
-    commandReturn.reply =
-      'You are in debt. You should find other ways to make money';
+    return { reply: 'You cannot thief yourself!', success: true };
   }
 
-  return commandReturn;
+  if (pMoney <= 0) {
+    return {
+      reply: 'You are in debt. You should find other ways to make money',
+      success: true,
+    };
+  }
+  if (mMoney <= 0) {
+    return { reply: 'The other player does not have any money', success: true };
+  }
+
+  // Both have at least some money. Figure out who wins!
+  let moneyChange = 0;
+  let winner = 'player';
+
+  if (utils.riskSuccess(pMoney, mMoney)) {
+    // Player wins! Adjust money
+    moneyChange = utils.getPercentOfValueGivenRange(
+      mMoney,
+      assets.rewardPayoutsPenalties.thief_success_percent_min,
+      assets.rewardPayoutsPenalties.thief_success_percent_max
+    );
+  } else {
+    // Mention wins! Adjust money
+    moneyChange = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.thief_penalty_min,
+      assets.rewardPayoutsPenalties.thief_penalty_max
+    );
+    winner = 'mention';
+  }
+
+  if (winner === 'player') {
+    moneyChange = moneyChange > mMoney ? mMoney : moneyChange;
+    playerData.money += moneyChange;
+    playerMention.money += moneyChange;
+  } else {
+    playerData.money -= moneyChange;
+    playerMention.money += moneyChange;
+  }
+
+  const successReplyTemplate = utils.randomElement(flavor.thief_success);
+  const failReplyTemplate = utils.randomElement(flavor.thief_fail);
+  const usedTemplate =
+    winner === 'player' ? successReplyTemplate : failReplyTemplate;
+  const reply = utils.templateReplace(usedTemplate, {
+    amount: moneyChange,
+    targetMention: `<@${playerMention.user}>`,
+    eMenAtArms: assets.emojis.MenAtArms,
+  });
+
+  await Database.playerData.saveMultiple([playerData, playerMention]);
+
+  return { reply, success: true };
 };
 
 /*
@@ -945,7 +958,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   thief: {
-    type: 'message',
+    type: 'slash',
     function: thief,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.thief),
