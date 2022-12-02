@@ -9,7 +9,6 @@ import {
 import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
-import { Siege } from './entity/Siege';
 import { TileOwner } from './entity/TileOwner';
 import { buildings, CommandReturn, Rank } from './types';
 import * as utils from './utils';
@@ -56,11 +55,18 @@ export const rolePayouts = async (
 
     for (const port of ports) {
       // TODO: should do this just based on the house set in the DB?
-      await Database.playerData.grantRolePayoutToAllPlayers(
+      const players =
         guild.roles.cache.get(port.house)?.members.map((member) => member.id) ??
-          [],
-        portPayout
-      );
+        [];
+
+      if (players.length > 0) {
+        await Database.playerData.grantRolePayoutToAllPlayers(
+          guild.roles.cache
+            .get(port.house)
+            ?.members.map((member) => member.id) ?? [],
+          portPayout
+        );
+      }
     }
 
     await Database.tracker.updateTrackerByName('payout_time', currentTime);

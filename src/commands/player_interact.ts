@@ -3,9 +3,16 @@ import { Database } from '../data-source';
 import * as game_tasks from '../game_tasks';
 import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
-import { CommandDispatch, CommandReturn } from '../types';
+import { ArgParserFn, CommandDispatch, CommandReturn } from '../types';
 import { PlayerData } from '../entity/PlayerData';
-import { APIRole, Guild, Role, SlashCommandBuilder, User } from 'discord.js';
+import {
+  APIRole,
+  ChatInputCommandInteraction,
+  Guild,
+  Role,
+  SlashCommandBuilder,
+  User,
+} from 'discord.js';
 import { ArgTypes } from '../enums';
 
 /*
@@ -178,92 +185,111 @@ const gift = async ({
  * fail lose 5-15, other 1-9. win lose 1-9, other 10-20
  * <PLAYER>
  */
-const pirate = async ({
-  args,
-  playerData,
-}: {
-  args: any[];
-  playerData: PlayerData;
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData: { ...playerData },
-    },
-    reply: '',
-    success: false,
+const pirate = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User }> = (options) => {
+    const player = options.getUser('player');
+
+    if (player === null) {
+      return null;
+    }
+
+    return { player };
   };
 
-  const playerMention = args[0] as PlayerData;
+  const parsedArgs = argParser(interaction.options);
 
-  (commandReturn.update as any).playerMention = playerMention;
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+
   // Make sure both have enough ships
   const pShips = playerData.ships;
   const mShips = playerMention.ships;
   if (playerData.user === playerMention.user) {
-    commandReturn.reply = 'You cannot pirate yourself!';
-  } else if (pShips >= 5) {
-    if (mShips >= 5) {
-      // Both have at least 5 ship. Figure out who wins!
-      let playerLose = 0;
-      let mentionLose = 0;
-      let winner = 'player';
-      let reward = 0;
-
-      if (utils.riskSuccess(pShips, mShips)) {
-        // Player wins! Adjust ships
-        reward = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.pirate_reward_min,
-          assets.rewardPayoutsPenalties.pirate_reward_max
-        );
-        (commandReturn.update?.playerData as PlayerData).money += reward;
-        playerLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.pirate_success_attacker_loss_min,
-          assets.rewardPayoutsPenalties.pirate_success_attacker_loss_max
-        );
-        mentionLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.pirate_success_defender_loss_min,
-          assets.rewardPayoutsPenalties.pirate_success_defender_loss_max
-        );
-      } else {
-        // Mention wins! Adjust ships
-        playerLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.pirate_fail_attacker_loss_min,
-          assets.rewardPayoutsPenalties.pirate_fail_attacker_loss_max
-        );
-        mentionLose = utils.getRandomValueInRange(
-          assets.rewardPayoutsPenalties.pirate_fail_defender_loss_min,
-          assets.rewardPayoutsPenalties.pirate_fail_defender_loss_max
-        );
-        winner = 'mention';
-      }
-
-      playerLose = playerLose > pShips ? pShips : playerLose;
-
-      mentionLose = mentionLose > mShips ? mShips : mentionLose;
-
-      (commandReturn.update?.playerData as PlayerData).ships -= playerLose;
-      (commandReturn.update?.playerMention as PlayerData).ships -= mentionLose;
-      const successReplyTemplate = utils.randomElement(flavor.pirate_success);
-      const failReplyTemplate = utils.randomElement(flavor.pirate_fail);
-      const usedTemplate =
-        winner === 'player' ? successReplyTemplate : failReplyTemplate;
-      commandReturn.reply = utils.templateReplace(usedTemplate, {
-        reward,
-        myLost: playerLose,
-        enemyLost: mentionLose,
-        targetMention: `<@${playerMention.user}>`,
-        eWarship: assets.emojis.Warship,
-      });
-      commandReturn.success = true;
-    } else {
-      commandReturn.reply = 'The other player must have at least 5 ships';
-    }
-  } else {
-    commandReturn.reply =
-      'You must have a least 5 ships to launch a pirate raid.';
+    return { reply: 'You cannot pirate yourself!', success: true };
   }
 
-  return commandReturn;
+  if (pShips < 5) {
+    return {
+      reply: 'You must have a least 5 ships to launch a pirate raid.',
+      success: true,
+    };
+  }
+
+  if (mShips < 5) {
+    return {
+      reply: 'The other player must have at least 5 ships',
+      success: true,
+    };
+  }
+
+  // Both have at least 5 ship. Figure out who wins!
+  let playerLose = 0;
+  let mentionLose = 0;
+  let winner = 'player';
+  let reward = 0;
+
+  if (utils.riskSuccess(pShips, mShips)) {
+    // Player wins! Adjust ships
+    reward = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.pirate_reward_min,
+      assets.rewardPayoutsPenalties.pirate_reward_max
+    );
+    playerData.money += reward;
+    playerLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.pirate_success_attacker_loss_min,
+      assets.rewardPayoutsPenalties.pirate_success_attacker_loss_max
+    );
+    mentionLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.pirate_success_defender_loss_min,
+      assets.rewardPayoutsPenalties.pirate_success_defender_loss_max
+    );
+  } else {
+    // Mention wins! Adjust ships
+    playerLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.pirate_fail_attacker_loss_min,
+      assets.rewardPayoutsPenalties.pirate_fail_attacker_loss_max
+    );
+    mentionLose = utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.pirate_fail_defender_loss_min,
+      assets.rewardPayoutsPenalties.pirate_fail_defender_loss_max
+    );
+    winner = 'mention';
+  }
+
+  playerLose = playerLose > pShips ? pShips : playerLose;
+
+  mentionLose = mentionLose > mShips ? mShips : mentionLose;
+
+  playerData.ships -= playerLose;
+  playerMention.ships -= mentionLose;
+  const successReplyTemplate = utils.randomElement(flavor.pirate_success);
+  const failReplyTemplate = utils.randomElement(flavor.pirate_fail);
+  const usedTemplate =
+    winner === 'player' ? successReplyTemplate : failReplyTemplate;
+  const reply = utils.templateReplace(usedTemplate, {
+    reward,
+    myLost: playerLose,
+    enemyLost: mentionLose,
+    targetMention: parsedArgs.player.toString(),
+    eWarship: assets.emojis.Warship,
+  });
+
+  await Database.playerData.saveMultiple([playerData, playerMention]);
+
+  return { reply, success: true };
 };
 
 /*
@@ -777,7 +803,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   pirate: {
-    type: 'message',
+    type: 'slash',
     function: pirate,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pirate),

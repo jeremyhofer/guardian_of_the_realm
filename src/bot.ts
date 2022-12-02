@@ -517,19 +517,7 @@ export async function interactionHandler(
       return;
     }
 
-    const argParser = commandConfig.slashCommandOptionParser;
-
-    const args =
-      argParser === undefined ? null : argParser(interaction.options);
-
-    if (argParser !== undefined && args === null) {
-      await interaction.reply(
-        'Issue with processing command arguments. Contact a Developer.'
-      );
-      return;
-    }
-
-    const commandReturn = await commandConfig.function();
+    const commandReturn = await commandConfig.function(interaction);
 
     if (commandReturn === null || commandReturn === undefined) {
       // TODO: figure out more proper response here if needed

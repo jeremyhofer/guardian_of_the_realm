@@ -148,6 +148,10 @@ export interface CooldownConfig {
   reply: string;
 }
 
+export type ArgParserFn<T> = (
+  options: Omit<CommandInteractionOptionResolver, 'getMessage' | 'getFocused'>
+) => T | null;
+
 export interface CommandConfig {
   type: 'slash' | 'message';
   function: (...all: any) => Promise<CommandReturn | null> | Promise<void>;
@@ -158,9 +162,7 @@ export interface CommandConfig {
   allowed_channels?: string[];
   cooldown_from_start?: number;
   slashCommandBuilder: SlashCommandBuilder | Partial<SlashCommandBuilder>;
-  slashCommandOptionParser?: (
-    options: Omit<CommandInteractionOptionResolver, 'getMessage' | 'getFocused'>
-  ) => any;
+  slashCommandOptionParser?: ArgParserFn<any>;
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;
