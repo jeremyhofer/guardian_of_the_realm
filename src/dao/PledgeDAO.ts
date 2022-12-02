@@ -1,4 +1,4 @@
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, InsertResult, Repository } from 'typeorm';
 import { PlayerData } from '../entity/PlayerData';
 import { Siege } from '../entity/Siege';
 import { Pledge } from '../entity/Pledge';
@@ -45,6 +45,10 @@ export class PledgeDAO {
 
   async savePledge(loan: Pledge): Promise<Pledge> {
     return await this._repository.save(loan);
+  }
+
+  async insertPledge(pPledge: Partial<Pledge>): Promise<InsertResult> {
+    return await this._repository.insert(pPledge);
   }
 
   async removePledge(pledge: Pledge): Promise<DeleteResult> {

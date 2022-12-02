@@ -1,10 +1,21 @@
 import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
-import { AttackTypes, CommandDispatch, CommandReturn } from '../types';
+import {
+  AttackTypes,
+  CommandDispatch,
+  CommandReturn,
+  ArgParserFn,
+} from '../types';
 import * as assets from '../assets';
 import { Database } from '../data-source';
 import * as utils from '../utils';
-import { APIRole, Role, SlashCommandBuilder } from 'discord.js';
+import * as game_tasks from '../game_tasks';
+import {
+  APIRole,
+  ChatInputCommandInteraction,
+  Role,
+  SlashCommandBuilder,
+} from 'discord.js';
 
 /*
  * Assigns player to a house w/ default money and men
@@ -71,119 +82,142 @@ const join = async ({
  *
  * deduct the units from the player's count when the pledge is made
  */
-const pledge = async ({
-  args,
-  playerData,
-  playerRoles,
-}: {
-  args: any[];
-  playerData: PlayerData;
-  playerRoles: string[];
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    sieges: {},
-    update: {
-      playerData,
-    },
-    pledges: {},
-    reply: '',
-    success: true,
+const pledge = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{
+    tile: string;
+    number: number;
+    action: string;
+  }> = (options) => {
+    const tile = options.getString('tile');
+    const number = options.getNumber('number');
+    const action = options.getString('action');
+
+    if (tile === null || number === null || action === null) {
+      return null;
+    }
+
+    return { tile, number, action };
   };
 
+  const parsedArgs = argParser(interaction.options);
+
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerRoles: string[] = await game_tasks.getAllPlayerRoleNames(
+    interaction,
+    interaction.user
+  );
+
   // Validate args
-  const selectedTile: string = args[0].toLowerCase();
-  const numUnits: number = parseInt(args[1], 10);
-  const action: string = args[2].toLowerCase();
+  const selectedTile: string = parsedArgs.tile.toLowerCase();
+  const numUnits: number = parsedArgs.number;
+  const action: string = parsedArgs.action.toLowerCase();
 
   const tileOwner = await Database.tileOwner.getTileOwner(selectedTile);
 
-  if (tileOwner !== null) {
-    const isPort = tileOwner.type === 'port';
-    const pUnits: number = isPort ? playerData.ships : playerData.men;
-
-    let roleLimit = isPort
-      ? assets.roleShipLimits.unsworn
-      : assets.roleTroopLimits.unsworn;
-
-    if (playerRoles.includes('duke')) {
-      roleLimit = isPort
-        ? assets.roleShipLimits.duke
-        : assets.roleTroopLimits.duke;
-    } else if (playerRoles.includes('earl')) {
-      roleLimit = isPort
-        ? assets.roleShipLimits.earl
-        : assets.roleTroopLimits.earl;
-    } else if (playerRoles.includes('baron')) {
-      roleLimit = isPort
-        ? assets.roleShipLimits.baron
-        : assets.roleTroopLimits.baron;
-    }
-
-    if (isNaN(numUnits) || numUnits < 1) {
-      commandReturn.reply = 'The number of units must be a positive number';
-    } else if (numUnits > roleLimit) {
-      commandReturn.reply = `You may only send at most ${roleLimit} units`;
-    } else if (action !== 'attack' && action !== 'defend') {
-      commandReturn.reply = 'The action must be ATTACK or DEFEND';
-    } else {
-      // Ensure a siege exists on the tile
-      const existingSiege = tileOwner.siege;
-
-      if (existingSiege !== null) {
-        // See if the player already has a pledge on the siege.
-        const existingPledge = await Database.pledge.getPlayerPledgeForSiege(
-          playerData,
-          existingSiege
-        );
-
-        let valid = false;
-        let unitsToDeduct = 0;
-
-        if (existingPledge !== null) {
-          if (numUnits > pUnits + existingPledge.units) {
-            commandReturn.reply = `You do not have ${numUnits} units`;
-          } else {
-            unitsToDeduct = existingPledge.units;
-            (commandReturn.pledges as any).remove = existingPledge;
-            valid = true;
-          }
-        } else if (numUnits > pUnits) {
-          commandReturn.reply = `You do not have ${numUnits} units`;
-        } else {
-          valid = true;
-        }
-
-        if (valid) {
-          // Add the pledge
-          (commandReturn.pledges as any).add = {
-            siege: existingSiege.siege_id,
-            user: playerData.user,
-            units: numUnits,
-            choice: action,
-          };
-
-          if (isPort) {
-            (commandReturn.update?.playerData as PlayerData).ships -=
-              numUnits - unitsToDeduct;
-          } else {
-            (commandReturn.update?.playerData as PlayerData).men -=
-              numUnits - unitsToDeduct;
-          }
-
-          commandReturn.reply = `You successfully pledged ${numUnits} to ${action} ${selectedTile.toUpperCase()}`;
-          // TODO: this is jank, setting the tileOwner here. need to determine better mappings tile<->siege
-          existingSiege.tile = tileOwner;
-          (commandReturn.sieges as any).update = existingSiege;
-        }
-      } else {
-        commandReturn.reply = `There is no active attack on ${selectedTile}`;
-      }
-    }
-  } else {
-    commandReturn.reply = `${selectedTile.toUpperCase()} is not a castle or port`;
+  if (tileOwner === null) {
+    return {
+      reply: `${selectedTile.toUpperCase()} is not a castle or port`,
+      success: true,
+    };
   }
 
-  return commandReturn;
+  const isPort = tileOwner.type === 'port';
+  const pUnits: number = isPort ? playerData.ships : playerData.men;
+
+  let roleLimit = isPort
+    ? assets.roleShipLimits.unsworn
+    : assets.roleTroopLimits.unsworn;
+
+  if (playerRoles.includes('duke')) {
+    roleLimit = isPort
+      ? assets.roleShipLimits.duke
+      : assets.roleTroopLimits.duke;
+  } else if (playerRoles.includes('earl')) {
+    roleLimit = isPort
+      ? assets.roleShipLimits.earl
+      : assets.roleTroopLimits.earl;
+  } else if (playerRoles.includes('baron')) {
+    roleLimit = isPort
+      ? assets.roleShipLimits.baron
+      : assets.roleTroopLimits.baron;
+  }
+
+  if (numUnits > roleLimit) {
+    return {
+      reply: `You may only send at most ${roleLimit} units`,
+      success: true,
+    };
+  } else if (action !== 'attack' && action !== 'defend') {
+    return { reply: 'The action must be ATTACK or DEFEND', success: true };
+  }
+  // Ensure a siege exists on the tile
+  const existingSiege = tileOwner.siege;
+
+  if (existingSiege === null) {
+    return {
+      reply: `There is no active attack on ${selectedTile}`,
+      success: true,
+    };
+  }
+  // See if the player already has a pledge on the siege.
+  const existingPledge = await Database.pledge.getPlayerPledgeForSiege(
+    playerData,
+    existingSiege
+  );
+
+  let valid = false;
+  let unitsToDeduct = 0;
+  let reply = '';
+
+  if (existingPledge !== null) {
+    if (numUnits > pUnits + existingPledge.units) {
+      reply = `You do not have ${numUnits} units`;
+    } else {
+      unitsToDeduct = existingPledge.units;
+      await Database.pledge.removePledge(existingPledge);
+      valid = true;
+    }
+  } else if (numUnits > pUnits) {
+    reply = `You do not have ${numUnits} units`;
+  } else {
+    valid = true;
+  }
+
+  if (valid) {
+    // Add the pledge
+    if (isPort) {
+      playerData.ships -= numUnits - unitsToDeduct;
+    } else {
+      playerData.men -= numUnits - unitsToDeduct;
+    }
+
+    await Database.playerData.setPlayer(playerData);
+    await Database.pledge.insertPledge({
+      siege: existingSiege.siege_id as any,
+      user: playerData.user as any,
+      units: numUnits,
+      choice: action,
+    });
+
+    reply = `You successfully pledged ${numUnits} to ${action} ${selectedTile.toUpperCase()}`;
+    // TODO: jank is here for regenerating the siege embed. can probably clean this up long term
+    // TODO: this is jank, setting the tileOwner here. need to determine better mappings tile<->siege
+    existingSiege.tile = tileOwner;
+    await Database.siege.saveSiege(existingSiege);
+  }
+
+  return { reply, success: true };
 };
 
 /*
@@ -521,7 +555,7 @@ export const dispatch: CommandDispatch = {
       .setDescription('join the things'),
   },
   pledge: {
-    type: 'message',
+    type: 'slash',
     function: pledge,
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.string, ArgTypes.number, ArgTypes.string]],
@@ -552,19 +586,6 @@ export const dispatch: CommandDispatch = {
             { name: 'Defend', value: 'defend' }
           )
       ),
-    slashCommandOptionParser: (
-      options
-    ): { tile: string; number: number; action: string } | null => {
-      const tile = options.getString('tile');
-      const number = options.getNumber('number');
-      const action = options.getString('action');
-
-      if (tile === null || number === null || action === null) {
-        return null;
-      }
-
-      return { tile, number, action };
-    },
   },
   siege: {
     type: 'message',
