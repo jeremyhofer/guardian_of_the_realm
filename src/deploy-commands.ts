@@ -1,12 +1,8 @@
 import { REST, Routes, SlashCommandBuilder } from 'discord.js';
 import * as auth from './auth.json';
+import { commandDispatch } from './bot';
 
-const commands = [
-  new SlashCommandBuilder()
-  .setName('foo')
-  .setDescription('lorem ipsum')
-  .addUserOption((option) => option.setName('subject').setDescription('Time to ping the pings!'))
-];
+const commands: Array<SlashCommandBuilder | Partial<SlashCommandBuilder>> = Object.values(commandDispatch).map((commandConfig) => commandConfig.slashCommandBuilder);
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: '10' }).setToken(auth.token);

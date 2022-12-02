@@ -1,4 +1,4 @@
-import { Guild, Message } from 'discord.js';
+import { Guild, Message, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { Database } from './data-source';
 import * as args from './args';
 import * as admin from './commands/admin';
@@ -15,7 +15,7 @@ import { PlayerData } from './entity/PlayerData';
 import { Loan } from './entity/Loan';
 
 const PREFIX = '.';
-const commandDispatch: CommandDispatch = {
+export const commandDispatch: CommandDispatch = {
   ...admin.dispatch,
   ...clan_interact.dispatch,
   ...economy.dispatch,
@@ -27,12 +27,20 @@ const commandDispatch: CommandDispatch = {
     args: ['guild'],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('map')
+    .setDescription('map the things')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   },
   reset: {
     function: async (cmdArgs) => await game_tasks.resetEverything(cmdArgs),
     args: ['guild', 'playerRoles', 'currentTime'],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('reset')
+    .setDescription('reset the things')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   },
 };
 

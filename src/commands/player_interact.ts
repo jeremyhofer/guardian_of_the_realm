@@ -5,7 +5,7 @@ import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
 import { CommandDispatch, CommandReturn } from '../types';
 import { PlayerData } from '../entity/PlayerData';
-import { Guild } from 'discord.js';
+import { Guild, SlashCommandBuilder } from 'discord.js';
 import { ArgTypes } from '../enums';
 
 /*
@@ -714,6 +714,19 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention, ArgTypes.game_role]],
     usage: ['@PLAYER INCOME_ROLE'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('arson')
+    .setDescription('arson the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to arson')
+      .setRequired(true)
+    )
+    .addRoleOption((option) => option
+      .setName('role')
+      .setDescription('role to arson')
+      .setRequired(true)
+    )
   },
   gift: {
     function: gift,
@@ -721,6 +734,20 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention, ArgTypes.number]],
     usage: ['@PLAYER MONEY'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('gift')
+    .setDescription('gift the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to gift')
+      .setRequired(true)
+    )
+    .addNumberOption((option) => option
+      .setName('amount')
+      .setDescription('amount to gift')
+      .setRequired(true)
+      .setMinValue(1)
+    )
   },
   pirate: {
     function: pirate,
@@ -735,6 +762,14 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention]],
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('pirate')
+    .setDescription('pirate the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to pirate')
+      .setRequired(true)
+    )
   },
   raid: {
     function: raid,
@@ -749,6 +784,14 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention]],
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('raid')
+    .setDescription('raid the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to raid')
+      .setRequired(true)
+    )
   },
   scandal: {
     function: scandal,
@@ -761,6 +804,14 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention]],
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('scandal')
+    .setDescription('scandal the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to scandal')
+      .setRequired(true)
+    )
   },
   spy: {
     function: spy,
@@ -773,6 +824,14 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention]],
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('spy')
+    .setDescription('spy the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to spy')
+      .setRequired(true)
+    )
   },
   thief: {
     function: thief,
@@ -787,6 +846,14 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention]],
     usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('thief')
+    .setDescription('thief the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to thief')
+      .setRequired(true)
+    )
   },
   trade: {
     function: trade,
@@ -801,5 +868,19 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.player_mention, ArgTypes.number]],
     usage: ['@PLAYER SHIPS'],
     allowed_channels: assets.playerInteractChannels,
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('trade')
+    .setDescription('trade the things')
+    .addUserOption((option) => option
+      .setName('player')
+      .setDescription('player to trade')
+      .setRequired(true)
+    )
+    .addNumberOption((option) => option
+      .setName('ships')
+      .setDescription('number of ships to use in the trade')
+      .setRequired(true)
+      .setMinValue(1)
+    )
   },
 };

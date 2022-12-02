@@ -44,6 +44,8 @@ AppDataSource.initialize()
       if(interaction.commandName === 'foo') {
         const subject = interaction.options.getUser('subject');
         await interaction.reply(`gadzooks! your subject is ${subject?.toString() ?? 'an unknown soul'}`);
+      } else {
+        await interaction.reply('this is not implemented yet');
       }
     });
   })

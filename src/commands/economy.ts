@@ -1,9 +1,10 @@
 import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
-import { CommandDispatch, CommandReturn, Rank } from '../types';
+import { armyUnits, CommandDispatch, CommandReturn, Rank } from '../types';
 import * as assets from '../assets';
 import * as utils from '../utils';
 import { Database } from '../data-source';
+import { SlashCommandBuilder } from 'discord.js';
 
 /*
  * Buy some item in a quantity. titles only one, cant buy more or same
@@ -273,6 +274,27 @@ export const dispatch: CommandDispatch = {
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.game_role], [ArgTypes.string, ArgTypes.number]],
     usage: ['ROLE', 'ITEM AMOUNT'],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('buy')
+    .setDescription('buy the things')
+    .addSubcommand((subcommand) => subcommand
+      .setName('role')
+      .setDescription('Purchase a building or title')
+      .addRoleOption((option) => option.setName('role').setDescription('Role to purchase').setRequired(true))
+    )
+    .addSubcommand((subcommand) => subcommand
+      .setName('troops')
+      .setDescription('Purchase troops')
+      .addStringOption((option) => option
+        .setName('type')
+        .setDescription('type of troop to purchase')
+        .addChoices(
+          ...armyUnits.map((unit) => ({ name: unit, value: unit }))
+        )
+        .setRequired(true)
+      )
+      .addNumberOption((option) => option.setName('amount').setDescription('number to purchase').setRequired(true))
+    )
   },
   loan: {
     function: loan,
@@ -283,11 +305,31 @@ export const dispatch: CommandDispatch = {
       [ArgTypes.string, ArgTypes.string],
     ],
     usage: ['show', 'get AMOUNT', 'pay AMOUNT|all'],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('loan')
+    .setDescription('loan the things')
+    .addSubcommand((subcommand) => subcommand
+      .setName('show')
+      .setDescription('View existing loans')
+    )
+    .addSubcommand((subcommand) => subcommand
+      .setName('get')
+      .setDescription('Purchase a new loan')
+      .addNumberOption((option) => option.setName('amount').setDescription('amount desired').setRequired(true))
+    )
+    .addSubcommand((subcommand) => subcommand
+      .setName('pay')
+      .setDescription('Purchase a new loan')
+      .addStringOption((option) => option.setName('amount').setDescription('amount to pay - ALL or set value').setRequired(true))
+    )
   },
   market: {
     function: market,
     args: [],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('market')
+    .setDescription('market the things')
   },
 };

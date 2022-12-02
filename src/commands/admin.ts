@@ -1,4 +1,5 @@
 // import { Database } from '../data-source';
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { CommandDispatch } from '../types';
 
 /*
@@ -23,17 +24,20 @@ export const dispatch: CommandDispatch = {
     args: [],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder().setName('edit').setDescription('edit the things').setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   },
   take: {
     function: take,
     args: [],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder().setName('take').setDescription('take the things').setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   },
   view: {
     function: view,
     args: [],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder().setName('view').setDescription('view the things').setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   },
 };

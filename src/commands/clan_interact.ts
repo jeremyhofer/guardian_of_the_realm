@@ -4,6 +4,7 @@ import { AttackTypes, CommandDispatch, CommandReturn } from '../types';
 import * as assets from '../assets';
 import { Database } from '../data-source';
 import * as utils from '../utils';
+import { SlashCommandBuilder } from 'discord.js';
 
 /*
  * Assigns player to a house w/ default money and men
@@ -514,12 +515,38 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('join')
+    .setDescription('join the things')
   },
   pledge: {
     function: pledge,
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.string, ArgTypes.number, ArgTypes.string]],
     usage: ['TILE NUMBER attack|defend'],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('pledge')
+    .setDescription('pledge the things')
+    .addStringOption((option) => option
+      .setName('tile')
+      .setDescription('Tile to pledge troops to')
+      .setRequired(true)
+    )
+    .addNumberOption((option) => option
+      .setName('number')
+      .setDescription('Number of troops to pledge')
+      .setRequired(true)
+      .setMinValue(1)
+    )
+    .addStringOption((option) => option
+      .setName('action')
+      .setDescription('Whether to attack or defend')
+      .setRequired(true)
+      .setChoices(
+        { name: 'Attack', value: 'attack' },
+        { name: 'Defend', value: 'defend' },
+      )
+    )
   },
   siege: {
     function: siege,
@@ -527,6 +554,14 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.string]],
     usage: ['TILE'],
     cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('siege')
+    .setDescription('siege the things')
+    .addStringOption((option) => option
+      .setName('tile')
+      .setDescription('Tile to begin a siege on')
+      .setRequired(true)
+    )
   },
   blockade: {
     function: blockade,
@@ -534,17 +569,59 @@ export const dispatch: CommandDispatch = {
     command_args: [[ArgTypes.string]],
     usage: ['TILE'],
     cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('blockade')
+    .setDescription('blockade the things')
+    .addStringOption((option) => option
+      .setName('tile')
+      .setDescription('Tile to befin a blockade on')
+      .setRequired(true)
+    )
   },
   pact: {
     function: pact,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
     usage: ['HOUSE yes|no'],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('pact')
+    .setDescription('pact the things')
+    .addRoleOption((option) => option
+      .setName('house')
+      .setDescription('house to begin a pact with')
+      .setRequired(true)
+    )
+    .addStringOption((option) => option
+      .setName('vote')
+      .setDescription('yes or no to the pact')
+      .setRequired(true)
+      .setChoices(
+        { name: 'Yes', value: 'yes' },
+        { name: 'No', value: 'no' },
+      )
+    )
   },
   war: {
     function: war,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
     usage: ['HOUSE yes|no'],
+    slashCommandBuilder: new SlashCommandBuilder()
+    .setName('war')
+    .setDescription('war the things')
+    .addRoleOption((option) => option
+      .setName('house')
+      .setDescription('house to begin a war with')
+      .setRequired(true)
+    )
+    .addStringOption((option) => option
+      .setName('vote')
+      .setDescription('yes or no to the war')
+      .setRequired(true)
+      .setChoices(
+        { name: 'Yes', value: 'yes' },
+        { name: 'No', value: 'no' },
+      )
+    )
   },
 };

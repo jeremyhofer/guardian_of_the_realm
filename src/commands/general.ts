@@ -9,6 +9,7 @@ import * as gameTasks from '../game_tasks';
 import * as utils from '../utils';
 import { PlayerData } from '../entity/PlayerData';
 import { Database } from '../data-source';
+import { SlashCommandBuilder } from 'discord.js';
 
 // Show help text. optional specific command
 const help = async (): Promise<CommandReturn> => {
@@ -93,17 +94,20 @@ export const dispatch: CommandDispatch = {
     args: [],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder().setName('help').setDescription('help the things')
   },
   bal: {
     function: bal,
     args: ['playerData', 'playerRoles'],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder().setName('bal').setDescription('bal the things')
   },
   cooldown: {
     function: cooldown,
     args: ['playerData', 'commandDispatch'],
     command_args: [[]],
     usage: [],
+    slashCommandBuilder: new SlashCommandBuilder().setName('cooldown').setDescription('cooldown the things')
   },
 };

@@ -3,6 +3,7 @@ import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
 import { CommandDispatch, CommandReturn } from '../types';
 import { PlayerData } from '../entity/PlayerData';
+import { SlashCommandBuilder } from 'discord.js';
 
 /*
  * Possibly earn money. 1h cooldown
@@ -176,6 +177,7 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
+    slashCommandBuilder: new SlashCommandBuilder().setName('pray').setDescription('pray the things')
   },
   subvert: {
     function: subvert,
@@ -188,6 +190,7 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
+    slashCommandBuilder: new SlashCommandBuilder().setName('subvert').setDescription('subvert the things')
   },
   train: {
     function: train,
@@ -199,6 +202,7 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
+    slashCommandBuilder: new SlashCommandBuilder().setName('train').setDescription('train the things')
   },
   work: {
     function: work,
@@ -210,5 +214,6 @@ export const dispatch: CommandDispatch = {
     args: ['playerData'],
     command_args: [[]],
     usage: [''],
+    slashCommandBuilder: new SlashCommandBuilder().setName('work').setDescription('work the things')
   },
 };
