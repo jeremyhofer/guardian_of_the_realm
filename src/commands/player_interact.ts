@@ -5,7 +5,7 @@ import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
 import { CommandDispatch, CommandReturn } from '../types';
 import { PlayerData } from '../entity/PlayerData';
-import { Guild, SlashCommandBuilder } from 'discord.js';
+import { APIRole, Guild, Role, SlashCommandBuilder, User } from 'discord.js';
 import { ArgTypes } from '../enums';
 
 /*
@@ -726,7 +726,17 @@ export const dispatch: CommandDispatch = {
       .setName('role')
       .setDescription('role to arson')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User, role: Role | APIRole } | null => {
+      const player = options.getUser('player');
+      const role = options.getRole('role');
+
+      if(player === null || role === null) {
+        return null;
+      }
+
+      return { player, role };
+    }
   },
   gift: {
     function: gift,
@@ -747,7 +757,17 @@ export const dispatch: CommandDispatch = {
       .setDescription('amount to gift')
       .setRequired(true)
       .setMinValue(1)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User, amount: number } | null => {
+      const player = options.getUser('player');
+      const amount = options.getNumber('role');
+
+      if(player === null || amount === null) {
+        return null;
+      }
+
+      return { player, amount };
+    }
   },
   pirate: {
     function: pirate,
@@ -769,7 +789,16 @@ export const dispatch: CommandDispatch = {
       .setName('player')
       .setDescription('player to pirate')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User } | null => {
+      const player = options.getUser('player');
+
+      if(player === null) {
+        return null;
+      }
+
+      return { player };
+    }
   },
   raid: {
     function: raid,
@@ -791,7 +820,16 @@ export const dispatch: CommandDispatch = {
       .setName('player')
       .setDescription('player to raid')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User } | null => {
+      const player = options.getUser('player');
+
+      if(player === null) {
+        return null;
+      }
+
+      return { player };
+    }
   },
   scandal: {
     function: scandal,
@@ -811,7 +849,16 @@ export const dispatch: CommandDispatch = {
       .setName('player')
       .setDescription('player to scandal')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User } | null => {
+      const player = options.getUser('player');
+
+      if(player === null) {
+        return null;
+      }
+
+      return { player };
+    }
   },
   spy: {
     function: spy,
@@ -831,7 +878,16 @@ export const dispatch: CommandDispatch = {
       .setName('player')
       .setDescription('player to spy')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User } | null => {
+      const player = options.getUser('player');
+
+      if(player === null) {
+        return null;
+      }
+
+      return { player };
+    }
   },
   thief: {
     function: thief,
@@ -853,7 +909,16 @@ export const dispatch: CommandDispatch = {
       .setName('player')
       .setDescription('player to thief')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User } | null => {
+      const player = options.getUser('player');
+
+      if(player === null) {
+        return null;
+      }
+
+      return { player };
+    }
   },
   trade: {
     function: trade,
@@ -881,6 +946,16 @@ export const dispatch: CommandDispatch = {
       .setDescription('number of ships to use in the trade')
       .setRequired(true)
       .setMinValue(1)
-    )
+    ),
+    slashCommandOptionParser: (options): { player: User, ships: number } | null => {
+      const player = options.getUser('player');
+      const ships = options.getNumber('ships');
+
+      if(player === null || ships === null) {
+        return null;
+      }
+
+      return { player, ships };
+    }
   },
 };

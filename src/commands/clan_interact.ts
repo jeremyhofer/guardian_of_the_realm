@@ -4,7 +4,7 @@ import { AttackTypes, CommandDispatch, CommandReturn } from '../types';
 import * as assets from '../assets';
 import { Database } from '../data-source';
 import * as utils from '../utils';
-import { SlashCommandBuilder } from 'discord.js';
+import { APIRole, Role, SlashCommandBuilder } from 'discord.js';
 
 /*
  * Assigns player to a house w/ default money and men
@@ -546,7 +546,18 @@ export const dispatch: CommandDispatch = {
         { name: 'Attack', value: 'attack' },
         { name: 'Defend', value: 'defend' },
       )
-    )
+    ),
+    slashCommandOptionParser: (options): { tile: string, number: number, action: string } | null => {
+      const tile = options.getString('tile');
+      const number = options.getNumber('number');
+      const action = options.getString('action');
+
+      if(tile === null || number === null || action === null) {
+        return null;
+      }
+
+      return { tile, number, action };
+    }
   },
   siege: {
     function: siege,
@@ -561,7 +572,16 @@ export const dispatch: CommandDispatch = {
       .setName('tile')
       .setDescription('Tile to begin a siege on')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { tile: string } | null => {
+      const tile = options.getString('tile');
+
+      if(tile === null) {
+        return null;
+      }
+
+      return { tile };
+    }
   },
   blockade: {
     function: blockade,
@@ -576,7 +596,16 @@ export const dispatch: CommandDispatch = {
       .setName('tile')
       .setDescription('Tile to befin a blockade on')
       .setRequired(true)
-    )
+    ),
+    slashCommandOptionParser: (options): { tile: string } | null => {
+      const tile = options.getString('tile');
+
+      if(tile === null) {
+        return null;
+      }
+
+      return { tile };
+    }
   },
   pact: {
     function: pact,
@@ -599,7 +628,17 @@ export const dispatch: CommandDispatch = {
         { name: 'Yes', value: 'yes' },
         { name: 'No', value: 'no' },
       )
-    )
+    ),
+    slashCommandOptionParser: (options): { house: Role | APIRole, vote: string } | null => {
+      const house = options.getRole('house');
+      const vote = options.getString('vote');
+
+      if(house === null || vote === null) {
+        return null;
+      }
+
+      return { house, vote };
+    }
   },
   war: {
     function: war,
@@ -622,6 +661,16 @@ export const dispatch: CommandDispatch = {
         { name: 'Yes', value: 'yes' },
         { name: 'No', value: 'no' },
       )
-    )
+    ),
+    slashCommandOptionParser: (options): { house: Role | APIRole, vote: string } | null => {
+      const house = options.getRole('house');
+      const vote = options.getString('vote');
+
+      if(house === null || vote === null) {
+        return null;
+      }
+
+      return { house, vote };
+    }
   },
 };

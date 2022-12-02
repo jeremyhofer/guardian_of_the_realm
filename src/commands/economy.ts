@@ -1,10 +1,10 @@
 import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
-import { armyUnits, CommandDispatch, CommandReturn, Rank } from '../types';
+import { ArmyUnits, armyUnits, CommandDispatch, CommandReturn, Rank } from '../types';
 import * as assets from '../assets';
 import * as utils from '../utils';
 import { Database } from '../data-source';
-import { SlashCommandBuilder } from 'discord.js';
+import { APIRole, Role, SlashCommandBuilder } from 'discord.js';
 
 /*
  * Buy some item in a quantity. titles only one, cant buy more or same
@@ -294,7 +294,33 @@ export const dispatch: CommandDispatch = {
         .setRequired(true)
       )
       .addNumberOption((option) => option.setName('amount').setDescription('number to purchase').setRequired(true))
-    )
+    ),
+    slashCommandOptionParser: (options): { role: Role | APIRole } | { troopType: ArmyUnits, amount: number } | null => {
+      const subCommand = options.getSubcommand();
+
+      if(subCommand === 'role') {
+        const role = options.getRole('role');
+
+        if(role === null) {
+          return null;
+        }
+
+        return { role };
+      }
+
+      if(subCommand === 'troops') {
+        const troopType = options.getString('type');
+        const amount = options.getNumber('amount');
+
+        if(troopType === null || amount === null) {
+          return null;
+        }
+
+        return { troopType, amount };
+      }
+
+      return null;
+    }
   },
   loan: {
     function: loan,
@@ -315,13 +341,22 @@ export const dispatch: CommandDispatch = {
     .addSubcommand((subcommand) => subcommand
       .setName('get')
       .setDescription('Purchase a new loan')
-      .addNumberOption((option) => option.setName('amount').setDescription('amount desired').setRequired(true))
+      .addStringOption((option) => option.setName('amount').setDescription('amount desired').setRequired(true))
     )
     .addSubcommand((subcommand) => subcommand
       .setName('pay')
       .setDescription('Purchase a new loan')
       .addStringOption((option) => option.setName('amount').setDescription('amount to pay - ALL or set value').setRequired(true))
-    )
+    ),
+    slashCommandOptionParser: (options): { action: string, amount: string | null } | null => {
+      const subCommand = options.getSubcommand();
+
+      if(!['show', 'get', 'pay'].some((command) => command === subCommand)) {
+        return null;
+      }
+
+      return { action: subCommand, amount: options.getString('amount') };
+    }
   },
   market: {
     function: market,

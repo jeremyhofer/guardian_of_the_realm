@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { CommandInteractionOptionResolver, SlashCommandBuilder } from 'discord.js';
 import { Loan } from './entity/Loan';
 import { PlayerData } from './entity/PlayerData';
 import { Pledge } from './entity/Pledge';
@@ -154,6 +154,7 @@ export interface CommandConfig {
   allowed_channels?: string[];
   cooldown_from_start?: number;
   slashCommandBuilder: SlashCommandBuilder | Partial<SlashCommandBuilder>;
+  slashCommandOptionParser?: (options: Omit<CommandInteractionOptionResolver, 'getMessage' | 'getFocused'>) => any;
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;

@@ -39,9 +39,15 @@ AppDataSource.initialize()
 
     client.on(Events.InteractionCreate, async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
-      console.log(interaction);
 
-      if(interaction.commandName === 'foo') {
+      if(interaction.commandName in botHandlers.commandDispatch) {
+        const commandConfig = botHandlers.commandDispatch[interaction.commandName];
+        const argParser = commandConfig.slashCommandOptionParser;
+
+        const args = argParser === undefined ? null : argParser(interaction.options);
+        console.log(args);
+        await interaction.reply(`Success! Args present: ${args === null ? 'no' : 'yes'}`);
+      } else if(interaction.commandName === 'foo') {
         const subject = interaction.options.getUser('subject');
         await interaction.reply(`gadzooks! your subject is ${subject?.toString() ?? 'an unknown soul'}`);
       } else {
