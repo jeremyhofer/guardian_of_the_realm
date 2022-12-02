@@ -27,6 +27,7 @@ import {
 const buy = async (
   interaction: ChatInputCommandInteraction
 ): Promise<CommandReturn> => {
+  // TODO: present purchasing of lower nobility role
   const argParser: ArgParserFn<
     { role: Role | APIRole } | { troopType: ArmyUnits; amount: number }
   > = (options) => {
@@ -335,7 +336,7 @@ const market = async (): Promise<CommandReturn> => {
 
 export const dispatch: CommandDispatch = {
   buy: {
-    type: 'message',
+    type: 'slash',
     function: buy,
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.game_role], [ArgTypes.string, ArgTypes.number]],
@@ -374,37 +375,6 @@ export const dispatch: CommandDispatch = {
               .setRequired(true)
           )
       ),
-    slashCommandOptionParser: (
-      options
-    ):
-      | { role: Role | APIRole }
-      | { troopType: ArmyUnits; amount: number }
-      | null => {
-      const subCommand = options.getSubcommand();
-
-      if (subCommand === 'role') {
-        const role = options.getRole('role');
-
-        if (role === null) {
-          return null;
-        }
-
-        return { role };
-      }
-
-      if (subCommand === 'troops') {
-        const troopType = options.getString('type');
-        const amount = options.getNumber('amount');
-
-        if (troopType === null || amount === null) {
-          return null;
-        }
-
-        return { troopType, amount };
-      }
-
-      return null;
-    },
   },
   loan: {
     type: 'slash',
