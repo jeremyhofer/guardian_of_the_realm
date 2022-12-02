@@ -9,7 +9,7 @@ import * as gameTasks from '../game_tasks';
 import * as utils from '../utils';
 import { PlayerData } from '../entity/PlayerData';
 import { Database } from '../data-source';
-import { SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 
 // Show help text. optional specific command
 const help = async (): Promise<CommandReturn> => {
@@ -23,13 +23,18 @@ const help = async (): Promise<CommandReturn> => {
  * Lists the players money, men, and ships with
  * the unique faction name for each.
  */
-const bal = async ({
-  playerData,
-  playerRoles,
-}: {
-  playerData: PlayerData;
-  playerRoles: string[];
-}): Promise<CommandReturn> => {
+const bal = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+
+  const playerRoles: string[] = await gameTasks.getAllPlayerRoleNames(
+    interaction,
+    interaction.user
+  );
+
   let reply =
     `Your account: ${playerData.money} :moneybag: ` +
     `${playerData.men} ${assets.emojis.MenAtArms} ${playerData.ships} ` +
@@ -60,6 +65,8 @@ const bal = async ({
   reply += blockadeContributions;
   reply += '\n\n';
   reply += gameTasks.generateRolesReply({ playerRoles });
+
+  // TODO: include loans
 
   return { reply, success: true };
 };
@@ -100,7 +107,7 @@ export const dispatch: CommandDispatch = {
       .setDescription('help the things'),
   },
   bal: {
-    type: 'message',
+    type: 'slash',
     function: bal,
     args: ['playerData', 'playerRoles'],
     command_args: [[]],
