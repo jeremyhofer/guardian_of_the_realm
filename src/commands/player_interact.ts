@@ -4,7 +4,6 @@ import * as game_tasks from '../game_tasks';
 import * as utils from '../utils';
 import * as flavor from '../data/flavor.json';
 import { ArgParserFn, CommandDispatch, CommandReturn } from '../types';
-import { PlayerData } from '../entity/PlayerData';
 import {
   APIRole,
   ChatInputCommandInteraction,
@@ -733,27 +732,41 @@ const thief = async (
  * Trade with a different player that is in a house in which you have a pact
  * @player <SHIPS>
  */
-const trade = async ({
-  args,
-  playerData,
-  playerRoles,
-}: {
-  args: any[];
-  playerData: PlayerData;
-  playerRoles: string[];
-}): Promise<CommandReturn> => {
-  const commandReturn: CommandReturn = {
-    update: {
-      playerData,
-    },
-    reply: '',
-    success: true,
+const trade = async (
+  interaction: ChatInputCommandInteraction
+): Promise<CommandReturn> => {
+  const argParser: ArgParserFn<{ player: User; ships: number }> = (options) => {
+    const player = options.getUser('player');
+    const ships = options.getNumber('ships');
+
+    if (player === null || ships === null) {
+      return null;
+    }
+
+    return { player, ships };
   };
 
-  const playerMention = args[0] as PlayerData;
-  const numShips = parseInt(args[1]);
+  const parsedArgs = argParser(interaction.options);
 
-  (commandReturn.update as any).playerMention = playerMention;
+  if (parsedArgs === null) {
+    return {
+      reply: 'Issue with arguments. Contact a Developer.',
+      success: true,
+    };
+  }
+
+  const playerData = await Database.playerData.getOrCreatePlayer(
+    interaction.user.id
+  );
+  const playerMention = await Database.playerData.getOrCreatePlayer(
+    parsedArgs.player.id
+  );
+
+  if (playerData.user === playerMention.user) {
+    return { reply: 'You cannot trade yourself!', success: true };
+  }
+
+  const numShips = parsedArgs.ships;
 
   // Make sure the players' houses are in a pact
   const pact = await Database.pact.getPactBetweenHouses(
@@ -761,60 +774,69 @@ const trade = async ({
     playerMention.house
   );
 
-  if (pact !== null) {
-    // Make sure the player has ships
-    const pShips = playerData.ships;
-    let roleLimit = assets.roleShipLimits.unsworn;
+  if (pact === null) {
+    return {
+      reply: `Your house is not in a pact with <@&${playerMention.house}>!`,
+      success: true,
+    };
+  }
+  // Make sure the player has ships
+  const pShips = playerData.ships;
+  let roleLimit = assets.roleShipLimits.unsworn;
+  const playerRoles: string[] = await game_tasks.getAllPlayerRoleNames(
+    interaction,
+    interaction.user
+  );
 
-    if (playerRoles.includes('duke')) {
-      roleLimit = assets.roleShipLimits.duke;
-    } else if (playerRoles.includes('earl')) {
-      roleLimit = assets.roleShipLimits.earl;
-    } else if (playerRoles.includes('baron')) {
-      roleLimit = assets.roleShipLimits.baron;
-    }
-
-    if (playerData.user === playerMention.user) {
-      commandReturn.reply = 'You cannot trade yourself!';
-    } else if (pShips > 0) {
-      // Ensure the args are valid
-      if (isNaN(numShips) || numShips < 1) {
-        commandReturn.reply = 'Number of ships must be a positive number';
-      } else if (numShips > roleLimit) {
-        commandReturn.reply = `You may only use at most ${roleLimit} ships`;
-      } else if (pShips >= numShips) {
-        // All good! Grant the cash
-        const traderPay =
-          utils.getRandomValueInRange(
-            assets.rewardPayoutsPenalties.trade_trader_reward_min,
-            assets.rewardPayoutsPenalties.trade_trader_reward_max
-          ) * numShips;
-        const tradeePay =
-          utils.getRandomValueInRange(
-            assets.rewardPayoutsPenalties.trade_tradee_reward_min,
-            assets.rewardPayoutsPenalties.trade_tradee_reward_max
-          ) * numShips;
-        (commandReturn.update?.playerData as PlayerData).money += traderPay;
-        (commandReturn.update?.playerMention as PlayerData).money += tradeePay;
-        const replyTemplate = utils.randomElement(flavor.trade);
-        commandReturn.reply = utils.templateReplace(replyTemplate, {
-          traderPay,
-          tradeePay,
-          trader: `<@${playerData.user}>`,
-          tradee: `<@${playerMention.user}>`,
-        });
-        commandReturn.success = true;
-      } else {
-        commandReturn.reply = `You only have ${pShips} ${assets.emojis.Warship} available`;
-      }
-    } else {
-      commandReturn.reply = 'You do not have any ships to trade with';
-    }
-  } else {
-    commandReturn.reply = `Your house is not in a pact with <@&${playerMention.house}>!`;
+  if (playerRoles.includes('duke')) {
+    roleLimit = assets.roleShipLimits.duke;
+  } else if (playerRoles.includes('earl')) {
+    roleLimit = assets.roleShipLimits.earl;
+  } else if (playerRoles.includes('baron')) {
+    roleLimit = assets.roleShipLimits.baron;
   }
 
-  return commandReturn;
+  if (pShips <= 0) {
+    return { reply: 'You do not have any ships to trade with', success: true };
+  }
+
+  // Ensure the args are valid
+  if (numShips > roleLimit) {
+    return {
+      reply: `You may only use at most ${roleLimit} ships`,
+      success: true,
+    };
+  }
+
+  if (pShips < numShips) {
+    return {
+      reply: `You only have ${pShips} ${assets.emojis.Warship} available`,
+      success: true,
+    };
+  }
+  // All good! Grant the cash
+  const traderPay =
+    utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.trade_trader_reward_min,
+      assets.rewardPayoutsPenalties.trade_trader_reward_max
+    ) * numShips;
+  const tradeePay =
+    utils.getRandomValueInRange(
+      assets.rewardPayoutsPenalties.trade_tradee_reward_min,
+      assets.rewardPayoutsPenalties.trade_tradee_reward_max
+    ) * numShips;
+  playerData.money += traderPay;
+  playerMention.money += tradeePay;
+  const replyTemplate = utils.randomElement(flavor.trade);
+  const reply = utils.templateReplace(replyTemplate, {
+    traderPay,
+    tradeePay,
+    trader: `<@${playerData.user}>`,
+    tradee: `<@${playerMention.user}>`,
+  });
+  await Database.playerData.saveMultiple([playerData, playerMention]);
+
+  return { reply, success: true };
 };
 
 export const dispatch: CommandDispatch = {
@@ -1053,7 +1075,7 @@ export const dispatch: CommandDispatch = {
     },
   },
   trade: {
-    type: 'message',
+    type: 'slash',
     function: trade,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.trade),

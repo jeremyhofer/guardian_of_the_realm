@@ -1296,3 +1296,12 @@ export const getMemberOwnedRoleIds = (
       .map((role) => role.id) ?? []
   );
 };
+
+export const getAllPlayerRoleNames = async (
+  interaction: ChatInputCommandInteraction,
+  user: User
+): Promise<string[]> => {
+  const guildMember = await interaction.guild?.members.fetch(user.id);
+
+  return guildMember?.roles.cache.map((role) => role.name.toLowerCase()) ?? [];
+};
