@@ -162,9 +162,6 @@ export const dispatch: CommandDispatch = {
       field: 'pray_last_time',
       reply: 'No one is around to hear your prayers for another',
     },
-    args: ['playerData'],
-    command_args: [[]],
-    usage: [''],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('pray')
       .setDescription('pray the things'),
@@ -177,9 +174,6 @@ export const dispatch: CommandDispatch = {
       reply:
         'The watch is in high presence right now. You should try again in another',
     },
-    args: ['playerData'],
-    command_args: [[]],
-    usage: [''],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('subvert')
       .setDescription('subvert the things'),
@@ -191,9 +185,6 @@ export const dispatch: CommandDispatch = {
       field: 'train_last_time',
       reply: 'You have been training tirelessly. You should rest for ',
     },
-    args: ['playerData'],
-    command_args: [[]],
-    usage: [''],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('train')
       .setDescription('train the things'),
@@ -205,9 +196,6 @@ export const dispatch: CommandDispatch = {
       field: 'work_last_time',
       reply: 'You continue to slave away, but you will not be paid for another',
     },
-    args: ['playerData'],
-    command_args: [[]],
-    usage: [''],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('work')
       .setDescription('work the things'),

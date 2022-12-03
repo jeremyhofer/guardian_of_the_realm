@@ -2,12 +2,6 @@ import {
   CommandInteractionOptionResolver,
   SlashCommandBuilder,
 } from 'discord.js';
-import { Loan } from './entity/Loan';
-import { PlayerData } from './entity/PlayerData';
-import { Pledge } from './entity/Pledge';
-import { Siege } from './entity/Siege';
-import { Vote } from './entity/Vote';
-import { ArgTypes } from './enums';
 
 export const rank = ['baron', 'earl', 'duke', 'unsworn'] as const;
 export type Rank = typeof rank[number];
@@ -135,13 +129,6 @@ export interface GameRoles {
   [key: string]: string[];
 }
 
-export type CommandArgs = ArgTypes[][];
-
-export interface ParsedArgs {
-  values: any[];
-  types: ArgTypes[];
-}
-
 export interface CooldownConfig {
   time: number;
   field: CooldownCommandFields;
@@ -154,14 +141,10 @@ export type ArgParserFn<T> = (
 
 export interface CommandConfig {
   function: (...all: any) => Promise<CommandReturn | null> | Promise<void>;
-  args: string[];
-  command_args: CommandArgs;
-  usage: string[];
   cooldown?: CooldownConfig;
   allowed_channels?: string[];
   cooldown_from_start?: number;
   slashCommandBuilder: SlashCommandBuilder | Partial<SlashCommandBuilder>;
-  slashCommandOptionParser?: ArgParserFn<any>;
 }
 
 export type CommandDispatch = Record<string, CommandConfig>;
@@ -169,44 +152,5 @@ export type CommandDispatch = Record<string, CommandConfig>;
 export interface CommandReturn {
   enableGame?: boolean;
   reply: string;
-  update?: {
-    playerData?: PlayerData;
-    playerMention?: PlayerData;
-    roles?: {
-      player?: {
-        add: string[];
-        remove: string[];
-      };
-      other_player?: {
-        id: string;
-        add: string[];
-        remove: string[];
-      };
-    };
-  };
-  loans?: {
-    add?: Loan;
-    remove?: Loan;
-    update?: Loan;
-  };
-  sieges?: {
-    add?: Siege;
-    update?: Siege;
-  };
-  pledges?: {
-    add?: Pledge;
-    remove?: Pledge;
-  };
-  votes?: {
-    add?: Vote;
-  };
-  send?: {
-    message?: string;
-    channel?: string;
-  };
-  map?: {
-    message: string;
-    embed: any;
-  };
   success: boolean;
 }

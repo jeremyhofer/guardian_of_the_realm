@@ -1,4 +1,3 @@
-import { ArgTypes } from '../enums';
 import {
   AttackTypes,
   CommandDispatch,
@@ -574,18 +573,12 @@ const war = async (
 export const dispatch: CommandDispatch = {
   join: {
     function: join,
-    args: ['playerData'],
-    command_args: [[]],
-    usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('join')
       .setDescription('join the things'),
   },
   pledge: {
     function: pledge,
-    args: ['args', 'playerData', 'playerRoles'],
-    command_args: [[ArgTypes.string, ArgTypes.number, ArgTypes.string]],
-    usage: ['TILE NUMBER attack|defend'],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('pledge')
       .setDescription('pledge the things')
@@ -615,9 +608,6 @@ export const dispatch: CommandDispatch = {
   },
   siege: {
     function: siege,
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.string]],
-    usage: ['TILE'],
     cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('siege')
@@ -631,9 +621,6 @@ export const dispatch: CommandDispatch = {
   },
   blockade: {
     function: blockade,
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.string]],
-    usage: ['TILE'],
     cooldown_from_start: utils.hoursToMs(assets.timeoutLengths.siege_blockade),
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('blockade')
@@ -647,9 +634,6 @@ export const dispatch: CommandDispatch = {
   },
   pact: {
     function: pact,
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.house, ArgTypes.string]],
-    usage: ['HOUSE yes|no'],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('pact')
       .setDescription('pact the things')
@@ -672,9 +656,6 @@ export const dispatch: CommandDispatch = {
   },
   war: {
     function: war,
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.house, ArgTypes.string]],
-    usage: ['HOUSE yes|no'],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('war')
       .setDescription('war the things')

@@ -21,9 +21,6 @@ const view = async (): Promise<null> => null;
 export const dispatch: CommandDispatch = {
   edit: {
     function: edit,
-    args: [],
-    command_args: [[]],
-    usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('edit')
       .setDescription('edit the things')
@@ -31,9 +28,6 @@ export const dispatch: CommandDispatch = {
   },
   take: {
     function: take,
-    args: [],
-    command_args: [[]],
-    usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('take')
       .setDescription('take the things')
@@ -41,9 +35,6 @@ export const dispatch: CommandDispatch = {
   },
   view: {
     function: view,
-    args: [],
-    command_args: [[]],
-    usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('view')
       .setDescription('view the things')

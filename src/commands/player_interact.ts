@@ -11,7 +11,6 @@ import {
   SlashCommandBuilder,
   User,
 } from 'discord.js';
-import { ArgTypes } from '../enums';
 
 /*
  * Attempt to destroy a person's income roles
@@ -847,9 +846,6 @@ export const dispatch: CommandDispatch = {
       field: 'arson_last_time',
       reply: 'The fire watch is on high alert. ' + 'They are due to leave in',
     },
-    args: ['args', 'playerData', 'playerRoles', 'guild'],
-    command_args: [[ArgTypes.player_mention, ArgTypes.game_role]],
-    usage: ['@PLAYER INCOME_ROLE'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('arson')
@@ -866,9 +862,6 @@ export const dispatch: CommandDispatch = {
   },
   gift: {
     function: gift,
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.player_mention, ArgTypes.number]],
-    usage: ['@PLAYER MONEY'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('gift')
@@ -896,9 +889,6 @@ export const dispatch: CommandDispatch = {
         'Pirating now would not be wise as the navy is patroling. ' +
         'They are due to leave in',
     },
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.player_mention]],
-    usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('pirate')
@@ -919,9 +909,6 @@ export const dispatch: CommandDispatch = {
         'Your troops are still resting from the last raid. ' +
         'Your party may leave again in',
     },
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.player_mention]],
-    usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('raid')
@@ -940,9 +927,6 @@ export const dispatch: CommandDispatch = {
       field: 'scandal_last_time',
       reply: 'The fire watch is on high alert. ' + 'They are due to leave in',
     },
-    args: ['args', 'playerData', 'guild'],
-    command_args: [[ArgTypes.player_mention]],
-    usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('scandal')
@@ -961,9 +945,6 @@ export const dispatch: CommandDispatch = {
       field: 'spy_last_time',
       reply: 'The spy is out to lunch and will be back in',
     },
-    args: ['args', 'playerData', 'guild'],
-    command_args: [[ArgTypes.player_mention]],
-    usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('spy')
@@ -984,9 +965,6 @@ export const dispatch: CommandDispatch = {
         'The guards are on the alert for thieves. ' +
         'Maybe you can try again in',
     },
-    args: ['args', 'playerData'],
-    command_args: [[ArgTypes.player_mention]],
-    usage: ['@PLAYER'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('thief')
@@ -1007,9 +985,6 @@ export const dispatch: CommandDispatch = {
         'Your merchants are buying goods from the guilds, and ' +
         'their sailors are drunk in the tavern. You can set sail again at',
     },
-    args: ['args', 'playerData', 'playerRoles'],
-    command_args: [[ArgTypes.player_mention, ArgTypes.number]],
-    usage: ['@PLAYER SHIPS'],
     allowed_channels: assets.playerInteractChannels,
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('trade')

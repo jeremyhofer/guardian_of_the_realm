@@ -87,7 +87,11 @@ export class PlayerDataDAO {
     return await this._repository.save(playerData);
   }
 
-  async updateCommandLastTime(user: string, field: string, value: number): Promise<UpdateResult> {
+  async updateCommandLastTime(
+    user: string,
+    field: string,
+    value: number
+  ): Promise<UpdateResult> {
     return await this._repository.update({ user }, { [field]: value });
   }
 

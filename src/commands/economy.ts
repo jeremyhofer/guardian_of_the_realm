@@ -1,4 +1,3 @@
-import { ArgTypes } from '../enums';
 import {
   ArgParserFn,
   ArmyUnits,
@@ -335,9 +334,6 @@ const market = async (): Promise<CommandReturn> => {
 export const dispatch: CommandDispatch = {
   buy: {
     function: buy,
-    args: ['args', 'playerData', 'playerRoles'],
-    command_args: [[ArgTypes.game_role], [ArgTypes.string, ArgTypes.number]],
-    usage: ['ROLE', 'ITEM AMOUNT'],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('buy')
       .setDescription('buy the things')
@@ -375,13 +371,6 @@ export const dispatch: CommandDispatch = {
   },
   loan: {
     function: loan,
-    args: ['args', 'playerData'],
-    command_args: [
-      [ArgTypes.string],
-      [ArgTypes.string, ArgTypes.number],
-      [ArgTypes.string, ArgTypes.string],
-    ],
-    usage: ['show', 'get AMOUNT', 'pay AMOUNT|all'],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('loan')
       .setDescription('loan the things')
@@ -414,9 +403,6 @@ export const dispatch: CommandDispatch = {
   },
   market: {
     function: market,
-    args: [],
-    command_args: [[]],
-    usage: [],
     slashCommandBuilder: new SlashCommandBuilder()
       .setName('market')
       .setDescription('market the things'),
