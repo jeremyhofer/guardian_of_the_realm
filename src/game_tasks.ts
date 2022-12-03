@@ -1026,6 +1026,7 @@ export const resetEverything = async (
     success: true,
   };
 
+  console.log('get guild members');
   // Remove everyone from game roles
   await guild.members.fetch();
   const gameRoleMembersCollection = guild.roles.cache.filter(
@@ -1034,6 +1035,7 @@ export const resetEverything = async (
 
   const firstRole = gameRoleMembersCollection.first();
 
+  console.log('remove all roles');
   if (firstRole !== undefined) {
     const memberCollection: Collection<Snowflake, GuildMember> =
       firstRole.members.concat(
@@ -1047,6 +1049,7 @@ export const resetEverything = async (
     }
   }
 
+  console.log('reset database data');
   // Reset database data and map
   await Database.playerData
     .resetAllPlayers()
@@ -1125,6 +1128,7 @@ export const resetEverything = async (
     )
     .then(async () => await postUpdatedMap(guild));
 
+  console.log('remake channels');
   const remakeChannels = [
     'house-bear',
     'house-dragon',
@@ -1161,11 +1165,13 @@ export const resetEverything = async (
     console.error('Could not find category channel');
   }
 
+  console.log('set game start');
   await Database.tracker.updateTrackerByName('game_start', currentTime);
 
   commandReturn.reply = 'Done';
   commandReturn.enableGame = true;
 
+  console.log('complete');
   return commandReturn;
 };
 
