@@ -509,10 +509,10 @@ export const resolveSieges = async (
         message +=
           'The members of the house controlling the port will ' +
           `each earn ${assets.rewardPayoutsPenalties.port_daily} ` +
-          ':moneybag: per day.';
+          `${assets.emojis.Money} per day.`;
       } else {
         message +=
-          `${winPot} :moneybag: has been distributed to the ` +
+          `${winPot} ${assets.emojis.Money} has been distributed to the ` +
           `winners. ${losePot} ${assets.emojis.MenAtArms} has been ` +
           'distributed to the losers.';
       }
@@ -660,7 +660,7 @@ export const generateSiegeEmbed = async (
   const winner_payout = pledges.length * 3000;
   const loser_payout = pledges.length * 20;
 
-  const rewards = `Winners: ${winner_payout} :moneybag:\n` +
+  const rewards = `Winners: ${winner_payout} ${assets.emojis.Money}\n` +
   `Losers: ${loser_payout} ${assets.emojis.MenAtArms}`;
   */
   const type = isPort ? 'Blockade' : 'Siege';
@@ -1181,7 +1181,7 @@ export const generateRolesReply = ({
   buildings.forEach((role) => {
     const roleCap = role[0].toUpperCase() + role.slice(1);
     const symbol = playerRoles.includes(role) ? ':white_check_mark:' : ':x:';
-    reply += `${symbol} ${roleCap}: ${assets.dailyPayouts[role]} :moneybag: per Day\n`;
+    reply += `${symbol} ${roleCap}: ${assets.dailyPayouts[role]} ${assets.emojis.Money} per Day\n`;
   });
 
   let roleReply = '';

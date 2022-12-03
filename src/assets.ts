@@ -63,6 +63,11 @@ export const emojis: Record<EmojiNames, string> = {
   PortWolf: '<:PortWolf:656628138536599557>',
   Unsworn: '<:Unsworn:575488619389779979>',
   Warship: '<:Warship:627639570565038140>',
+  Iron: ':rock:',
+  Wood: ':wood:',
+  Food: ':ear_of_rice:',
+  Money: ':moneybag:',
+  Serfs: ':busts_in_silhouette:',
 };
 
 export const storeItems: Record<AvailableStoreItems, StoreItems> = {

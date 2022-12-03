@@ -35,7 +35,7 @@ const bal = async (
   );
 
   let reply =
-    `Your account: ${playerData.money} :moneybag: ` +
+    `Your account: ${playerData.money} ${assets.emojis.Money} ` +
     `${playerData.men} ${assets.emojis.MenAtArms} ${playerData.ships} ` +
     `${assets.emojis.Warship}`;
 

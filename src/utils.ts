@@ -12,6 +12,7 @@ import {
   Emojis,
   GameRoles,
 } from './types';
+import * as assets from './assets';
 
 /**
  * Convert milliseconds to a countdown-like string.
@@ -89,6 +90,11 @@ export function templateReplace(
   for (const key in mappings) {
     const re = new RegExp(`\\{${key}\\}`, 'gu');
     filledTemplate = filledTemplate.replace(re, `${mappings[key]}`);
+  }
+
+  for (const [key, value] of Object.entries(assets.emojis)) {
+    const re = new RegExp(`\\{emoji.${key}\\}`, 'gu');
+    filledTemplate = filledTemplate.replace(re, `${value}`);
   }
 
   return filledTemplate;

@@ -207,7 +207,9 @@ const gift = async (
   await Database.playerData.saveMultiple([playerData, playerMention]);
 
   return {
-    reply: `You successfully gave ${parsedArgs.player.toString()} ${amountToGive} :moneybag:`,
+    reply: `You successfully gave ${parsedArgs.player.toString()} ${amountToGive} ${
+      assets.emojis.Money
+    }`,
     success: true,
   };
 };
@@ -515,7 +517,7 @@ const scandal = async (
     return {
       reply:
         `Instigating a scandal against ${highestRole} ` +
-        `<@${playerMention.user}> costs ${scandalCost} :moneybag:. You do ` +
+        `<@${playerMention.user}> costs ${scandalCost} ${assets.emojis.Money}. You do ` +
         ' not have enough to afford the scandal.',
       success: true,
     };
@@ -623,7 +625,7 @@ const spy = async (
   playerData.money -= assets.rewardPayoutsPenalties.spy_cost;
   const reply =
     `${parsedArgs.player.toString()} has ` +
-    `${playerMention.money} :moneybag: ${playerMention.men} ` +
+    `${playerMention.money} ${assets.emojis.Money} ${playerMention.men} ` +
     `${assets.emojis.MenAtArms} ${playerMention.ships} ` +
     `${assets.emojis.Warship}\n\n${roleReply}`;
 
