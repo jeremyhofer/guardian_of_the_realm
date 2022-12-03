@@ -517,8 +517,82 @@ export async function interactionHandler(
       await interaction.reply('The game is over. Please play again soon!');
       return;
     }
+    if (
+      assets.blockedChannels.includes(interaction.channel?.id ?? '') &&
+        !(interaction.guild?.members.cache.get(interaction.user.id)?.roles.cache.has(assets.developerRole) ?? false)
+    ) {
+      await interaction.reply('commands are not allowed in this channel');
+      return;
+    }
 
     const commandConfig = commandDispatch[interaction.commandName];
+
+    if ('allowed_channels' in commandConfig && !(commandConfig.allowed_channels?.includes(interaction.channel?.id ?? '') ?? false) &&
+        !(interaction.guild?.members.cache.get(interaction.user.id)?.roles.cache.has(assets.developerRole) ?? false)
+    ) {
+      await interaction.reply('this command is not allowed in this channel.');
+      return;
+    }
+    // Get playerData
+    const playerData = await Database.playerData.getOrCreatePlayer(
+      interaction.user.id
+    );
+
+    let cooldown = false;
+    let cooldownPassed = false;
+    let cooldownField: CooldownCommandFields | undefined;
+    let cooldownFailMessage = null;
+    const currentTime = Date.now();
+
+    if ('cooldown' in commandConfig) {
+      // Check to see if the cooldown for the command has passed
+      cooldown = true;
+      cooldownField = commandConfig.cooldown?.field;
+      if (cooldownField !== undefined) {
+        const lastTime: number = playerData[cooldownField] ?? 0;
+        const cooldownTime = commandConfig.cooldown?.time ?? 0;
+        const baseReply: string =
+          commandConfig.cooldown?.reply ?? '';
+        const timeUntil = utils.getTimeUntilString(
+          lastTime + cooldownTime - currentTime
+        );
+
+        cooldownPassed = currentTime - lastTime >= cooldownTime;
+        cooldownFailMessage = cooldownPassed
+          ? ''
+          : baseReply + ' ' + timeUntil;
+      } else {
+        console.error('Cooldown field not defined');
+      }
+    }
+
+    if ('cooldown_from_start' in commandConfig) {
+      // Check to see if the cooldown for the command has passed
+      cooldown = true;
+      const gameStartTracker = await Database.tracker.getTrackerByName(
+        'gameStart'
+      );
+      const gameStart: number =
+        gameStartTracker === null ? 0 : gameStartTracker.value;
+      const cooldownTime: number =
+        commandConfig.cooldown_from_start ?? 0;
+      const baseReply = `You cannot perform a ${commandName} for`;
+      const timeUntil = utils.getTimeUntilString(
+        gameStart + cooldownTime - currentTime
+      );
+
+      cooldownPassed = currentTime - gameStart >= cooldownTime;
+      cooldownFailMessage = cooldownPassed
+        ? ''
+        : baseReply + ' ' + timeUntil;
+    }
+
+    // If we do not have a cooldown or the cooldown is passed, continue
+    if (cooldown && !cooldownPassed) {
+      // Cooldown failed. Reply.
+      await interaction.reply(cooldownFailMessage ?? 'Cooldown in effect.');
+      return;
+    }
 
     await interaction.deferReply();
 
