@@ -1,4 +1,5 @@
 import {
+  ChatInputCommandInteraction,
   Guild,
   Interaction,
   Message,
@@ -16,7 +17,7 @@ import * as assets from './assets';
 import * as game_tasks from './game_tasks';
 import * as tasks from './commands/tasks';
 import * as utils from './utils';
-import { CommandDispatch, CooldownCommandFields } from './types';
+import { CommandDispatch, CommandReturn, CooldownCommandFields } from './types';
 import { PlayerData } from './entity/PlayerData';
 import { Loan } from './entity/Loan';
 
@@ -29,8 +30,16 @@ export const commandDispatch: CommandDispatch = {
   ...player_interact.dispatch,
   ...tasks.dispatch,
   map: {
-    type: 'message',
-    function: async (cmdArgs) => await game_tasks.postUpdatedMap(cmdArgs),
+    type: 'slash',
+    function: async (
+      interaction: ChatInputCommandInteraction
+    ): Promise<CommandReturn> => {
+      if (interaction.guild !== null) {
+        return await game_tasks.postUpdatedMap(interaction.guild);
+      }
+
+      return { reply: 'issue generating map', success: true };
+    },
     args: ['guild'],
     command_args: [[]],
     usage: [],
@@ -40,8 +49,16 @@ export const commandDispatch: CommandDispatch = {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   },
   reset: {
-    type: 'message',
-    function: async (cmdArgs) => await game_tasks.resetEverything(cmdArgs),
+    type: 'slash',
+    function: async (
+      interaction: ChatInputCommandInteraction
+    ): Promise<CommandReturn> => {
+      if (interaction.guild !== null) {
+        return await game_tasks.resetEverything(interaction.guild, Date.now());
+      }
+
+      return { reply: 'issue resetting', success: true };
+    },
     args: ['guild', 'playerRoles', 'currentTime'],
     command_args: [[]],
     usage: [],
@@ -433,7 +450,9 @@ export async function messageHandler(
                     console.error('Cound not find channel for guild');
                   }
 
-                  await game_tasks.postUpdatedMap({ guild: msg.guild });
+                  if (msg.guild !== null) {
+                    await game_tasks.postUpdatedMap(msg.guild);
+                  }
                 }
                 if (commandReturn.sieges.update !== undefined) {
                   const siege = commandReturn.sieges.update;
@@ -517,6 +536,8 @@ export async function interactionHandler(
       return;
     }
 
+    await interaction.deferReply();
+
     // commandDispatch supplied as input for cooldown command
     const commandReturn = await commandConfig.function(
       interaction,
@@ -525,18 +546,20 @@ export async function interactionHandler(
 
     if (commandReturn === null || commandReturn === undefined) {
       // TODO: figure out more proper response here if needed
-      await interaction.reply('Command is not yet implemented');
+      await interaction.editReply('Command is not yet implemented');
       return;
     }
 
     if (!commandReturn.success) {
-      await interaction.reply(
+      await interaction.editReply(
         'The command failed. Please check with a Developer.'
       );
       return;
     }
 
-    await interaction.reply({ embeds: [{ description: commandReturn.reply }] });
+    await interaction.editReply({
+      embeds: [{ description: commandReturn.reply }],
+    });
   } else {
     await interaction.reply('This slash command is not recognized.');
   }

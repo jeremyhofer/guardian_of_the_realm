@@ -180,7 +180,7 @@ export const resolveWarVotes = async (
     await Database.vote.removeMultiple(pHouseVoteResults.map((r) => r.vote_id));
 
     if (regenMap) {
-      await postUpdatedMap({ guild });
+      await postUpdatedMap(guild);
     }
 
     // Get next war to try and resolve, if exists
@@ -313,7 +313,7 @@ export const resolvePactVotes = async (
     ]);
 
     if (regenMap) {
-      await postUpdatedMap({ guild });
+      await postUpdatedMap(guild);
     }
 
     // Get next pact to try and resolve, if exists
@@ -557,7 +557,7 @@ export const resolveSieges = async (
     expiredSiege = await Database.siege.getExpiredSiege(currentTime);
 
     if (regenMap) {
-      await postUpdatedMap({ guild });
+      await postUpdatedMap(guild);
     }
   }
 };
@@ -691,11 +691,7 @@ export const generateSiegeEmbed = async (
   return embed;
 };
 
-export const postUpdatedMap = async ({
-  guild,
-}: {
-  guild: Guild | null;
-}): Promise<CommandReturn> => {
+export const postUpdatedMap = async (guild: Guild): Promise<CommandReturn> => {
   /*
    * Generates a map. 8x12 (tiles are emojis). top row and left column are
    * positions (A1, etc.) outer edge all sea. inner random. 14 castles on
@@ -1020,165 +1016,155 @@ export const configureTrackers = async (): Promise<void> => {
   }
 };
 
-export const resetEverything = async ({
-  guild,
-  playerRoles,
-  currentTime,
-}: {
-  guild: Guild;
-  playerRoles: string[];
-  currentTime: number;
-}): Promise<CommandReturn> => {
+export const resetEverything = async (
+  guild: Guild,
+  currentTime: number
+): Promise<CommandReturn> => {
   const commandReturn: CommandReturn = {
     reply: '',
     enableGame: false,
     success: true,
   };
 
-  if (playerRoles.includes('developer')) {
-    // Remove everyone from game roles
-    await guild.members.fetch();
-    const gameRoleMembersCollection = guild.roles.cache.filter(
-      (role) => role.id in assets.gameRoles && role.id !== '625905668263510017'
-    );
+  // Remove everyone from game roles
+  await guild.members.fetch();
+  const gameRoleMembersCollection = guild.roles.cache.filter(
+    (role) => role.id in assets.gameRoles && role.id !== '625905668263510017'
+  );
 
-    const firstRole = gameRoleMembersCollection.first();
+  const firstRole = gameRoleMembersCollection.first();
 
-    if (firstRole !== undefined) {
-      const memberCollection: Collection<Snowflake, GuildMember> =
-        firstRole.members.concat(
-          ...gameRoleMembersCollection.map((role) => role.members)
-        );
+  if (firstRole !== undefined) {
+    const memberCollection: Collection<Snowflake, GuildMember> =
+      firstRole.members.concat(
+        ...gameRoleMembersCollection.map((role) => role.members)
+      );
 
-      if (memberCollection !== null) {
-        for (const member of memberCollection.values()) {
-          await member.roles.remove(gameRoleMembersCollection);
-        }
+    if (memberCollection !== null) {
+      for (const member of memberCollection.values()) {
+        await member.roles.remove(gameRoleMembersCollection);
       }
     }
-
-    // Reset database data and map
-    await Database.playerData
-      .resetAllPlayers()
-      .then(async () => await Database.pledge.deleteAll())
-      .then(async () => await Database.siege.deleteAll())
-      .then(async () => await Database.vote.deleteAll())
-      .then(async () => await Database.war.deleteAll())
-      .then(async () => {
-        const defaultWars: Array<[string, string]> = [
-          ['572290551357898781', '572288816652484608'],
-          ['572290551357898781', '572291484288548929'],
-          ['572290551357898781', '572288999843168266'],
-          ['572290551357898781', '572288151419355136'],
-          ['572290551357898781', '572289104742580254'],
-          ['572290551357898781', '572288492101435408'],
-          ['572288816652484608', '572291484288548929'],
-          ['572288816652484608', '572288999843168266'],
-          ['572288816652484608', '572288151419355136'],
-          ['572288816652484608', '572289104742580254'],
-          ['572288816652484608', '572288492101435408'],
-          ['572291484288548929', '572288999843168266'],
-          ['572291484288548929', '572288151419355136'],
-          ['572291484288548929', '572289104742580254'],
-          ['572291484288548929', '572288492101435408'],
-          ['572288999843168266', '572288151419355136'],
-          ['572288999843168266', '572289104742580254'],
-          ['572288999843168266', '572288492101435408'],
-          ['572288151419355136', '572289104742580254'],
-          ['572288151419355136', '572288492101435408'],
-          ['572289104742580254', '572288492101435408'],
-          ['572290551357898781', '625905668263510017'],
-          ['572288816652484608', '625905668263510017'],
-          ['572288816652484608', '625905668263510017'],
-          ['572291484288548929', '625905668263510017'],
-          ['572288999843168266', '625905668263510017'],
-          ['572288151419355136', '625905668263510017'],
-          ['572289104742580254', '625905668263510017'],
-        ];
-
-        await Database.war.createMultipleWars(defaultWars);
-      })
-      .then(async () => await Database.tileOwner.deleteAll())
-      .then(async () => {
-        const defaultTileOwners: Array<Partial<TileOwner>> = [
-          { tile: 'c2', house: '572288999843168266', type: 'castle' },
-          { tile: 'b3', house: '572288816652484608', type: 'castle' },
-          { tile: 'g3', house: '572288151419355136', type: 'castle' },
-          { tile: 'd4', house: '572290551357898781', type: 'castle' },
-          { tile: 'f5', house: '572289104742580254', type: 'castle' },
-          { tile: 'g5', house: '572288999843168266', type: 'castle' },
-          { tile: 'b6', house: '572288492101435408', type: 'castle' },
-          { tile: 'd6', house: '572288492101435408', type: 'castle' },
-          { tile: 'e6', house: '572290551357898781', type: 'castle' },
-          { tile: 'd7', house: '572289104742580254', type: 'castle' },
-          { tile: 'g9', house: '572288816652484608', type: 'castle' },
-          { tile: 'b10', house: '572291484288548929', type: 'castle' },
-          { tile: 'c10', house: '572288151419355136', type: 'castle' },
-          { tile: 'd10', house: '572291484288548929', type: 'castle' },
-          { tile: 'h1', house: '625905668263510017', type: 'port' },
-          { tile: 'a12', house: '625905668263510017', type: 'port' },
-          { tile: 'h12', house: '625905668263510017', type: 'port' },
-        ];
-
-        await Database.tileOwner.createMultipleTileOwner(defaultTileOwners);
-      })
-      .then(async () => await Database.loan.deleteAll())
-      .then(async () => await Database.pact.deleteAll())
-      .then(
-        async () => await Database.tracker.updateTrackerByName('payout_time', 0)
-      )
-      .then(
-        async () => await Database.tracker.updateTrackerByName('game_active', 1)
-      )
-      .then(
-        async () => await Database.tracker.updateTrackerByName('game_start', 0)
-      )
-      .then(async () => await postUpdatedMap({ guild }));
-
-    const remakeChannels = [
-      'house-bear',
-      'house-dragon',
-      'house-falcon',
-      'house-hydra',
-      'house-lion',
-      'house-scorpion',
-      'house-wolf',
-    ];
-
-    const houseCategory = utils.findGuildCategoryChannelByName(
-      guild,
-      'The Great Houses'
-    );
-
-    if (houseCategory !== null) {
-      for (let inc = 0; inc < remakeChannels.length; inc += 1) {
-        const channelToRemake = utils.findGuildTextChannelByName(
-          guild,
-          remakeChannels[inc]
-        );
-
-        if (channelToRemake !== null) {
-          channelToRemake
-            .clone()
-            .then((clone) => {
-              clone.setParent(houseCategory).catch(console.error);
-              channelToRemake.delete().catch(console.error);
-            })
-            .catch(console.error);
-        }
-      }
-    } else {
-      console.error('Could not find category channel');
-    }
-
-    await Database.tracker.updateTrackerByName('game_start', currentTime);
-
-    commandReturn.reply = 'Done';
-    commandReturn.enableGame = true;
-  } else {
-    commandReturn.reply =
-      'You dare command this of me? Be gone, before you destroy these lands.';
   }
+
+  // Reset database data and map
+  await Database.playerData
+    .resetAllPlayers()
+    .then(async () => await Database.pledge.deleteAll())
+    .then(async () => await Database.siege.deleteAll())
+    .then(async () => await Database.vote.deleteAll())
+    .then(async () => await Database.war.deleteAll())
+    .then(async () => {
+      const defaultWars: Array<[string, string]> = [
+        ['572290551357898781', '572288816652484608'],
+        ['572290551357898781', '572291484288548929'],
+        ['572290551357898781', '572288999843168266'],
+        ['572290551357898781', '572288151419355136'],
+        ['572290551357898781', '572289104742580254'],
+        ['572290551357898781', '572288492101435408'],
+        ['572288816652484608', '572291484288548929'],
+        ['572288816652484608', '572288999843168266'],
+        ['572288816652484608', '572288151419355136'],
+        ['572288816652484608', '572289104742580254'],
+        ['572288816652484608', '572288492101435408'],
+        ['572291484288548929', '572288999843168266'],
+        ['572291484288548929', '572288151419355136'],
+        ['572291484288548929', '572289104742580254'],
+        ['572291484288548929', '572288492101435408'],
+        ['572288999843168266', '572288151419355136'],
+        ['572288999843168266', '572289104742580254'],
+        ['572288999843168266', '572288492101435408'],
+        ['572288151419355136', '572289104742580254'],
+        ['572288151419355136', '572288492101435408'],
+        ['572289104742580254', '572288492101435408'],
+        ['572290551357898781', '625905668263510017'],
+        ['572288816652484608', '625905668263510017'],
+        ['572288816652484608', '625905668263510017'],
+        ['572291484288548929', '625905668263510017'],
+        ['572288999843168266', '625905668263510017'],
+        ['572288151419355136', '625905668263510017'],
+        ['572289104742580254', '625905668263510017'],
+      ];
+
+      await Database.war.createMultipleWars(defaultWars);
+    })
+    .then(async () => await Database.tileOwner.deleteAll())
+    .then(async () => {
+      const defaultTileOwners: Array<Partial<TileOwner>> = [
+        { tile: 'c2', house: '572288999843168266', type: 'castle' },
+        { tile: 'b3', house: '572288816652484608', type: 'castle' },
+        { tile: 'g3', house: '572288151419355136', type: 'castle' },
+        { tile: 'd4', house: '572290551357898781', type: 'castle' },
+        { tile: 'f5', house: '572289104742580254', type: 'castle' },
+        { tile: 'g5', house: '572288999843168266', type: 'castle' },
+        { tile: 'b6', house: '572288492101435408', type: 'castle' },
+        { tile: 'd6', house: '572288492101435408', type: 'castle' },
+        { tile: 'e6', house: '572290551357898781', type: 'castle' },
+        { tile: 'd7', house: '572289104742580254', type: 'castle' },
+        { tile: 'g9', house: '572288816652484608', type: 'castle' },
+        { tile: 'b10', house: '572291484288548929', type: 'castle' },
+        { tile: 'c10', house: '572288151419355136', type: 'castle' },
+        { tile: 'd10', house: '572291484288548929', type: 'castle' },
+        { tile: 'h1', house: '625905668263510017', type: 'port' },
+        { tile: 'a12', house: '625905668263510017', type: 'port' },
+        { tile: 'h12', house: '625905668263510017', type: 'port' },
+      ];
+
+      await Database.tileOwner.createMultipleTileOwner(defaultTileOwners);
+    })
+    .then(async () => await Database.loan.deleteAll())
+    .then(async () => await Database.pact.deleteAll())
+    .then(
+      async () => await Database.tracker.updateTrackerByName('payout_time', 0)
+    )
+    .then(
+      async () => await Database.tracker.updateTrackerByName('game_active', 1)
+    )
+    .then(
+      async () => await Database.tracker.updateTrackerByName('game_start', 0)
+    )
+    .then(async () => await postUpdatedMap(guild));
+
+  const remakeChannels = [
+    'house-bear',
+    'house-dragon',
+    'house-falcon',
+    'house-hydra',
+    'house-lion',
+    'house-scorpion',
+    'house-wolf',
+  ];
+
+  const houseCategory = utils.findGuildCategoryChannelByName(
+    guild,
+    'The Great Houses'
+  );
+
+  if (houseCategory !== null) {
+    for (let inc = 0; inc < remakeChannels.length; inc += 1) {
+      const channelToRemake = utils.findGuildTextChannelByName(
+        guild,
+        remakeChannels[inc]
+      );
+
+      if (channelToRemake !== null) {
+        channelToRemake
+          .clone()
+          .then((clone) => {
+            clone.setParent(houseCategory).catch(console.error);
+            channelToRemake.delete().catch(console.error);
+          })
+          .catch(console.error);
+      }
+    }
+  } else {
+    console.error('Could not find category channel');
+  }
+
+  await Database.tracker.updateTrackerByName('game_start', currentTime);
+
+  commandReturn.reply = 'Done';
+  commandReturn.enableGame = true;
 
   return commandReturn;
 };

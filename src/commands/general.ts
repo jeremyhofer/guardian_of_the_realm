@@ -7,7 +7,6 @@ import {
 import * as assets from '../assets';
 import * as gameTasks from '../game_tasks';
 import * as utils from '../utils';
-import { PlayerData } from '../entity/PlayerData';
 import { Database } from '../data-source';
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 

@@ -1,4 +1,3 @@
-import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
 import {
   ArgParserFn,
@@ -17,7 +16,6 @@ import {
   ChatInputCommandInteraction,
   Role,
   SlashCommandBuilder,
-  User,
 } from 'discord.js';
 
 /*

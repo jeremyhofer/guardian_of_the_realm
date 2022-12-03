@@ -1,4 +1,3 @@
-import { PlayerData } from '../entity/PlayerData';
 import { ArgTypes } from '../enums';
 import {
   AttackTypes,
