@@ -563,7 +563,7 @@ export const resolveSieges = async (
 };
 
 export const generateSiegeEmbed = async (
-  guildRoles: RoleManager | null,
+  guildRoles: RoleManager | null | undefined,
   tileId: string
 ): Promise<APIEmbed | null> => {
   /*
@@ -1290,4 +1290,39 @@ export const getAllPlayerRoleNames = async (
   const guildMember = await interaction.guild?.members.fetch(user.id);
 
   return guildMember?.roles.cache.map((role) => role.name.toLowerCase()) ?? [];
+};
+
+export const postSiegeEmbed = async (
+  interaction: ChatInputCommandInteraction,
+  tileOwner: TileOwner,
+  siegeMessage?: string
+): Promise<void> => {
+  const siegeEmbed = await generateSiegeEmbed(
+    interaction.guild?.roles,
+    tileOwner.tile
+  );
+  const brChannel = assets.replyChannels.battle_reports;
+  const channel = utils.getGuildTextChannel(interaction.guild, brChannel);
+
+  if (channel !== null && siegeEmbed !== null) {
+    if (siegeMessage === undefined) {
+      await channel
+        .send({ embeds: [siegeEmbed] })
+        .then(
+          async (message) =>
+            await Database.siege.updateSiegeMessageForTile(
+              tileOwner,
+              message.id
+            )
+        )
+        .catch(console.error);
+    } else {
+      await channel.messages
+        .fetch(siegeMessage)
+        .then(async (message) => await message.edit({ embeds: [siegeEmbed] }))
+        .catch(console.error);
+    }
+  } else {
+    console.log('Issue posting siege embed');
+  }
 };

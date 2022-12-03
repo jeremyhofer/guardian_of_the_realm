@@ -30,6 +30,12 @@ export class SiegeDAO {
     });
   }
 
+  async getSiegeByTile(tile: string): Promise<Siege | null> {
+    return await this._repository.findOneBy({
+      tile: tile as any,
+    });
+  }
+
   async getAllSiegeIdBetweenTwoHouses(
     houseA: string,
     houseB: string

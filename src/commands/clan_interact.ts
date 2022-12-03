@@ -200,12 +200,13 @@ const pledge = async (
       units: numUnits,
       choice: action,
     });
+    await game_tasks.postSiegeEmbed(
+      interaction,
+      tileOwner,
+      existingSiege.message
+    );
 
     reply = `You successfully pledged ${numUnits} to ${action} ${selectedTile.toUpperCase()}`;
-    // TODO: jank is here for regenerating the siege embed. can probably clean this up long term
-    // TODO: this is jank, setting the tileOwner here. need to determine better mappings tile<->siege
-    existingSiege.tile = tileOwner;
-    await Database.siege.saveSiege(existingSiege);
   }
 
   return { reply, success: true };
@@ -324,7 +325,12 @@ const handleAttack = async (
     attacker: playerData.house,
     time: Date.now() + utils.hoursToMs(8),
   });
-  // TODO: generate and post siege embed
+  await game_tasks.postSiegeEmbed(interaction, tileOwner);
+
+  if (interaction.guild !== null) {
+    await game_tasks.postUpdatedMap(interaction.guild);
+  }
+
   const reply =
     type === 'blockade'
       ? 'A blockade has been started on the port'
