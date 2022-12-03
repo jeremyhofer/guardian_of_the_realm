@@ -96,7 +96,6 @@ const cooldown = async (
 
 export const dispatch: CommandDispatch = {
   help: {
-    type: 'slash',
     function: help,
     args: [],
     command_args: [[]],
@@ -106,7 +105,6 @@ export const dispatch: CommandDispatch = {
       .setDescription('help the things'),
   },
   bal: {
-    type: 'slash',
     function: bal,
     args: ['playerData', 'playerRoles'],
     command_args: [[]],
@@ -116,7 +114,6 @@ export const dispatch: CommandDispatch = {
       .setDescription('bal the things'),
   },
   cooldown: {
-    type: 'slash',
     function: cooldown,
     args: ['playerData', 'commandDispatch'],
     command_args: [[]],

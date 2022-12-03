@@ -156,7 +156,6 @@ const work = async (
 
 export const dispatch: CommandDispatch = {
   pray: {
-    type: 'slash',
     function: pray,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pray),
@@ -171,7 +170,6 @@ export const dispatch: CommandDispatch = {
       .setDescription('pray the things'),
   },
   subvert: {
-    type: 'slash',
     function: subvert,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.subvert),
@@ -187,7 +185,6 @@ export const dispatch: CommandDispatch = {
       .setDescription('subvert the things'),
   },
   train: {
-    type: 'slash',
     function: train,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.train),
@@ -202,7 +199,6 @@ export const dispatch: CommandDispatch = {
       .setDescription('train the things'),
   },
   work: {
-    type: 'slash',
     function: work,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.work),

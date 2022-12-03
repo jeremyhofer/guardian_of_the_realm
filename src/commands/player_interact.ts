@@ -841,7 +841,6 @@ const trade = async (
 
 export const dispatch: CommandDispatch = {
   arson: {
-    type: 'slash',
     function: arson,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.arson),
@@ -866,7 +865,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   gift: {
-    type: 'slash',
     function: gift,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.player_mention, ArgTypes.number]],
@@ -890,7 +888,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   pirate: {
-    type: 'slash',
     function: pirate,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.pirate),
@@ -914,7 +911,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   raid: {
-    type: 'slash',
     function: raid,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.raid),
@@ -938,7 +934,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   scandal: {
-    type: 'slash',
     function: scandal,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.scandal),
@@ -960,7 +955,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   spy: {
-    type: 'slash',
     function: spy,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.spy),
@@ -982,7 +976,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   thief: {
-    type: 'slash',
     function: thief,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.thief),
@@ -1006,7 +999,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   trade: {
-    type: 'slash',
     function: trade,
     cooldown: {
       time: utils.hoursToMs(assets.timeoutLengths.trade),

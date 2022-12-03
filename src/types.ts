@@ -153,7 +153,6 @@ export type ArgParserFn<T> = (
 ) => T | null;
 
 export interface CommandConfig {
-  type: 'slash' | 'message';
   function: (...all: any) => Promise<CommandReturn | null> | Promise<void>;
   args: string[];
   command_args: CommandArgs;

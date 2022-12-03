@@ -334,7 +334,6 @@ const market = async (): Promise<CommandReturn> => {
 
 export const dispatch: CommandDispatch = {
   buy: {
-    type: 'slash',
     function: buy,
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.game_role], [ArgTypes.string, ArgTypes.number]],
@@ -375,7 +374,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   loan: {
-    type: 'slash',
     function: loan,
     args: ['args', 'playerData'],
     command_args: [
@@ -415,7 +413,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   market: {
-    type: 'slash',
     function: market,
     args: [],
     command_args: [[]],

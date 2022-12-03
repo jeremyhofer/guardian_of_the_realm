@@ -7,12 +7,7 @@ import * as utils from './utils';
 import * as assets from './assets';
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 });
 
 let clientReady = false;
@@ -31,10 +26,6 @@ AppDataSource.initialize()
       console.log(`Logged in as ${client.user?.tag ?? 'BOT NAME ISSUE'}!`);
       clientReady = true;
       gameActive = await game_tasks.isGameActive();
-    });
-
-    client.on(Events.MessageCreate, async (message) => {
-      await botHandlers.messageHandler(message, gameActive);
     });
 
     client.on(

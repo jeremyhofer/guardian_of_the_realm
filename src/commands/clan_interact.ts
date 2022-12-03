@@ -573,7 +573,6 @@ const war = async (
 
 export const dispatch: CommandDispatch = {
   join: {
-    type: 'slash',
     function: join,
     args: ['playerData'],
     command_args: [[]],
@@ -583,7 +582,6 @@ export const dispatch: CommandDispatch = {
       .setDescription('join the things'),
   },
   pledge: {
-    type: 'slash',
     function: pledge,
     args: ['args', 'playerData', 'playerRoles'],
     command_args: [[ArgTypes.string, ArgTypes.number, ArgTypes.string]],
@@ -616,7 +614,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   siege: {
-    type: 'slash',
     function: siege,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
@@ -633,7 +630,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   blockade: {
-    type: 'slash',
     function: blockade,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.string]],
@@ -650,7 +646,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   pact: {
-    type: 'slash',
     function: pact,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],
@@ -676,7 +671,6 @@ export const dispatch: CommandDispatch = {
       ),
   },
   war: {
-    type: 'slash',
     function: war,
     args: ['args', 'playerData'],
     command_args: [[ArgTypes.house, ArgTypes.string]],

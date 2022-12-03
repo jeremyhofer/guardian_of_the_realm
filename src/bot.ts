@@ -30,7 +30,6 @@ export const commandDispatch: CommandDispatch = {
   ...player_interact.dispatch,
   ...tasks.dispatch,
   map: {
-    type: 'slash',
     function: async (
       interaction: ChatInputCommandInteraction
     ): Promise<CommandReturn> => {
@@ -49,7 +48,6 @@ export const commandDispatch: CommandDispatch = {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   },
   reset: {
-    type: 'slash',
     function: async (
       interaction: ChatInputCommandInteraction
     ): Promise<CommandReturn> => {
@@ -79,13 +77,6 @@ export async function messageHandler(
     const command = tokens[0].substring(1);
 
     if (command in commandDispatch) {
-      if (commandDispatch[command].type === 'slash') {
-        await msg.reply(
-          `${command} is now implemented as a slash command. Give it a try with /${command}!`
-        );
-
-        return;
-      }
       if (!gameActive && command !== 'reset') {
         await msg.reply('The game is over! A new round will begin soon!');
 
@@ -528,13 +519,6 @@ export async function interactionHandler(
     }
 
     const commandConfig = commandDispatch[interaction.commandName];
-
-    if (commandConfig.type === 'message') {
-      await interaction.reply(
-        `${commandName} is not implemented as a slack command yet. Please use .${commandName}`
-      );
-      return;
-    }
 
     await interaction.deferReply();
 
