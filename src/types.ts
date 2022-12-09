@@ -2,6 +2,10 @@ import {
   CommandInteractionOptionResolver,
   SlashCommandBuilder,
 } from 'discord.js';
+import { PlayerData } from './entity/PlayerData';
+
+// TODO: include other resources from PlayerData as they are added
+export type ResourceMap = Partial<Pick<PlayerData, 'money'>>;
 
 export const rank = ['baron', 'earl', 'duke', 'unsworn'] as const;
 export type Rank = typeof rank[number];

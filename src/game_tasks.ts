@@ -12,7 +12,7 @@ import * as assets from './assets';
 import { Database } from './data-source';
 import { PlayerData } from './entity/PlayerData';
 import { TileOwner } from './entity/TileOwner';
-import { buildings, CommandReturn, Rank, StoreItemTypes } from './types';
+import { buildings, CommandReturn, Rank, ResourceMap, StoreItemTypes } from './types';
 import * as utils from './utils';
 
 export const rolePayouts = async (
@@ -28,16 +28,20 @@ export const rolePayouts = async (
     lastPayout.value + utils.hoursToMs(hoursBetweenPayout) <= currentTime
   ) {
     // Payout roles
-    for (const [title, titleDailyPayout] of Object.entries(
-      assets.dailyPayouts
+    for (const [title, titleDailyPayoutUpkeepMap] of Object.entries(
+      assets.dailyPayoutsUpkeeps
     )) {
-      const payout = Math.round(titleDailyPayout * payoutPercent);
+      const titleUpdates: ResourceMap = {};
+
+      if(titleDailyPayoutUpkeepMap.money !== undefined) {
+        titleUpdates.money = Math.round(titleDailyPayoutUpkeepMap.money * payoutPercent);
+      }
       const roleId = utils.findRoleIdGivenName(title, assets.gameRoles);
       const players =
         guild.roles.cache.get(roleId)?.members.map((member) => member.id) ?? [];
 
       if (players.length > 0) {
-        await Database.playerData.grantRolePayoutToAllPlayers(players, payout);
+        await Database.playerData.grantRolePayoutToAllPlayers(players, titleUpdates);
       }
     }
 
@@ -66,7 +70,7 @@ export const rolePayouts = async (
           guild.roles.cache
             .get(port.house)
             ?.members.map((member) => member.id) ?? [],
-          portPayout
+          { money: portPayout }
         );
       }
     }
@@ -1187,7 +1191,14 @@ export const generateRolesReply = ({
   buildings.forEach((role) => {
     const roleCap = role[0].toUpperCase() + role.slice(1);
     const symbol = playerRoles.includes(role) ? ':white_check_mark:' : ':x:';
-    reply += `${symbol} ${roleCap}: ${assets.dailyPayouts[role]} ${assets.emojis.Money} per Day\n`;
+    const payoutsUpkeeps: string[] = [];
+    const rolePayoutsUpkeeps = assets.dailyPayoutsUpkeeps[role];
+
+    // TODO: add info for other payouts/upkeeps of resources as they are implemented
+    if(rolePayoutsUpkeeps.money !== undefined) {
+      payoutsUpkeeps.push(`${rolePayoutsUpkeeps.money} ${assets.emojis.Money}`);
+    }
+    reply += `${symbol} ${roleCap}: ${payoutsUpkeeps.length === 0 ? 'no upkeep or payout' : payoutsUpkeeps.join(', ')} per Day\n`;
   });
 
   let roleReply = '';

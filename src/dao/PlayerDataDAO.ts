@@ -1,6 +1,7 @@
 import { defaultPlayer } from '../constants';
 import { Repository, UpdateResult } from 'typeorm';
 import { PlayerData } from '../entity/PlayerData';
+import { ResourceMap } from '../types';
 
 export class PlayerDataDAO {
   constructor(private readonly _repository: Repository<PlayerData>) {}
@@ -62,11 +63,14 @@ export class PlayerDataDAO {
   // TODO: test this query
   async grantRolePayoutToAllPlayers(
     playerIds: string[],
-    value: number
+    values: ResourceMap
   ): Promise<UpdateResult> {
-    return await this._repository.update(playerIds, {
-      money: () => `money + ${value}`,
-    });
+    const updateValues = Object.entries(values).reduce<{ [key: string]: () => string }>((acc, [resource, value]) => {
+      acc[resource] = () => `${resource} + ${value}`;
+      return acc;
+    }, {});
+
+    return await this._repository.update(playerIds, updateValues);
   }
 
   // TODO: test this query

@@ -7,6 +7,7 @@ import {
   GameRoles,
   StoreItems,
   EmojiNames,
+  ResourceMap,
 } from './types';
 
 // custom emojis require the name:guild_emoji_id to be sent
@@ -183,13 +184,25 @@ export const houseTiles: { [key: string]: Houses } = {
   '572288492101435408': 'Dragon',
 };
 
-export const dailyPayouts: Record<Buildings, number> = {
-  mine: 500,
-  blacksmith: 1500,
-  bordello: 1000,
-  lumber: 1000,
-  monastery: 1000,
-  farm: 500,
+export const dailyPayoutsUpkeeps: Record<Buildings, ResourceMap> = {
+  mine: {
+    money: 500
+  },
+  blacksmith: {
+    money: 1500,
+  },
+  bordello: {
+    money: 1000,
+  },
+  lumber: {
+    money: 1000,
+  },
+  monastery: {
+    money: 1000,
+  },
+  farm: {
+    money: 500,
+  }
 };
 
 export const roleTroopLimits: Record<Rank, number> = {
