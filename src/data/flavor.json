@@ -70,14 +70,6 @@
     "You and your Men-at-Arms suddenly attacked an enemy patrol, and killed {enemyLost} {eMenAtArms} of {targetMention} after a short, bloody fight. We lost {myLost} {eMenAtArms} and took {reward} {emoji.Money} in loot. Your men were in high spirits all the way home.",
     "You and your men raided an enemy hold-fast. It went splendidly. We only had to kill a dog, {enemyLost} {eMenAtArms} of {targetMention}, and an old man. We lost {myLost} {eMenAtArms}, and took {reward} {emoji.Money} in loot."
   ],
-  "pirate_fail": [
-    "A few of your ships sail into hostile waters. Just as you find an enemy fleet you are attacked by a leviathon. In the chaos, it destorys {enemyLost} {eWarship} of {targetMention}, but you lose {myLost} {eWarship}. Terror fills your sailors all the way home.",
-    "You slip out to sea to engage in a bit of free booting. Your fleet is ambushed. You manage to sink {enemyLost} {eWarship} of {targetMention}, but your fleet took heavy damage, and lost {myLost} {eWarship}. Your men are morose on the journey home."
-  ],
-  "pirate_success": [
-    "You slip out to sea to engage in a bit of free booting. Your fleet sunk {enemyLost} {eWarship} of {targetMention}, and you only lost {myLost} {eWarship} and take {reward} {emoji.Money} in loot. This incursion was a success, and your sailors are well pleased with the result!",
-    "In the dead of night your sailors safely navigate the dangerous shaols and slip into a hostile port. After lighting several enemy ships on fire your men flee into the dark embrace of the high seas. Your fleet sunk {enemyLost} {eWarship} of {targetMention}, lost {myLost} {eWarship}, took {reward} {emoji.Money} in loot."
-  ],
   "smuggle_fail": [
     "In the dead of night your men sail into a hostile port. Your ships are not flying any banners - speed and stealth are your watchwords. There's good money to be made selling excommunicated goods to less then savory elements of the underworld. Unfortunately, those same criminal elements also don't mind informing the Inquisition about the less then holy intents of your ships. {amount} {eWarship} were seized in the harbor, and your ship barely escaped their grasp.",
     "Your fleet sailed into a distant port, and retrieved a single man with a mysterious cargo. He had hired your whole fleet for a flabbergasting sum of money on the condition that he arrive safely at another port. Your sailors failed to navigate the dangerous shaols of the port, and you lost {amount} {eWarship}."

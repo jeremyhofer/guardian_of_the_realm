@@ -7,9 +7,7 @@ export const rank = ['baron', 'earl', 'duke', 'unsworn'] as const;
 export type Rank = typeof rank[number];
 
 export const buildings = [
-  'apothecary',
   'mine',
-  'barrack',
   'blacksmith',
   'bordello',
   'monastery',
@@ -45,7 +43,6 @@ export type AttackTypes = 'siege' | 'blockade';
 
 export const CooldownCommands = [
   'arson',
-  'pirate',
   'pray',
   'raid',
   'scandal',

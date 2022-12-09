@@ -9,7 +9,6 @@ export const defaultPlayer: Omit<
   ships: 2,
   money: 2000,
   arson_last_time: 0,
-  pirate_last_time: 0,
   pray_last_time: 0,
   raid_last_time: 0,
   smuggle_last_time: 0,

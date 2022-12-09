@@ -25,9 +25,6 @@ export class PlayerData {
   arson_last_time!: number; // INTEGER,
 
   @Column()
-  pirate_last_time!: number; // INTEGER,
-
-  @Column()
   pray_last_time!: number; // INTEGER,
 
   @Column()

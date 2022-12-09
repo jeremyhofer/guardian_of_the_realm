@@ -71,12 +71,6 @@ export const emojis: Record<EmojiNames, string> = {
 };
 
 export const storeItems: Record<AvailableStoreItems, StoreItems> = {
-  apothecary: {
-    type: 'income',
-    flavor:
-      'Your local herbalist may not cure everyone, but at least a few recover to pay more taxes.',
-    cost: 500,
-  },
   mine: {
     type: 'income',
     flavor:
@@ -88,12 +82,6 @@ export const storeItems: Record<AvailableStoreItems, StoreItems> = {
     flavor:
       "You've scraped together a sizeable pile of coins. Now it's time to pitch tents for up to 300 men, and docks for 30 ships.",
     cost: 3000,
-  },
-  barrack: {
-    type: 'income',
-    flavor:
-      'A warm hearth, and stout walls reassure your people that they are protected by a strong lord, which increases tax revenues.',
-    cost: 1500,
   },
   blacksmith: {
     type: 'income',
@@ -162,7 +150,6 @@ export const gameRoles: GameRoles = {
   '572288151419355136': ['knights', 'bear'],
   '572289104742580254': ['shinobi', 'hydra'],
   '572288492101435408': ['ronin', 'dragon'],
-  '575048350915756050': ['barrack'],
   '575048286059102209': ['mine'],
   '629752243440058388': ['monastery'],
   '596111896633933860': ['bordello'],
@@ -172,7 +159,6 @@ export const gameRoles: GameRoles = {
   '584864539259043912': ['duke'],
   '575048205234995225': ['blacksmith'],
   '587764622296219651': ['baron'],
-  '629752308011630605': ['apothecary'],
 };
 
 export const houses: string[] = [
@@ -198,9 +184,7 @@ export const houseTiles: { [key: string]: Houses } = {
 };
 
 export const dailyPayouts: Record<Buildings, number> = {
-  apothecary: 500,
   mine: 500,
-  barrack: 1500,
   blacksmith: 1500,
   bordello: 1000,
   lumber: 1000,
@@ -250,7 +234,6 @@ export const timeoutLengths: { [key: string]: number } = {
   vote_expiration: 8,
   payout_interval: 12,
   arson: 12,
-  pirate: 24,
   raid: 24,
   scandal: 48,
   spy: 1,
@@ -267,16 +250,6 @@ export const rewardPayoutsPenalties: { [key: string]: number } = {
   port_daily: 3000,
   arson_penalty_min: 200,
   arson_penalty_max: 1000,
-  pirate_reward_min: 2000,
-  pirate_reward_max: 3000,
-  pirate_success_attacker_loss_min: 0,
-  pirate_success_attacker_loss_max: 5,
-  pirate_success_defender_loss_min: 5,
-  pirate_success_defender_loss_max: 10,
-  pirate_fail_attacker_loss_min: 5,
-  pirate_fail_attacker_loss_max: 8,
-  pirate_fail_defender_loss_min: 3,
-  pirate_fail_defender_loss_max: 6,
   raid_reward_min: 2000,
   raid_reward_max: 3000,
   raid_success_attacker_loss_min: 0,
